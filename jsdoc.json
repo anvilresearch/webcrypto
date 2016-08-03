@@ -1,0 +1,14 @@
+{
+  "source": {
+    "include": [
+      "./src"
+    ]
+  },
+  "opts": {
+    "destination": "./docs/build",
+    "readme": "./README.md"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ]
+}
