@@ -1,6 +1,6 @@
 {
   "name": "webcrypto",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "WebCrypto API for Node.js and browsers",
   "main": "src/index.js",
   "directories": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/anvilresearch/webcrypto.git"
+    "url": "git+ssh://git@github.com/anvilresearch/webcrypto.git"
   },
   "keywords": [
     "WebCrypto"
@@ -19,9 +19,9 @@
   "author": "Anvil Research, Inc.",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/anvilresearch/webcrypto/issues"
+    "url": "https://github.com/anvilresearch/webcrypto/issues"
   },
-  "homepage": "https://gitlab.com/anvilresearch/webcrypto#README",
+  "homepage": "https://github.com/anvilresearch/webcrypto#README",
   "devDependencies": {
     "karma": "^1.1.2",
     "karma-chrome-launcher": "^1.0.1",
