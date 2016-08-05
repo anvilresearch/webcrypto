@@ -61,7 +61,35 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   verify (algorithm, key, signature, data) {
-    return new Promise()
+    // 2. Let signature be the result of cloning the data of the signature
+    //    parameter passed to the verify method.
+    signature = clone(signature)
+
+    // 3. Let normalizedAlgorithm be the result of normalizing an
+    //    algorithm, with alg set to algorithm and op set to "verify".
+    let normalizedAlgorithm = { alg: algorithm, op: 'verify' }
+
+    try {
+      normalizedAlgorithm = algorithms.normalize(normalizedAlgorithm)
+    } catch (e) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    data = clone(data)
+
+    return new Promise((resolve, reject) => {
+      if (normalizedAlgorithm.name !== key.algorithm.name) {
+        throw new InvalidAccessError()
+      }
+
+      if (!key.usages.includes('verify')) {
+        throw new InvalidAccessError()
+      }
+
+      let verify = crypto.createVerify(`RSA-SHA${key.bitlength}`)
+      verify.update(data)
+      resolve(verify.verify(key.exportKey('public'), signature))
+    })
   }
 
   /**
