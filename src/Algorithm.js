@@ -2,8 +2,9 @@
  * Algorithm dictionary
  */
 class Algorithm {
-  constructor (name) {
+  constructor (name, op) {
     this.name = name
+    this.op = op
   }
 }
 
