@@ -29,5 +29,8 @@
     "karma-webpack": "^1.7.0",
     "mocha": "^3.0.0",
     "webpack": "^1.13.1"
+  },
+  "dependencies": {
+    "node-rsa": "^0.4.0"
   }
 }
