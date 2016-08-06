@@ -7,95 +7,33 @@ const RSA = require('node-rsa')
 /**
  * Local dependencies
  */
-const Algorithm = require('../Algorithm')
+const Algorithm = require('./Algorithm')
 const BigInteger = require('../BigInteger')
+const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
-const HashAlgorithmIdentifier = require('../HashAlgorithmIdentifier')
-const KeyAlgorithm = require('../KeyAlgorithm')
-
-/**
- * RsaKeyGenParams
- */
-class RsaKeyGenParams extends Algorithm {
-  constructor (modulusLength, publicExponent) {
-    // validate and set modulusLength
-    if (typeof modulusLength !== 'number') { throw new Error() }
-    if (modulusLength < 1024) { throw new Error() }
-    this.modulusLength = modulusLength
-
-    // validate and set publicExponent
-    if (!(publicExponent instanceof BigInteger)) { throw new Error() }
-    this.publicExponent = publicExponent
-  }
-}
-
-/**
- * RsaHashedKeyGenParams
- */
-class RsaHashedKeyGenParams extends RsaKeyGenParams {
-  constructor (modulusLength, publicExponent, hash) {
-    super(modulusLength, publicExponent)
-
-    // validate and set hash
-    if (!(hash instanceof HashAlgorithmIdentifier)) { throw new Error() }
-    this.hash = hash
-  }
-}
-
-/**
- * RsaKeyAlgorithm
- */
-class RsaKeyAlgorithm extends KeyAlgorithm {
-  constructor (modulusLength, publicExponent) {
-    // validate and set modulusLength
-    if (typeof modulusLength !== 'number') { throw new Error() }
-    if (modulusLength < 1024) { throw new Error() }
-    this.modulusLength = modulusLength
-
-    // validate and set publicExponent
-    if (!(publicExponent instanceof BigInteger)) { throw new Error() }
-    this.publicExponent = publicExponent
-  }
-}
-
-/**
- * RsaHashedKeyAlgorithm
- */
-class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
-  constructor (modulusLength, publicExponent, hash) {
-    super(modulusLength, publicExponent)
-
-    // validate and set hash
-    if (!(hash instanceof KeyAlgorithm)) { throw new Error() }
-    this.hash = hash
-  }
-}
-
-/**
- * RsaHashedImportParams
- */
-class RsaHashedImportParams {
-  constructor (hash) {
-    // validate and set hash
-    if (!(hash instanceof HashAlgorithmIdentifier)) { throw new Error() }
-    this.hash = hash
-  }
-}
+const KeyAlgorithm = require('./KeyAlgorithm')
+const RsaKeyGenParams = require('./RsaKeyGenParams')
+const RsaHashedKeyGenParams = require('./RsaHashedKeyGenParams')
+const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
+const RsaHashedKeyAlgorithm = require('./RsaHashedKeyAlgorithm')
+const RsaHashedImportParams = require('./RsaHashedImportParams')
 
 /**
  * RSASSA-PKCS1-v1_5
  */
-class RSASSA-PKCS1-v1_5 {
+class RSASSA_PKCS1_v1_5 {
 
   /**
-   * Constuctor
+   * Constructor
+   *
+   * @param {RsaKeyAlgorithm} algorithm
+   * @param {Boolean} extractable
+   * @param {Array} usages
    */
-  constructor (key, data, bitlength) {
-    // TODO should name be an argument to constructor?
-    this.name = 'RSASSA-PKCS1-v1_5'
-    this.key = key
-    this.data = data
-    this.bitlength = bitlength
+  constructor (algorithm, extractable, usages) {
+    this.algorithm = algorithm
+    this.extractable = extractable
+    this.usages = usages
   }
 
   /**
@@ -105,13 +43,54 @@ class RSASSA-PKCS1-v1_5 {
 
   /**
    * generateKey
+   *
+   * @param {RsaHashedKeyGenParams} params
+   * @returns {CryptoKeyPair}
    */
-  generateKey () {
-    let key = new RSA()
+  generateKey (params) {
+    // validate usages
+    this.usages.forEach(usage => {
+      if (usage !== 'sign' && usage !== 'verify') {
+        throw new SyntaxError()
+      }
+    })
 
-    // ...
+    // Generate and RSA keypair
+    try {
+      // TODO
+      // what is this bit option, where do we get the value from in this
+      // api?
+      let key = new RSA({b:512})
+      let {modulusLength,publicExponent} = this.algorithm
+      let keypair = key.generateKeyPair(modulusLength, publicExponent)
+      console.log('KEYPAIR', keypair)
+    } catch (e) {
+      throw new OperationError()
+    }
 
-    return new CryptoKeyPair()
+    // cast params to algorithm
+    let algorithm = new RsaHashedKeyAlgorithm(params)
+
+    // instantiate publicKey
+    let publicKey = new CryptoKey({
+      type: 'public',
+      algorithm,
+      extractable: true,
+      usages: ['verify']
+    })
+
+    // instantiate privateKey
+    let privateKey = new CryptoKey({
+      type: 'private',
+      algorithm,
+      // TODO is there a typo in the spec?
+      // it says "extractable" instead of "false"
+      extractable: false,
+      usages: ['sign']
+    })
+
+    // return a new keypair
+    return new CryptoKeyPair({publicKey,privateKey})
   }
 
   /**
@@ -135,4 +114,4 @@ class RSASSA-PKCS1-v1_5 {
 /**
  * Export
  */
-module.exports = RSASSA-PKCS1-v1_5
+module.exports = RSASSA_PKCS1_v1_5
