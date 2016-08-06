@@ -2,13 +2,19 @@
  * KeyAlgorithm dictionary
  */
 class KeyAlgorithm {
-  constructor (name, op) {
-    // validate and set name
-    if (name === undefined) { throw new Error() }
-    this.name = name
 
-    // set op
-    this.op = op
+  /**
+   * constructor
+   *
+   * @param {object} algorithm
+   */
+  constructor (algorithm) {
+    Object.assign(this, algorithm)
+
+    // validate name
+    if (this.name === undefined) {
+      throw new Error('KeyAlgorithm must have a name')
+    }
   }
 }
 
