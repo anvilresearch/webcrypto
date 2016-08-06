@@ -1,6 +1,9 @@
 /**
  * Module dependencies
  */
+const Algorithm = require('../Algorithm')
+const KeyAlgorithm = require('../KeyAlgorithm')
+const NotSupportedError = require('../NotSupportedError')
 const supportedAlgorithms = require('./supportedAlgorithms')
 
 /**
@@ -39,35 +42,36 @@ function normalize (op, alg) {
   }
 
   // object argument
-  let registeredAlgorithms = supportedAlgorithms[op]
-  let initialAlg, algName, desiredType, normalizedAlgorithm
+  if (typeof alg === 'object') {
+    let initialAlg, algName, desiredType, normalizedAlgorithm
 
-  try {
-    initialAlg = new Algorithm(alg, op)
-  } catch (error) {
-    return error
+    let registeredAlgorithms = supportedAlgorithms[op]
+
+    try {
+      initialAlg = new Algorithm(alg)
+    } catch (error) {
+      return error
+    }
+
+    algName = registeredAlgorithms.getCaseInsensitive(initialAlg.name)
+
+    if (algName) {
+      desiredType = algorithms[algName]
+    } else {
+      return new NotSupportedError(algName)
+    }
+
+    try {
+      normalizedAlgorithm = new desiredType(initialAlg)
+    } catch (error) {
+      return error
+    }
+
+    return normalizedAlgorithm
   }
-
-  let algName = initialAlg.name
-
-  // TODO this should be a case-insensitive match
-  if (registeredAlgorithms.includes(algName)) {
-    algName = registeredAlgorithms.getCaseInsensitive(algName)
-    desiredType = algorithms[algName]
-  } else {
-    return new NotSupportedError()
-  }
-
-  try {
-    normalizedAlgorithm = new desiredType(initialAlg)
-  } catch (error) {
-    return error
-  }
-
-  return normalizedAlgorithm
 }
 
 /**
  * Export
  */
-module.exports = normalize
+module.exports = {normalize}
