@@ -1,7 +1,12 @@
 /**
  * CryptoKeyPair dictionary
  */
-class CryptoKeyPair {}
+class CryptoKeyPair {
+  constructor ({publicKey,privateKey}) {
+    this.publicKey = publicKey
+    this.privateKey = privateKey
+  }
+}
 
 /**
  * Export
