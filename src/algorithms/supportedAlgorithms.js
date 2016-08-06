@@ -1,48 +1,53 @@
 /**
+ * Local dependencies
+ */
+const RegisteredAlgorithms = require('./RegisteredAlgorithms')
+
+/**
  * SupportedAlgorithms
  */
 const supportedAlgorithms = {
-  encrypt: [
+  encrypt: new RegisteredAlgorithms([
     'RSA-OAEP', 'AES-CTR', 'AES-CBC', 'AES-GCM', 'AES-CFB'
-  ],
-  decrypt: [
+  ]),
+  decrypt: new RegisteredAlgorithms([
     'RSA-OAEP', 'AES-CTR', 'AES-CBC', 'AES-GCM', 'AES-CFB'
-  ],
-  sign: [
+  ]),
+  sign: new RegisteredAlgorithms([
     'RSASSA-PKCS1-v1_5', 'RSA-PSS', 'ECDSA', 'AES-CMAC', 'HMAC'
-  ],
-  verify: [
+  ]),
+  verify: new RegisteredAlgorithms([
     'RSASSA-PKCS1-v1_5', 'RSA-PSS', 'ECDSA', 'AES-CMAC', 'HMAC'
-  ],
-  digest: [
+  ]),
+  digest: new RegisteredAlgorithms([
     'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'
-  ],
-  deriveKey: [
+  ]),
+  deriveKey: new RegisteredAlgorithms([
     'ECDH', 'DH', 'CONCAT', 'HKDF-CTR', 'PBKDF2'
-  ],
-  deriveBits: [
+  ]),
+  deriveBits: new RegisteredAlgorithms([
     'ECDH', 'DH', 'CONCAT', 'HKDF-CTR', 'PBKDF2'
-  ],
-  generateKey: [
+  ]),
+  generateKey: new RegisteredAlgorithms([
     'RSASSA-PKCS1-v1_5', 'RSA-PSS', 'RSA-OAEP', 'ECDSA', 'ECDH', 'AES-CTR',
     'AES-CBC', 'AES-CMAC', 'AES-GCM', 'AES-CFB', 'AES-KW', 'HMAC', 'DH',
     'PBKDF2'
-  ],
-  importKey: [
+  ]),
+  importKey: new RegisteredAlgorithms([
     'RSASSA-PKCS1-v1_5', 'RSA-PSS', 'RSA-OAEP', 'ECDSA', 'ECDH', 'AES-CTR',
     'AES-CBC', 'AES-CMAC', 'AES-GCM', 'AES-CFB', 'AES-KW', 'HMAC', 'DH',
     'CONCAT', 'HKDF-CTR', 'PBKDF2'
-  ],
-  exportKey: [
+  ]),
+  exportKey: new RegisteredAlgorithms([
     'RSASSA-PKCS1-v1_5', 'RSA-PSS', 'RSA-OAEP', 'ECDSA', 'ECDH', 'AES-CTR',
     'AES-CBC', 'AES-CMAC', 'AES-GCM', 'AES-CFB', 'AES-KW', 'HMAC', 'DH'
-  ],
-  wrapKey: [
+  ]),
+  wrapKey: new RegisteredAlgorithms([
     'RSA-OAEP', 'AES-CTR', 'AES-CBC', 'AES-GCM', 'AES-CFB', 'AES-KW'
-  ],
-  unwrapKey: [
+  ]),
+  unwrapKey: new RegisteredAlgorithms([
     'RSA-OAEP', 'AES-CTR', 'AES-CBC', 'AES-GCM', 'AES-CFB', 'AES-KW'
-  ]
+  ])
 }
 
 /**
