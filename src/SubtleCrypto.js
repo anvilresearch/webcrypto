@@ -52,7 +52,27 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   sign (algorithm, key, data) {
-    return new Promise()
+    data = data.slice()
+
+    let normalizedAlgorithm = algorithms.normalize('sign', algorithm)
+
+    if (normalizedAlgorithm instanceof Error) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    return new Promise((resolve, reject) => {
+      if (normalizedAlgorithm.name !== key.algorithm.name) {
+        throw new InvalidAccessError()
+      }
+
+      if (!key.usages.includes('sign')) {
+        throw new InvalidAccessError()
+      }
+
+      let result = normalizedAlgorithm.sign(key, data)
+
+      resolve(result)
+    })
   }
 
   /**
@@ -83,9 +103,6 @@ class SubtleCrypto {
     data = data.slice()
 
     return new Promise((resolve, reject) => {
-      // TODO
-      // This is breaking right here. We need `key` to be
-      // a CryptoKey object.
       if (normalizedAlgorithm.name !== key.algorithm.name) {
         throw new InvalidAccessError()
       }
