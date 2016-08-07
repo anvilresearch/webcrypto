@@ -1,4 +1,11 @@
 /**
+ * Local dependencies
+ */
+const algorithms = require('./algorithms')
+const CryptoKey = require('./CryptoKey')
+const CryptoKeyPair = require('./CryptoKeyPair')
+
+/**
  * SubtleCrypto
  */
 class SubtleCrypto {
@@ -60,24 +67,25 @@ class SubtleCrypto {
    *
    * @returns {Promise}
    */
-  verify (algorithm, key, signature, data) {
+  verify (alg, key, signature, data) {
     // 2. Let signature be the result of cloning the data of the signature
     //    parameter passed to the verify method.
-    signature = clone(signature)
+    signature = signature.slice()
 
     // 3. Let normalizedAlgorithm be the result of normalizing an
     //    algorithm, with alg set to algorithm and op set to "verify".
-    let normalizedAlgorithm = { alg: algorithm, op: 'verify' }
+    let normalizedAlgorithm = algorithms.normalize('verify', alg)
 
-    try {
-      normalizedAlgorithm = algorithms.normalize(normalizedAlgorithm)
-    } catch (e) {
+    if (normalizedAlgorithm instanceof Error) {
       return Promise.reject(normalizedAlgorithm)
     }
 
-    data = clone(data)
+    data = data.slice()
 
     return new Promise((resolve, reject) => {
+      // TODO
+      // This is breaking right here. We need `key` to be
+      // a CryptoKey object.
       if (normalizedAlgorithm.name !== key.algorithm.name) {
         throw new InvalidAccessError()
       }
@@ -86,9 +94,7 @@ class SubtleCrypto {
         throw new InvalidAccessError()
       }
 
-      let verify = crypto.createVerify(`RSA-SHA${key.bitlength}`)
-      verify.update(data)
-      resolve(verify.verify(key.exportKey('public'), signature))
+      normalizedAlgorithm.verify()
     })
   }
 
@@ -118,7 +124,39 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   generateKey (algorithm, extractable, keyUsages) {
-    return Promise()
+    let normalizedAlgorithm = algorithms.normalize('generateKey', algorithm)
+
+    if (normalizedAlgorithm instanceof Error) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        let result = normalizedAlgorithm.generateKey(algorithm, extractable, keyUsages)
+
+        if (result instanceof CryptoKey) {
+          let {type,usages} = result
+          let restricted = (type === 'secret' || type === 'private')
+          let emptyUsages = (!usages || usages.length === 0)
+
+          if (restricted && emptyUsages) {
+            throw new SyntaxError()
+          }
+        }
+
+        if (result instanceof CryptoKeyPair) {
+          let {privateKey:{usages}} = result
+
+          if (!usages || usages.length === 0) {
+            throw new SyntaxError()
+          }
+        }
+
+        resolve(result)
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 
   /**
