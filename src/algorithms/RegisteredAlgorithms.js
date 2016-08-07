@@ -1,19 +1,15 @@
 /**
  * RegisteredAlgorithms
  */
-class RegisteredAlgorithms extends Array {
+class RegisteredAlgorithms {
 
   /**
    * Constructor
    *
-   * @param {Array} collection
+   * @param {Object} mapping
    */
-  constructor (collection) {
-    super()
-
-    collection.forEach(item => {
-      this.push(item)
-    })
+  constructor (mapping) {
+    Object.assign(this, mapping)
   }
 
   /**
@@ -23,9 +19,11 @@ class RegisteredAlgorithms extends Array {
    * @returns {string}
    */
   getCaseInsensitive (algName) {
-    return this.find(item => {
-      return item.match(new RegExp(algName, 'i'))
-    })
+    for (let key in this) {
+      if (key.match(new RegExp(`^${algName}$`, 'i'))) {
+        return key
+      }
+    }
   }
 }
 
