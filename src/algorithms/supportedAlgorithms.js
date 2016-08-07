@@ -23,7 +23,7 @@ const supportedAlgorithms = {
     //'AES-CFB'
   }),
   sign: new RegisteredAlgorithms({
-    //'RSASSA-PKCS1-v1_5',
+    'RSASSA-PKCS1-v1_5': RsaHashedKeyAlgorithm,
     //'RSA-PSS',
     //'ECDSA',
     //'AES-CMAC',
