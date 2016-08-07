@@ -1,9 +1,9 @@
 /**
  * Module dependencies
  */
-const Algorithm = require('../Algorithm')
-const KeyAlgorithm = require('../KeyAlgorithm')
-const NotSupportedError = require('../NotSupportedError')
+const Algorithm = require('./Algorithm')
+const KeyAlgorithm = require('./KeyAlgorithm')
+const NotSupportedError = require('./NotSupportedError')
 const supportedAlgorithms = require('./supportedAlgorithms')
 
 /**
@@ -38,7 +38,7 @@ const algorithms = {
 function normalize (op, alg) {
   // string argument
   if (typeof alg === 'string') {
-    return this.normalize(op, new KeyAlgorithm(alg, op))
+    return this.normalize(op, new KeyAlgorithm({ name: alg }))
   }
 
   // object argument
@@ -56,7 +56,7 @@ function normalize (op, alg) {
     algName = registeredAlgorithms.getCaseInsensitive(initialAlg.name)
 
     if (algName) {
-      desiredType = algorithms[algName]
+      desiredType = registeredAlgorithms[algName]
     } else {
       return new NotSupportedError(algName)
     }
