@@ -25,7 +25,6 @@ const algorithms = {
   'PBKDF2': require('./PBKDF2'),
   'RSA-OAEP': require('./RSA-OAEP'),
   'RSA-PSS': require('./RSA-PSS'),
-  'RSASSA-PKCS1-v1_5': require('./RSASSA-PKCS1-v1_5'),
   'SHA': require('./SHA')
 }
 
