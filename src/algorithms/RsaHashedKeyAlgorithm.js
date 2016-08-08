@@ -153,11 +153,110 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    * importKey
    *
    * @description
-   * @param {}
-   * @returns {}
+   *
+   * @param {string} format
+   * @param {string|JsonWebKey} keyData
+   * @param {KeyAlgorithm} algorithm
+   * @param {Boolean} extractable
+   * @param {Array} keyUsages
+   *
+   * @returns {CryptoKey}
    */
-  importKey () {
-    // TODO
+  importKey (format, keyData, algorithm, extractable, keyUsages) {
+    let key
+
+    if (format === 'spki') {
+      // ...
+    } else if (format === 'pkcs8') {
+
+    } else if (format === 'jwk') {
+      let jwk = new JsonWebKey(keyData)
+
+      if (jwk.d && usages.some(usage => usage !== 'sign')) {
+        throw new SyntaxError()
+      }
+
+      if (jwk.d === undefined && usages.some(usage => usage !== 'verify)) {
+        throw new SyntaxError()
+      }
+
+      if (jwk.kty !== 'RSA') {
+        throw new DataError()
+      }
+
+      if (jwk.use !== undefined && jwk.use !== 'sig') {
+        throw new DataError()
+      }
+
+      // TODO
+      //if (jwk.key_ops ...) {
+      //  throw new DataError()
+      //}
+
+      let hash
+
+      if (jwk.alg === undefined) {
+        // leave hash undefined
+      } else if (jwk.alg === 'RS1') {
+        hash = 'SHA-1'
+      } else if (jwk.alg === 'RS256') {
+        hash = 'SHA-256'
+      } else if (jwk.alg === 'RS384') {
+        hash = 'SHA-384'
+      } else if (jwk.alg === 'RS512') {
+        hash = 'SHA-512'
+      } else {
+        // perform any key import steps defined by other applicable specifications
+        // passing format, jwk, and obtaining hash
+
+        throw new DataError()
+      }
+
+      if (hash !== undefined) {
+        let normalizedHash = algorithms.normalize('digest', hash)
+
+        if (normalizedHash !== normalizedAlgorithm.hash) {
+          throw new DataError()
+        }
+
+        if (jwk.d) {
+          // TODO
+          // - validate JWK requirements
+          // - translate JWK to PEM
+          key = new CryptoKey({
+            type: 'private',
+            //algorithm,
+            //extractable: false,
+            usages: ['sign'],
+            key: jwk2pem(jwk)
+          })
+        } else {
+          // TODO
+          // - validate JWK requirements
+          // - translate JWK to PEM
+          key = new CryptoKey({
+            type: 'public',
+            //algorithm,
+            //extractable: false,
+            usages: ['verify'],
+            key: jwk2pem(jwk)
+          })
+        }
+      }
+    } else {
+      throw new NotSupportedError()
+    }
+
+    let algorithm = new RsaHashedKeyAlgorithm({
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: getBitLength(jwk.n),
+      publicExponent: new BigInteger(jwk.e),
+      hash: hash
+    })
+
+    key.algorithm = algorithm
+
+    return key
   }
 
   /**
