@@ -12,6 +12,8 @@ const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
+const OperationError = require('../errors/OperationError')
+const InvalidAccessError = require('../errors/InvalidAccessError')
 
 /**
  * RsaHashedKeyAlgorithm
