@@ -7,11 +7,11 @@ const crypto = require('crypto')
 /**
  * Local dependencies
  */
+const {buf2ab} = require('../encodings')
 const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
-const NotSupportedError = require('./NotSupportedError')
 
 /**
  * RsaHashedKeyAlgorithm
@@ -33,26 +33,6 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
   }
 
   /**
-   * encrypt
-   *
-   * @description
-   * encrypt is not a supported operation for this algorithm.
-   */
-  encrypt () {
-    throw new NotSupportedError()
-  }
-
-  /**
-   * decrypt
-   *
-   * @description
-   * decrypt is not a supported operation for this algorithm.
-   */
-  decrypt () {
-    throw new NotSupportedError()
-  }
-
-  /**
    * sign
    *
    * @description
@@ -71,13 +51,11 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     try {
       let pem = key.key
       let signer = crypto.createSign('RSA-SHA256')
+
       signer.update(data.toString())
-      let signature = signer.sign(pem)
-      // TODO
-      // return an ArrayBuffer representation of the signature
-      return signature
+      return buf2ab(signer.sign(pem))
     } catch (error) {
-      throw error //new OperationError()
+      throw new OperationError()
     }
   }
 
@@ -92,37 +70,6 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   verify () {
     // TODO
-    throw new NotSupportedError()
-  }
-
-  /**
-   * deriveBits
-   *
-   * @description
-   * deriveBits is not a supported operation for this algorithm.
-   */
-  deriveBits () {
-    throw new NotSupportedError()
-  }
-
-  /**
-   * wrapKey
-   *
-   * @description
-   * wrapKey is not a supported operation for this algorithm.
-   */
-  wrapKey () {
-    throw new NotSupportedError()
-  }
-
-  /**
-   * unwrapKey
-   *
-   * @description
-   * unwrapKey is not a supported operation for this algorithm.
-   */
-  unwrapKey () {
-    throw new NotSupportedError()
   }
 
   /**
@@ -135,6 +82,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    * @returns {CryptoKeyPair}
    */
   generateKey (params, extractable, usages) {
+
     // validate usages
     usages.forEach(usage => {
       if (usage !== 'sign' && usage !== 'verify') {
@@ -147,17 +95,14 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     // Generate RSA keypair
     try {
       // TODO
-      // what is this bit option, where do we get the value from in this
-      // api?
+      // - fallback on system OpenSSL + child_process
+      // - what is this bit option, where do we get the value from in this api?
       let key = new RSA({b:512})
       let {modulusLength,publicExponent} = params
       keypair = key.generateKeyPair(modulusLength, publicExponent)
 
-      //console.log(keypair.exportKey('public'), keypair.exportKey('private'))
-      // TODO
-      // - fallback on system OpenSSL + child_process
-      // - how do we bind the results to the generated CryptoKey objects?
-    } catch (e) {
+    // cast error
+    } catch (error) {
       throw new OperationError()
     }
 
@@ -197,7 +142,6 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   importKey () {
     // TODO
-    throw new NotSupportedError()
   }
 
   /**
@@ -209,17 +153,6 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   exportKey () {
     // TODO
-    throw new NotSupportedError()
-  }
-
-  /**
-   * getLength
-   *
-   * @description
-   * getLength is not a supported operation for this algorithm.
-   */
-  getLength () {
-    throw new NotSupportedError()
   }
 }
 
