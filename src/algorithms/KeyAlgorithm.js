@@ -1,7 +1,7 @@
 /**
  * Local dependencies
  */
-const NotSupportedError = require('./NotSupportedError')
+const NotSupportedError = require('../errors/NotSupportedError')
 
 /**
  * KeyAlgorithm dictionary

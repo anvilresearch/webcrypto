@@ -3,7 +3,7 @@
  */
 const Algorithm = require('./Algorithm')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const NotSupportedError = require('./NotSupportedError')
+const NotSupportedError = require('../errors/NotSupportedError')
 const supportedAlgorithms = require('./supportedAlgorithms')
 
 /**
