@@ -218,7 +218,45 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
-    return new Promise()
+    let normalizedAlgorithm = algorithms.normalize('importKey', algorithm)
+
+    if (normalizedAlgorithm instanceof Error) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    return new Promise((resolve, reject) => {
+      if (format === 'raw' || format === 'pkcs8' || format === 'spki') {
+        if (keyData instanceof JsonWebKey) {
+          throw new TypeError()
+        }
+
+        keyData = keyData.slice()
+      }
+
+      if (format === 'jwk') {
+        if (!(keyData instanceof JsonWebKey)) {
+          throw new TypeError()
+        }
+      }
+
+      try {
+        let result = normalizedAlgorithm
+          .importKey(format, keyData, algorithm, extractable, keyUsages)
+
+        if (result.type === 'secret' || result.type === 'private) {
+          if (!result.usages || result.usages.length === 0) {
+            throw new SyntaxError()
+          }
+        }
+
+        result.extractable = extractable
+        result.usages = normalize(usages) // ??
+
+        resolve(result)
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 
   /**
