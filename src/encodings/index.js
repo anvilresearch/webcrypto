@@ -24,6 +24,26 @@ const encodings = {
   },
 
   /**
+   * ab2buf
+   *
+   * @description
+   * Convert an ArrayBuffer instance to a Buffer instance
+   *
+   * @param {ArrayBuffer} buffer
+   * @returns {Buffer}
+   */
+  ab2buf (ab) {
+    let buf = new Buffer(ab.byteLength)
+    let view = new Uint8Array(ab)
+
+    for (let i = 0; i < buf.length; ++i) {
+      buf[i] = view[i]
+    }
+
+    return buf
+  },
+
+  /**
    * str2ab
    *
    * @description
