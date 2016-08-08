@@ -1,4 +1,9 @@
 /**
+ * Local dependencies
+ */
+const NotSupportedError = require('./NotSupportedError')
+
+/**
  * KeyAlgorithm dictionary
  */
 class KeyAlgorithm {
@@ -15,6 +20,118 @@ class KeyAlgorithm {
     if (this.name === undefined) {
       throw new Error('KeyAlgorithm must have a name')
     }
+  }
+
+  /**
+   * encrypt
+   *
+   * @description
+   * encrypt is not a supported operation for this algorithm.
+   */
+  encrypt () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * decrypt
+   *
+   * @description
+   * decrypt is not a supported operation for this algorithm.
+   */
+  decrypt () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * sign
+   *
+   * @description
+   * sign is not a supported operation for this algorithm.
+   */
+  sign () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * verify
+   *
+   * @description
+   * verify is not a supported operation for this algorithm.
+   */
+  verify () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * deriveBits
+   *
+   * @description
+   * deriveBits is not a supported operation for this algorithm.
+   */
+  deriveBits () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * wrapKey
+   *
+   * @description
+   * wrapKey is not a supported operation for this algorithm.
+   */
+  wrapKey () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * unwrapKey
+   *
+   * @description
+   * unwrapKey is not a supported operation for this algorithm.
+   */
+  unwrapKey () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * generateKey
+   *
+   * @description
+   * generateKey is not a supported operation for this algorithm.
+   */
+  generateKey () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * importKey
+   *
+   * @description
+   * @param {}
+   * @returns {}
+   */
+  importKey () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * exportKey
+   *
+   * @description
+   * @param {}
+   * @returns {}
+   */
+  exportKey () {
+    throw new NotSupportedError()
+  }
+
+  /**
+   * getLength
+   *
+   * @description
+   * getLength is not a supported operation for this algorithm.
+   */
+  getLength () {
+    throw new NotSupportedError()
   }
 }
 
