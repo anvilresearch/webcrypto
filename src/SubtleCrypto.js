@@ -243,7 +243,7 @@ class SubtleCrypto {
         let result = normalizedAlgorithm
           .importKey(format, keyData, algorithm, extractable, keyUsages)
 
-        if (result.type === 'secret' || result.type === 'private) {
+        if (result.type === 'secret' || result.type === 'private') {
           if (!result.usages || result.usages.length === 0) {
             throw new SyntaxError()
           }
