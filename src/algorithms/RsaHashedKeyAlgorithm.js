@@ -247,14 +247,14 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       throw new NotSupportedError()
     }
 
-    let algorithm = new RsaHashedKeyAlgorithm({
+    let alg = new RsaHashedKeyAlgorithm({
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: getBitLength(jwk.n),
       publicExponent: new BigInteger(jwk.e),
       hash: hash
     })
 
-    key.algorithm = algorithm
+    key.algorithm = alg
 
     return key
   }
