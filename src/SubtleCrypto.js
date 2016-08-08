@@ -88,12 +88,8 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   verify (alg, key, signature, data) {
-    // 2. Let signature be the result of cloning the data of the signature
-    //    parameter passed to the verify method.
     signature = signature.slice()
 
-    // 3. Let normalizedAlgorithm be the result of normalizing an
-    //    algorithm, with alg set to algorithm and op set to "verify".
     let normalizedAlgorithm = algorithms.normalize('verify', alg)
 
     if (normalizedAlgorithm instanceof Error) {
@@ -111,7 +107,8 @@ class SubtleCrypto {
         throw new InvalidAccessError()
       }
 
-      normalizedAlgorithm.verify()
+      let result = normalizedAlgorithm.verify(key, signature, data)
+      resolve(result)
     })
   }
 
