@@ -7,7 +7,7 @@ const crypto = require('crypto')
 /**
  * Local dependencies
  */
-const {buf2ab} = require('../encodings')
+const {buf2ab,ab2buf} = require('../encodings')
 const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
 const KeyAlgorithm = require('./KeyAlgorithm')
@@ -66,12 +66,26 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    *
    * @description
    *
-   * @param {}
+   * @param {CryptoKey} key
+   * @param {BufferSource} signature
+   * @param {BufferSource} data
    *
-   * @returns {}
+   * @returns {Boolean}
    */
-  verify () {
-    // TODO
+  verify (key, signature, data) {
+    if (key.type !== 'public') {
+      throw new InvalidAccessError()
+    }
+
+    try {
+      let pem = key.key
+      let verifier = crypto.createVerify('RSA-SHA256')
+
+      verifier.update(data)
+      return verifier.verify(pem, ab2buf(signature))
+    } catch (error) {
+      throw new OperationError()
+    }
   }
 
   /**
