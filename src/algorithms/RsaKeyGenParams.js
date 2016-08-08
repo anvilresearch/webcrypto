@@ -2,6 +2,7 @@
  * Local dependencies
  */
 const Algorithm = require('./Algorithm')
+const BigInteger = require('../BigInteger')
 
 /**
  * RsaKeyGenParams
