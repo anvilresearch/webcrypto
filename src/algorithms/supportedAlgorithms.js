@@ -73,7 +73,7 @@ const supportedAlgorithms = {
     //'PBKDF2'
   }),
   importKey: new RegisteredAlgorithms({
-    //'RSASSA-PKCS1-v1_5',
+    'RSASSA-PKCS1-v1_5': RsaHashedKeyAlgorithm,
     //'RSA-PSS',
     //'RSA-OAEP',
     //'ECDSA',
