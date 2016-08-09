@@ -49,6 +49,35 @@ function algorithm (op, alg) {
 }
 
 /**
+ * Recognized Key Usages
+ */
+const recognizedKeyUsages = ['encrypt','decrypt','sign','verify','deriveBits','wrapKey','unwrapKey']
+const recognizedKeyUsagesLength = recognizedKeyUsages.length
+
+/**
+ * Normalize Usages
+ *
+ * @description
+ * https://www.w3.org/TR/WebCryptoAPI/#concept-normalized-usages
+ *
+ * @param {Array} list
+ * @returns {Array}
+ */
+function usages (list) {
+  let result = []
+
+  for (let i = 0; i < recognizedKeyUsagesLength; i++) {
+    let usage = recognizedKeyUsages[i]
+
+    if (list.includes(usage) !== -1) {
+      result.push(usage)
+    }
+  }
+
+  return result
+}
+
+/**
  * Export
  */
-module.exports = {algorithm}
+module.exports = {algorithm,usages}
