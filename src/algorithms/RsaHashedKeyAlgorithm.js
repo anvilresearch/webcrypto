@@ -51,7 +51,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     }
 
     try {
-      let pem = key.key
+      let pem = key.handle
       let signer = crypto.createSign('RSA-SHA256')
 
       signer.update(data.toString())
@@ -78,7 +78,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     }
 
     try {
-      let pem = key.key
+      let pem = key.handle
       let verifier = crypto.createVerify('RSA-SHA256')
 
       verifier.update(data)
@@ -131,7 +131,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       algorithm,
       extractable: true,
       usages: ['verify'],
-      key: keypair.exportKey('public')
+      handle: keypair.exportKey('public')
     })
 
     // instantiate privateKey
@@ -142,7 +142,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       // it says "extractable" instead of "false"
       extractable: false,
       usages: ['sign'],
-      key: keypair.exportKey('private')
+      handle: keypair.exportKey('private')
     })
 
     // return a new keypair
@@ -228,7 +228,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
             //algorithm,
             //extractable: false,
             usages: ['sign'],
-            key: jwk2pem(jwk)
+            handle: jwk2pem(jwk)
           })
         } else {
           // TODO
@@ -239,7 +239,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
             //algorithm,
             //extractable: false,
             usages: ['verify'],
-            key: jwk2pem(jwk)
+            handle: jwk2pem(jwk)
           })
         }
       }
@@ -263,11 +263,67 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    * exportKey
    *
    * @description
-   * @param {}
-   * @returns {}
+   *
+   * @param {string} format
+   * @param {CryptoKey} key
+   *
+   * @returns {*}
    */
-  exportKey () {
+  exportKey (format, key) {
+    let result
+
     // TODO
+    // - should we type check key here?
+    if (!key.handle) {
+      throw new OperationError()
+    }
+
+    if (format === 'spki') {
+      // TODO
+    } else if (format === 'pkcs8') {
+      // TODO
+    } else if (format === 'jwk') {
+      let jwk = new JsonWebKey({ kty: 'RSA' })
+
+      let hash = key.hash.name
+
+      if (hash === 'SHA-1') {
+        jwk.alg = 'RS1'
+      } else if (hash === 'SHA-256') {
+        jwk.alg = 'RS256'
+      } else if (hash === 'SHA-384') {
+        jwk.alg = 'RS384'
+      } else if (hash === 'SHA-512') {
+        jwk.alg = 'RS512'
+      } else {
+        // TODO other applicable specifications
+      }
+
+      jwk.n = 'TODO'
+      jwk.e = 'TODO'
+
+      if (key.type === 'private') {
+        jwk.d = 'TODO'
+        jwk.p = 'TODO'
+        jwk.dp = 'TODO'
+        jwk.dq = 'TODO'
+        jwk.qi = 'TODO'
+
+        if (key.handle.moreThanTwoPrimes()) {
+          jwk.oth = {}
+        }
+      }
+
+      jwk.key_ops = key.usages
+      jwk.ext = key.extractable
+
+      // conversion to ECMAScript Object is implicit
+      result = jwk
+    } else {
+      throw new NotSupportedError()
+    }
+
+    return result
   }
 }
 
