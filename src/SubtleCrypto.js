@@ -270,7 +270,23 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   exportKey (format, key) {
-    return new Promise()
+    return new Promise((resolve, reject) => {
+      try {
+        if (!registeredAlgorithms[key.algorithm.name]) {
+          throw new NotSupportedError()
+        }
+
+        if (key.extractable === false) {
+          throw new InvalidAccessError()
+        }
+
+        let result = key.algorithm.exportKey(format, key)
+
+        resolve(result)
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 
   /**
