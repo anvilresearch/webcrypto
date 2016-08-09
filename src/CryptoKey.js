@@ -6,7 +6,7 @@ class CryptoKey {
   /**
    * Constructor
    */
-  constructor ({type, extractable, algorithm, usages, key}) {
+  constructor ({type, extractable, algorithm, usages, handle}) {
 
     // ensure values are not writeable
     Object.defineProperties(this, {
@@ -30,10 +30,14 @@ class CryptoKey {
         writeable: false,
         value: usages
       },
-      key: {
+
+      // this is the "key material" used internally
+      // it is not enumerable, but we need it to be
+      // accessible by algorithm implementations
+      handle: {
         enumerable: false,
         writeable: false,
-        value: key
+        value: handle
       }
     })
 
