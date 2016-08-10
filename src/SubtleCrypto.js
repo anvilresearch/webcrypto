@@ -250,7 +250,7 @@ class SubtleCrypto {
         }
 
         result.extractable = extractable
-        result.usages = normalize(usages) // ??
+        result.usages = normalize.usages(usages)
 
         resolve(result)
       } catch (error) {
