@@ -45,6 +45,24 @@ class CryptoKey {
     // verify type of algorithm
     // verify type/enum of usages
   }
+
+  /**
+   * Structured clone algorithm
+   * https://www.w3.org/TR/WebCryptoAPI/#cryptokey-interface-clone
+   *
+   * TODO
+   * This requires review and consideration with respect to the
+   * internal structured cloning algorithm.
+   * https://www.w3.org/TR/WebCryptoAPI/#dfn-structured-clone
+   *
+   * @param {Object} input
+   * @param {Object} memory
+   *
+   * @returns {CryptoKey}
+   */
+  clone ({type,extractable,algorithm,usages,handle}, memory) {
+    return new CryptoKey({type,extractable,algorithm,usages,handle})
+  }
 }
 
 /**
