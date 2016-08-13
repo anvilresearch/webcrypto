@@ -4,6 +4,7 @@
 const normalize = require('./algorithms/normalize')
 const CryptoKey = require('./CryptoKey')
 const CryptoKeyPair = require('./CryptoKeyPair')
+const InvalidAccessError = require('./errors/InvalidAccessError')
 
 /**
  * SubtleCrypto
@@ -62,11 +63,11 @@ class SubtleCrypto {
 
     return new Promise((resolve, reject) => {
       if (normalizedAlgorithm.name !== key.algorithm.name) {
-        throw new InvalidAccessError()
+        throw new InvalidAccessError('Algorithm does not match key')
       }
 
       if (!key.usages.includes('sign')) {
-        throw new InvalidAccessError()
+        throw new InvalidAccessError('Key usages must include "sign"')
       }
 
       let result = normalizedAlgorithm.sign(key, data)
