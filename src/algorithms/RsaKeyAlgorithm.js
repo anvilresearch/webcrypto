@@ -32,7 +32,7 @@ class RsaKeyAlgorithm extends KeyAlgorithm {
     }
 
     // validate publicExponent
-    if (!(this.publicExponent instanceof BigInteger)) {
+    if (!(this.publicExponent instanceof Uint8Array)) {
       throw new Error(
         'publicExponent of RsaKeyAlgorithm must be a BigInteger'
       )
