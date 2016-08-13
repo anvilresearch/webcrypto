@@ -1,7 +1,6 @@
 /**
  * Local dependencies
  */
-const BigInteger = require('../BigInteger')
 const KeyAlgorithm = require('./KeyAlgorithm')
 
 /**
