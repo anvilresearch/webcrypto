@@ -30,7 +30,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
     // validate hash
     if (!(this.hash instanceof KeyAlgorithm)) {
-      throw new Error('hash of RsaHashedKeyAlgorithm must be a KeyAlgorithm')
+      this.hash = new KeyAlgorithm(this.hash)
     }
   }
 
@@ -57,7 +57,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       signer.update(data.toString())
       return buf2ab(signer.sign(pem))
     } catch (error) {
-      throw new OperationError()
+      throw new OperationError(error.message)
     }
   }
 
