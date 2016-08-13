@@ -35,7 +35,7 @@ function algorithm (op, alg) {
     if (algName) {
       desiredType = registeredAlgorithms[algName]
     } else {
-      return new NotSupportedError(algName)
+      return new NotSupportedError(initialAlg.name)
     }
 
     try {
