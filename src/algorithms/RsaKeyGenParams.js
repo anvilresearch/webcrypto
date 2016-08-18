@@ -17,7 +17,12 @@ class RsaKeyGenParams extends Algorithm {
    */
   constructor (algorithm) {
     super(algorithm)
+  }
 
+  /**
+   * validate
+   */
+  validate () {
     // validate modulusLength
     if (typeof this.modulusLength !== 'number') {
       throw new Error()
