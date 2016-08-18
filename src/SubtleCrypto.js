@@ -1,9 +1,9 @@
 /**
  * Local dependencies
  */
-const normalize = require('./algorithms/normalize')
 const CryptoKey = require('./CryptoKey')
 const CryptoKeyPair = require('./CryptoKeyPair')
+const supportedAlgorithms = require('./algorithms/supportedAlgorithms')
 const InvalidAccessError = require('./errors/InvalidAccessError')
 
 /**
@@ -55,7 +55,7 @@ class SubtleCrypto {
   sign (algorithm, key, data) {
     data = data.slice()
 
-    let normalizedAlgorithm = normalize.algorithm('sign', algorithm)
+    let normalizedAlgorithm = supportedAlgorithms.normalize('sign', algorithm)
 
     if (normalizedAlgorithm instanceof Error) {
       return Promise.reject(normalizedAlgorithm)
@@ -91,7 +91,7 @@ class SubtleCrypto {
   verify (alg, key, signature, data) {
     signature = signature.slice()
 
-    let normalizedAlgorithm = normalize.algorithm('verify', alg)
+    let normalizedAlgorithm = supportedAlgorithms.normalize('verify', alg)
 
     if (normalizedAlgorithm instanceof Error) {
       return Promise.reject(normalizedAlgorithm)
@@ -139,7 +139,7 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   generateKey (algorithm, extractable, keyUsages) {
-    let normalizedAlgorithm = normalize.algorithm('generateKey', algorithm)
+    let normalizedAlgorithm = supportedAlgorithms.normalize('generateKey', algorithm)
 
     if (normalizedAlgorithm instanceof Error) {
       return Promise.reject(normalizedAlgorithm)
