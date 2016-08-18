@@ -109,17 +109,8 @@ describe('SubtleCrypto', () => {
       let promise, error
 
       beforeEach(() => {
-        let algorithm = {
-          name: 'RSASSA-PKCS1-v1_5',
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: { name: 'SHA-256' }
-        }
-
-        let privateKey = new CryptoKey({
-          algorithm: { name: 'RSA-PSS' }
-        })
-
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
+        let privateKey = new CryptoKey({ algorithm: { name: 'RSA-PSS' } })
         let data = new ArrayBuffer()
 
         promise = crypto.subtle.sign(algorithm, privateKey, data)
@@ -140,12 +131,7 @@ describe('SubtleCrypto', () => {
       let promise, error
 
       beforeEach(() => {
-        let algorithm = {
-          name: 'RSASSA-PKCS1-v1_5',
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: { name: 'SHA-256' }
-        }
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
 
         let privateKey = new CryptoKey({
           algorithm: { name: 'RSASSA-PKCS1-v1_5' },
@@ -172,12 +158,7 @@ describe('SubtleCrypto', () => {
       let promise, result, error
 
       beforeEach((done) => {
-        let algorithm = {
-          name: 'RSASSA-PKCS1-v1_5',
-          modulusLength: 1024,
-          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: { name: 'SHA-256' }
-        }
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
 
         let privateKey = new CryptoKey({
           type: 'private',
@@ -248,11 +229,11 @@ describe('SubtleCrypto', () => {
 
       beforeEach(() => {
         let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
-        let privateKey = new CryptoKey({ algorithm: { name: 'RSA-PSS' } })
+        let publicKey = new CryptoKey({ algorithm: { name: 'RSA-PSS' } })
         let signature = new ArrayBuffer()
         let data = new ArrayBuffer()
 
-        promise = crypto.subtle.verify(algorithm, privateKey, signature, data)
+        promise = crypto.subtle.verify(algorithm, publicKey, signature, data)
         promise.catch(err => error = err)
       })
 
@@ -261,15 +242,35 @@ describe('SubtleCrypto', () => {
       })
 
       it('should reject the promise', () => {
-        console.log(error)
         error.should.be.instanceof(Error)
         error.message.should.include('Algorithm does not match key')
       })
     })
 
     describe('with invalid usages', () => {
-      it('should return a promise')
-      it('should reject the promise')
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
+        let publicKey = new CryptoKey({
+          algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+          usages: ['sign']
+        })
+        let signature = new ArrayBuffer()
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.verify(algorithm, publicKey, signature, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Key usages must include "verify"')
+      })
     })
 
     describe('with valid arguments', () => {
