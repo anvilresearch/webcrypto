@@ -27,10 +27,28 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   constructor (algorithm) {
     super(algorithm)
+  }
 
-    // validate hash
-    if (!(this.hash instanceof KeyAlgorithm)) {
-      this.hash = new KeyAlgorithm(this.hash)
+  /**
+   * dictionaries
+   */
+  static get dictionaries () {
+    return [
+      KeyAlgorithm,
+      RsaKeyAlgorithm,
+      RsaHashedKeyAlgorithm
+    ]
+  }
+
+  /**
+   * members
+   */
+  static get members () {
+    return {
+      name: String,
+      modulusLength: Number,
+      publicExponent: 'BufferSource',
+      hash: 'HashAlgorithmIdentifier'
     }
   }
 
