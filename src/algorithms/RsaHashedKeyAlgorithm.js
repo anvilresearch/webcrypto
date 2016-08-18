@@ -65,7 +65,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   sign (key, data) {
     if (key.type !== 'private') {
-      throw new InvalidAccessError()
+      throw new InvalidAccessError('Signing requires a private key')
     }
 
     try {
@@ -92,17 +92,17 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    */
   verify (key, signature, data) {
     if (key.type !== 'public') {
-      throw new InvalidAccessError()
+      throw new InvalidAccessError('Verifying requires a public key')
     }
 
     try {
       let pem = key.handle
       let verifier = crypto.createVerify('RSA-SHA256')
 
-      verifier.update(data)
+      verifier.update(ab2buf(data))
       return verifier.verify(pem, ab2buf(signature))
     } catch (error) {
-      throw new OperationError()
+      throw new OperationError(error.message)
     }
   }
 
