@@ -22,42 +22,42 @@ const {ab2str,str2ab,ab2buf,buf2ab} = require('../src/encodings')
  */
 const RsaPrivateKey =
 `-----BEGIN RSA PRIVATE KEY-----
-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
+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
 -----END RSA PRIVATE KEY-----`
 
 const RsaPublicKey =
 `-----BEGIN PUBLIC KEY-----
-MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEAjShpceWt4yI7PKZsUJoW
-dCCVo1y8DDrnoD1i7N7kekxh9Be9FmwopiQ0k61Xpi2rKi+Y5yFsVHhOKfVM1l86
-MD/ai6ViJduJB8Fps95vp3N78QZmVS+bNWgl5+j1R1GOkWK4iCCkNrE1Di9h+Uy1
-soUwZpo5KwdcCR2r8FeiUYxAyFIhvabDgxGIjMpfRThiy1t+gLbE02b8mFt6Hg38
-x4Pu4eIr2pv0jx+FzKnMZNyATbyiOV1xZzVfRkTcazF6L3zDNhS1waCOg0aKeX8p
-sD+41rWEa1dOXYSd7N0DyGVYKmL3gxFyLhcq95JXzdYlt225PhCTeBG6USkYYIOi
-DwIBAQ==
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiEJoO1tBT1Yc9jdYWI5J
+UkMnOlFD+weoi1rkxsWvZoBRJJGifjrdmIn/5xOaaW38Cg535lo6NEorsVsq7V6z
+Gan2QCT1TRCb7vJq4UIEq6tL5uB0BZMyByKBYDKVGAinXYd502nJ1T7sbZQnSjZF
+C3HgDvrqb/4bDIbO0+sAiaTumt+2uyIYcGYBuIfTi8vmElz2ngUFh+8K/uQyH7Yj
+rOrg6ThOldh8IVzaOSA7LAb/DjyC+H44F/J24qMRLGuWK53gz+2RazSBotiNUsGo
+xdZv30Sud3Yfbz9ZjSXxPWpRnG6mZAZW76oSbn8FvTSTWrf0iU6MyNkv/QuAjF+1
+BQIDAQAB
 -----END PUBLIC KEY-----`
 
 /**
@@ -188,7 +188,6 @@ describe('SubtleCrypto', () => {
 
       it('should resolve the promise', () => {
         result.should.be.instanceof(ArrayBuffer)
-        console.log(ab2str(result)) //.toString('base64'))
       })
 
       it('should not reject the promise', () => {
@@ -274,7 +273,7 @@ describe('SubtleCrypto', () => {
     })
 
     describe('with valid arguments', () => {
-      let signature = buf2ab(new Buffer('i7gvO8Ajv8Kxyk1Sh76d0TAMeagQqv3a0BWFIksqsn25iNpWpAf2CmJ2eMrX3jFileFcZUdoBrBIFr19AuevCvI04RkgArhF8BPthwbG70V9/ON+30vGrY1GCHJy6juBh0C3vWzQeYXDRx1XVEwFFCLB8vSxHN9MBm15p5YFMMzCdMoXtlr6CuSP/4f+d1kaLaj6e8LIgk1WPllh6sfZvt7zLFvWkI3ILyyvYoQt7ijgvg+vTvwPPUZBEKYjL68B9G954/H9sCS+iwWWYVISpuFBxJhnGIfcFaW1kvJYYxJsah8twtNmrS3L6bXrzu0hDiaZj6gENbK6c88aHrVcGw==', 'base64'))
+      let signature = buf2ab(new Buffer('X68EtkKcwZqcySv/NU6hucJg9b/uHojiOzQ2uttIH9V9kS5ACmTnsPY5Kk708foNACHcNrvAk2S8szAJWbK8RJPW1So4OyArqRjnTyjADpriLjCEIUZZBT6Igpeddv5unOZnrmLPXNePQLVGsOXcW6xmy7kZrSbXmsTJet6dvfku0AM0DNjpdZonKIewjZf6ALSkNiskpo8Fm14GRb3c9ZytQziD5mWHNvuUi4ZV3SiIzs7LBzUnmcB94E67fw7vhOP/OnYmVB5cM+ANTKmjIHJgWgXcUM6SrHMs8oy0ENvKQOMWUdbX4qetvBMOR1/3GV5oUWIVqj0wlDqH0wMqCA==', 'base64'))
 
       let promise, result, error
 
@@ -312,7 +311,6 @@ describe('SubtleCrypto', () => {
       })
 
       it('should not reject the promise', () => {
-        console.log(error)
         expect(error).to.be.undefined
       })
     })
@@ -372,8 +370,11 @@ describe('SubtleCrypto', () => {
           hash: { name: 'SHA-256' }
         }
 
+        let extractable = false
+        let usages = ['sign', 'verify']
+
         promise = crypto.subtle
-          .generateKey(algorithm, false, ['sign', 'verify'])
+          .generateKey(algorithm, extractable, usages)
           .then(res => {
             result = res
             done()

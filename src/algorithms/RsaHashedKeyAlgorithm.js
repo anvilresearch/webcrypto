@@ -72,7 +72,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       let pem = key.handle
       let signer = crypto.createSign('RSA-SHA256')
 
-      signer.update(data.toString())
+      signer.update(ab2buf(data))
       return buf2ab(signer.sign(pem))
     } catch (error) {
       throw new OperationError(error.message)
@@ -133,7 +133,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       // - what is this bit option, where do we get the value from in this api?
       let key = new RSA({b:512})
       let {modulusLength,publicExponent} = params
-      keypair = key.generateKeyPair(modulusLength, publicExponent)
+      keypair = key.generateKeyPair()//(modulusLength, publicExponent)
 
     // cast error
     } catch (error) {
