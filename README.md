@@ -21,16 +21,8 @@ not use in production.
 
 ## Running tests
 
-### Nodejs
-
 ```bash
 $ npm test
-```
-
-### Browser (karma)
-
-```bash
-$ npm run karma
 ```
 
 ## MIT License
