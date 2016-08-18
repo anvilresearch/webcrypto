@@ -15,7 +15,12 @@ class RsaKeyAlgorithm extends KeyAlgorithm {
    */
   constructor (algorithm) {
     super(algorithm)
+  }
 
+  /**
+   * validate
+   */
+  validate () {
     // validate type of modulusLength
     if (typeof this.modulusLength !== 'number') {
       throw new Error(
