@@ -15,7 +15,7 @@ chai.should()
 const crypto = require('../src')
 const CryptoKey = require('../src/CryptoKey')
 const CryptoKeyPair = require('../src/CryptoKeyPair')
-const {str2ab,ab2buf,buf2ab} = require('../src/encodings')
+const {ab2str,str2ab,ab2buf,buf2ab} = require('../src/encodings')
 
 /**
  * RSA Key Pair
@@ -168,7 +168,7 @@ describe('SubtleCrypto', () => {
           handle: RsaPrivateKey
         })
 
-        let data = new ArrayBuffer()
+        let data = str2ab('data')
 
         promise = crypto.subtle
           .sign(algorithm, privateKey, data)
@@ -188,7 +188,7 @@ describe('SubtleCrypto', () => {
 
       it('should resolve the promise', () => {
         result.should.be.instanceof(ArrayBuffer)
-        //console.log(ab2buf(result).toString('base64'))
+        console.log(ab2str(result)) //.toString('base64'))
       })
 
       it('should not reject the promise', () => {
@@ -274,11 +274,47 @@ describe('SubtleCrypto', () => {
     })
 
     describe('with valid arguments', () => {
-      let signature = buf2ab(new Buffer('K6vDm+8AoOCtUiai3ssiS3nJ2HMy/8BlZywP2NFcl2fSdOniJL1MZkN7JDY0FPj0OuUgotB8C+A0WcPnaerXYUZcXvDHhpkhWjKqhJgWf2vp2Hj8wkujxo50sxXvBChwgsNLEMCshziFg31LnoWkjTCc3bXN9vg6sHAh9S2f51Xd/iRktV0uPwoNEhHxzK8Vc+5hB5wJRv4KuPTGg2E+/iirYsE35AE1QLkFMyF5klyp9ZCGPI/XfAoWPBE0vuSzsLH1tJq2/e5k83hL/6ikGhpt66SsnpcmnRZVksKLfOGUr90dywkaRPq3jQV/klAeUamce1N4lBJW9bYdaVkFvQ==', 'base64'))
+      let signature = buf2ab(new Buffer('i7gvO8Ajv8Kxyk1Sh76d0TAMeagQqv3a0BWFIksqsn25iNpWpAf2CmJ2eMrX3jFileFcZUdoBrBIFr19AuevCvI04RkgArhF8BPthwbG70V9/ON+30vGrY1GCHJy6juBh0C3vWzQeYXDRx1XVEwFFCLB8vSxHN9MBm15p5YFMMzCdMoXtlr6CuSP/4f+d1kaLaj6e8LIgk1WPllh6sfZvt7zLFvWkI3ILyyvYoQt7ijgvg+vTvwPPUZBEKYjL68B9G954/H9sCS+iwWWYVISpuFBxJhnGIfcFaW1kvJYYxJsah8twtNmrS3L6bXrzu0hDiaZj6gENbK6c88aHrVcGw==', 'base64'))
 
+      let promise, result, error
 
-      it('should return a promise')
-      it('should resolve the promise')
+      beforeEach((done) => {
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
+
+        let publicKey = new CryptoKey({
+          type: 'public',
+          algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+          extractable: false,
+          usages: ['verify'],
+          handle: RsaPublicKey
+        })
+
+        let data = str2ab('data')
+
+        promise = crypto.subtle
+          .verify(algorithm, publicKey, signature, data)
+          .then(res => {
+            result = res
+            done()
+          })
+          .catch(err => {
+            error = err
+            done()
+          })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.equal(true)
+      })
+
+      it('should not reject the promise', () => {
+        console.log(error)
+        expect(error).to.be.undefined
+      })
     })
   })
 
