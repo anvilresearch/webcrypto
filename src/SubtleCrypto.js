@@ -273,12 +273,14 @@ class SubtleCrypto {
   exportKey (format, key) {
     return new Promise((resolve, reject) => {
       try {
+        let registeredAlgorithms = supportedAlgorithms['exportKey']
+
         if (!registeredAlgorithms[key.algorithm.name]) {
-          throw new NotSupportedError()
+          throw new NotSupportedError(key.algorithm.name)
         }
 
         if (key.extractable === false) {
-          throw new InvalidAccessError()
+          throw new InvalidAccessError('Key is not extractable')
         }
 
         let result = key.algorithm.exportKey(format, key)
