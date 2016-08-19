@@ -3,6 +3,7 @@
  */
 const RSA = require('node-rsa')
 const crypto = require('crypto')
+const {pem2jwk} = require('pem-jwk')
 
 /**
  * Local dependencies
@@ -10,6 +11,7 @@ const crypto = require('crypto')
 const {buf2ab,ab2buf} = require('../encodings')
 const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
+const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
 const OperationError = require('../errors/OperationError')
@@ -156,9 +158,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     let privateKey = new CryptoKey({
       type: 'private',
       algorithm,
-      // TODO is there a typo in the spec?
-      // it says "extractable" instead of "false"
-      extractable: false,
+      extractable: extractable,
       usages: ['sign'],
       handle: keypair.exportKey('private')
     })
@@ -302,8 +302,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       // TODO
     } else if (format === 'jwk') {
       let jwk = new JsonWebKey({ kty: 'RSA' })
-
-      let hash = key.hash.name
+      let hash = key.algorithm.hash.name
 
       if (hash === 'SHA-1') {
         jwk.alg = 'RS1'
@@ -317,20 +316,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
         // TODO other applicable specifications
       }
 
-      jwk.n = 'TODO'
-      jwk.e = 'TODO'
-
-      if (key.type === 'private') {
-        jwk.d = 'TODO'
-        jwk.p = 'TODO'
-        jwk.dp = 'TODO'
-        jwk.dq = 'TODO'
-        jwk.qi = 'TODO'
-
-        if (key.handle.moreThanTwoPrimes()) {
-          jwk.oth = {}
-        }
-      }
+      Object.assign(jwk, pem2jwk(key.handle))
 
       jwk.key_ops = key.usages
       jwk.ext = key.extractable
