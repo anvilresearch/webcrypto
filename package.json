@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/anvilresearch/webcrypto#README",
   "dependencies": {
-    "node-rsa": "^0.4.0"
+    "node-rsa": "^0.4.0",
+    "pem-jwk": "^1.5.1"
   }
 }
