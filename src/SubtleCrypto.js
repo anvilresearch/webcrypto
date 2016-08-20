@@ -4,6 +4,7 @@
 const CryptoKey = require('./CryptoKey')
 const CryptoKeyPair = require('./CryptoKeyPair')
 const supportedAlgorithms = require('./algorithms/supportedAlgorithms')
+const recognizedKeyUsages = require('./recognizedKeyUsages')
 const InvalidAccessError = require('./errors/InvalidAccessError')
 
 /**
@@ -219,7 +220,7 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
-    let normalizedAlgorithm = normalize.algorithm('importKey', algorithm)
+    let normalizedAlgorithm = supportedAlgorithms.normalize('importKey', algorithm)
 
     if (normalizedAlgorithm instanceof Error) {
       return Promise.reject(normalizedAlgorithm)
@@ -235,9 +236,9 @@ class SubtleCrypto {
       }
 
       if (format === 'jwk') {
-        if (!(keyData instanceof JsonWebKey)) {
-          throw new TypeError()
-        }
+        //if (!(keyData instanceof JsonWebKey)) {
+        //  throw new TypeError()
+        //}
       }
 
       try {
@@ -251,7 +252,7 @@ class SubtleCrypto {
         }
 
         result.extractable = extractable
-        result.usages = normalize.usages(usages)
+        result.usages = recognizedKeyUsages.normalize(keyUsages)
 
         resolve(result)
       } catch (error) {
