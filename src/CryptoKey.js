@@ -7,29 +7,39 @@ class CryptoKey {
    * Constructor
    */
   constructor ({type, extractable, algorithm, usages, handle}) {
+    this.type = type
+    this.extractable = extractable
+    this.algorithm = algorithm
+    this.usages = usages
 
     // ensure values are not writeable
     Object.defineProperties(this, {
-      type: {
-        enumerable: true,
-        writeable: false,
-        value: type
-      },
-      extractable: {
-        enumerable: true,
-        writeable: false,
-        value: extractable
-      },
-      algorithm: {
-        enumerable: true,
-        writeable: false,
-        value: algorithm
-      },
-      usages: {
-        enumerable: true,
-        writeable: false,
-        value: usages
-      },
+      // TODO
+      // These properties can't be fixed immediately on creation of the
+      // object because the implementation may build it up in stages.
+      // At some point in the operations before returning a key we should
+      // freeze the object to prevent further manipulation.
+
+      //type: {
+      //  enumerable: true,
+      //  writeable: false,
+      //  value: type
+      //},
+      //extractable: {
+      //  enumerable: true,
+      //  writeable: true,
+      //  value: extractable
+      //},
+      //algorithm: {
+      //  enumerable: true,
+      //  writeable: false,
+      //  value: algorithm
+      //},
+      //usages: {
+      //  enumerable: true,
+      //  writeable: true,
+      //  value: usages
+      //},
 
       // this is the "key material" used internally
       // it is not enumerable, but we need it to be
