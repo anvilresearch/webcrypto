@@ -3,7 +3,7 @@
  */
 const RSA = require('node-rsa')
 const crypto = require('crypto')
-const {pem2jwk} = require('pem-jwk')
+const {pem2jwk, jwk2pem} = require('pem-jwk')
 
 /**
  * Local dependencies
@@ -14,6 +14,7 @@ const CryptoKeyPair = require('../CryptoKeyPair')
 const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
+const supportedAlgorithms = require('./supportedAlgorithms')
 const OperationError = require('../errors/OperationError')
 const InvalidAccessError = require('../errors/InvalidAccessError')
 
@@ -181,20 +182,20 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
    * @returns {CryptoKey}
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
-    let key
+    let key, hash, normalizedHash, jwk
 
     if (format === 'spki') {
       // ...
     } else if (format === 'pkcs8') {
 
     } else if (format === 'jwk') {
-      let jwk = new JsonWebKey(keyData)
+      jwk = new JsonWebKey(keyData)
 
-      if (jwk.d && usages.some(usage => usage !== 'sign')) {
+      if (jwk.d && keyUsages.some(usage => usage !== 'sign')) {
         throw new SyntaxError()
       }
 
-      if (jwk.d === undefined && usages.some(usage => usage !== 'verify')) {
+      if (jwk.d === undefined && keyUsages.some(usage => usage !== 'verify')) {
         throw new SyntaxError()
       }
 
@@ -210,8 +211,6 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       //if (jwk.key_ops ...) {
       //  throw new DataError()
       //}
-
-      let hash
 
       if (jwk.alg === undefined) {
         // leave hash undefined
@@ -231,31 +230,27 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       }
 
       if (hash !== undefined) {
-        let normalizedHash = algorithms.normalize('digest', hash)
+        normalizedHash = supportedAlgorithms.normalize('digest', hash)
 
-        if (normalizedHash !== normalizedAlgorithm.hash) {
-          throw new DataError()
-        }
+        //if (normalizedHash !== normalizedAlgorithm.hash) {
+        //  throw new DataError()
+        //}
 
         if (jwk.d) {
           // TODO
           // - validate JWK requirements
-          // - translate JWK to PEM
           key = new CryptoKey({
             type: 'private',
-            //algorithm,
-            //extractable: false,
+            extractable: extractable,
             usages: ['sign'],
             handle: jwk2pem(jwk)
           })
         } else {
           // TODO
           // - validate JWK requirements
-          // - translate JWK to PEM
           key = new CryptoKey({
             type: 'public',
-            //algorithm,
-            //extractable: false,
+            extractable: true,
             usages: ['verify'],
             handle: jwk2pem(jwk)
           })
@@ -267,9 +262,9 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
     let alg = new RsaHashedKeyAlgorithm({
       name: 'RSASSA-PKCS1-v1_5',
-      modulusLength: getBitLength(jwk.n),
-      publicExponent: new BigInteger(jwk.e),
-      hash: hash
+      modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
+      hash: normalizedHash
     })
 
     key.algorithm = alg
