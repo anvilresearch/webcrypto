@@ -416,8 +416,30 @@ describe('SubtleCrypto', () => {
   /**
    * importKey
    */
-  describe('importKey', () => {
-    it('should return a Promise')
+  describe.only('importKey', () => {
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let format = 'jwk'
+        let key = {}
+        let algorithm = { name: 'BAD-ALGORITHM' }
+        let extractable = false
+        let usages = ['verify']
+
+        promise = crypto.subtle.importKey('jwk', key, algorithm, extractable, usages)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
   })
 
   /**
