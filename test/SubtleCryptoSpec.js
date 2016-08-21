@@ -440,6 +440,66 @@ describe('SubtleCrypto', () => {
         error.message.should.include('is not a supported algorithm')
       })
     })
+
+    describe('with raw format', () => {})
+    describe('with pkcs8 format', () => {})
+    describe('with spki format', () => {})
+    describe('with jwk format', () => {})
+    describe('with invalid resulting usages', () => {})
+
+    describe('with valid arguments', () => {
+      let promise, result, error
+
+      beforeEach((done) => {
+        let key = {
+          kty: "RSA",
+          e: "AQAB",
+          n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
+          alg: "RS256",
+          ext: true
+        }
+
+        let algorithm = {
+          name: 'RSASSA-PKCS1-v1_5',
+          hash: { name: 'SHA-256' }
+        }
+
+        let extractable = true
+        let usages = ['sign', 'verify', 'nope']
+
+        promise = crypto.subtle
+          .importKey('jwk', key, algorithm, extractable, usages)
+          .then(res => {
+            result = res
+            done()
+          })
+          .catch(err => {
+            error = err
+            done()
+          })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.be.instanceof(CryptoKey)
+      })
+
+      it('should set extractable', () => {
+        result.extractable.should.equal(true)
+      })
+
+      it('should normalize key usages', () => {
+        result.usages.should.eql(['sign', 'verify'])
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+
+    })
   })
 
   /**
