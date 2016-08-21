@@ -4,8 +4,8 @@
 const Algorithm = require('./Algorithm')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RegisteredAlgorithms = require('./RegisteredAlgorithms')
-const RsaHashedKeyAlgorithm = require('./RsaHashedKeyAlgorithm')
-const ShaKeyAlgorithm = require('./ShaKeyAlgorithm')
+//const RsaHashedKeyAlgorithm = require('./RsaHashedKeyAlgorithm')
+//const ShaKeyAlgorithm = require('./ShaKeyAlgorithm')
 const NotSupportedError = require('../errors/NotSupportedError')
 
 /**
@@ -83,7 +83,7 @@ class SupportedAlgorithms {
       let desiredType, normalizedAlgorithm
 
       try {
-        desiredType = registeredAlgorithms[algName]
+        desiredType = require(registeredAlgorithms[algName])
         normalizedAlgorithm = new desiredType(alg)
         normalizedAlgorithm.name = algName
       } catch (error) {
@@ -151,7 +151,7 @@ const supportedAlgorithms = new SupportedAlgorithms()
 /**
  * sign
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', RsaHashedKeyAlgorithm)
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', './RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'sign', )
 //supportedAlgorithms.define('ECDSA', 'sign', )
 //supportedAlgorithms.define('AES-CMAC', 'sign', )
@@ -160,7 +160,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', RsaHashedKeyAlgorithm)
 /**
  * verify
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', RsaHashedKeyAlgorithm)
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', './RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'verify', )
 //supportedAlgorithms.define('ECDSA', 'verify', )
 //supportedAlgorithms.define('AES-CMAC', 'verify', )
@@ -169,10 +169,10 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', RsaHashedKeyAlgorithm)
 /**
  * digest
  */
-supportedAlgorithms.define('SHA-1', 'digest', ShaKeyAlgorithm)
-supportedAlgorithms.define('SHA-256', 'digest', ShaKeyAlgorithm)
-supportedAlgorithms.define('SHA-384', 'digest', ShaKeyAlgorithm)
-supportedAlgorithms.define('SHA-512', 'digest', ShaKeyAlgorithm)
+supportedAlgorithms.define('SHA-1', 'digest', './ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-256', 'digest', './ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-384', 'digest', './ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-512', 'digest', './ShaKeyAlgorithm')
 
 /**
  * deriveKey
@@ -195,7 +195,7 @@ supportedAlgorithms.define('SHA-512', 'digest', ShaKeyAlgorithm)
 /**
  * generateKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', RsaHashedKeyAlgorithm)
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', './RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'generateKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'generateKey', )
 //supportedAlgorithms.define('ECDSA', 'generateKey', )
@@ -213,7 +213,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', RsaHashedKeyAlgor
 /**
  * importKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', RsaHashedKeyAlgorithm)
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', './RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'importKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'importKey', )
 //supportedAlgorithms.define('ECDSA', 'importKey', )
@@ -233,7 +233,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', RsaHashedKeyAlgorit
 /**
  * exportKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', RsaHashedKeyAlgorithm)
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', './RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'exportKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'exportKey', )
 //supportedAlgorithms.define('ECDSA', 'exportKey', )
