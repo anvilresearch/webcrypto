@@ -195,8 +195,8 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
         throw new SyntaxError()
       }
 
-      if (jwk.d === undefined && keyUsages.some(usage => usage !== 'verify')) {
-        throw new SyntaxError()
+      if (jwk.d === undefined && !keyUsages.some(usage => usage === 'verify')) {
+        throw new SyntaxError('Key usages must include "verify"')
       }
 
       if (jwk.kty !== 'RSA') {
