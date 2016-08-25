@@ -15,6 +15,8 @@ chai.should()
 const crypto = require('../src')
 const CryptoKey = require('../src/CryptoKey')
 const CryptoKeyPair = require('../src/CryptoKeyPair')
+const JsonWebKey = require('../src/JsonWebKey')
+const RsaHashedKeyAlgorithm = require('../src/algorithms/RsaHashedKeyAlgorithm')
 const {ab2str,str2ab,ab2buf,buf2ab} = require('../src/encodings')
 
 /**
@@ -416,7 +418,7 @@ describe('SubtleCrypto', () => {
   /**
    * importKey
    */
-  describe.only('importKey', () => {
+  describe('importKey', () => {
     describe('with invalid algorithm', () => {
       let promise, error
 
@@ -498,7 +500,6 @@ describe('SubtleCrypto', () => {
       it('should not reject the promise', () => {
         expect(error).to.be.undefined
       })
-
     })
   })
 
@@ -506,7 +507,100 @@ describe('SubtleCrypto', () => {
    * exportKey
    */
   describe('exportKey', () => {
-    it('should return a Promise')
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let format = 'jwk'
+        let key = new CryptoKey({
+          algorithm: {
+            name: 'BAD-ALGORITHM'
+          }
+        })
+
+        promise = crypto.subtle.exportKey('jwk', key)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with unextractable key', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let format = 'jwk'
+        let key = new CryptoKey({
+          type: 'public',
+          algorithm: new RsaHashedKeyAlgorithm({
+            name: 'RSASSA-PKCS1-v1_5',
+          }),
+          extractable: false,
+          handle: RsaPrivateKey
+        })
+
+        promise = crypto.subtle.exportKey('jwk', key)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Key is not extractable')
+      })
+    })
+
+    describe('with valid arguments', () => {
+      let promise, result, error
+
+      beforeEach((done) => {
+        let format = 'jwk'
+        let key = new CryptoKey({
+          type: 'public',
+          algorithm: new RsaHashedKeyAlgorithm({
+            name: 'RSASSA-PKCS1-v1_5',
+            modulusLength: 1024,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+            hash: { name: 'SHA-256' }
+          }),
+          extractable: true,
+          handle: RsaPrivateKey
+        })
+
+        promise = crypto.subtle
+          .exportKey('jwk', key)
+          .then(res => {
+            result = res
+            done()
+          })
+          .catch(err => {
+            error = err
+            done()
+          })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.be.instanceof(JsonWebKey)
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+    })
   })
 
   /**
