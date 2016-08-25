@@ -3,6 +3,7 @@
  */
 const CryptoKey = require('./CryptoKey')
 const CryptoKeyPair = require('./CryptoKeyPair')
+const JsonWebKey = require('./JsonWebKey')
 const supportedAlgorithms = require('./algorithms/supportedAlgorithms')
 const recognizedKeyUsages = require('./recognizedKeyUsages')
 const InvalidAccessError = require('./errors/InvalidAccessError')
@@ -237,9 +238,11 @@ class SubtleCrypto {
       }
 
       if (format === 'jwk') {
-        //if (!(keyData instanceof JsonWebKey)) {
-        //  throw new TypeError()
-        //}
+        keyData = new JsonWebKey(keyData)
+
+        if (!(keyData instanceof JsonWebKey)) {
+          throw new TypeError('key is not a JSON Web Key')
+        }
       }
 
       try {
