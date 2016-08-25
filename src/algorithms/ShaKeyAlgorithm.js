@@ -25,6 +25,17 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
     return {}
   }
 
+  /**
+   * digest
+   *
+   * @description
+   *
+   * @param {AlgorithmIdentifier} algorithm
+   * @param {BufferSource} data
+   *
+   * @returns {ArrayBuffer}
+   */
+  digest (hash, data) {}
 
 }
 
