@@ -24,15 +24,6 @@ const InvalidAccessError = require('../errors/InvalidAccessError')
 class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
   /**
-   * constructor
-   *
-   * @param {object} algorithm
-   */
-  constructor (algorithm) {
-    super(algorithm)
-  }
-
-  /**
    * dictionaries
    */
   static get dictionaries () {
