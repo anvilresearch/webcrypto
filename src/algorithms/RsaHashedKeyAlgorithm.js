@@ -15,8 +15,10 @@ const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
 const supportedAlgorithms = require('./supportedAlgorithms')
+const DataError = require('../errors/DataError')
 const OperationError = require('../errors/OperationError')
 const InvalidAccessError = require('../errors/InvalidAccessError')
+const KeyFormatNotSupportedError = require('../errors/KeyFormatNotSupportedError')
 
 /**
  * RsaHashedKeyAlgorithm
@@ -183,7 +185,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       jwk = new JsonWebKey(keyData)
 
       if (jwk.d && keyUsages.some(usage => usage !== 'sign')) {
-        throw new SyntaxError()
+        throw new SyntaxError('Key usages must include "sign"')
       }
 
       if (jwk.d === undefined && !keyUsages.some(usage => usage === 'verify')) {
@@ -191,11 +193,11 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       }
 
       if (jwk.kty !== 'RSA') {
-        throw new DataError()
+        throw new DataError('Key type must be RSA')
       }
 
       if (jwk.use !== undefined && jwk.use !== 'sig') {
-        throw new DataError()
+        throw new DataError('Key use must be "sig"')
       }
 
       // TODO
@@ -214,10 +216,12 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       } else if (jwk.alg === 'RS512') {
         hash = 'SHA-512'
       } else {
-        // perform any key import steps defined by other applicable specifications
-        // passing format, jwk, and obtaining hash
-
-        throw new DataError()
+        // TODO
+        // perform any key import steps defined by other applicable
+        // specifications, passing format, jwk, and obtaining hash
+        throw new DataError(
+          'Key alg must be "RS1", "RS256", "RS384", or "RS512"'
+        )
       }
 
       if (hash !== undefined) {
@@ -227,28 +231,29 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
         //  throw new DataError()
         //}
 
-        if (jwk.d) {
-          // TODO
-          // - validate JWK requirements
-          key = new CryptoKey({
-            type: 'private',
-            extractable: extractable,
-            usages: ['sign'],
-            handle: jwk2pem(jwk)
-          })
-        } else {
-          // TODO
-          // - validate JWK requirements
-          key = new CryptoKey({
-            type: 'public',
-            extractable: true,
-            usages: ['verify'],
-            handle: jwk2pem(jwk)
-          })
-        }
+      }
+
+      if (jwk.d) {
+        // TODO
+        // - validate JWK requirements
+        key = new CryptoKey({
+          type: 'private',
+          extractable: extractable,
+          usages: ['sign'],
+          handle: jwk2pem(jwk)
+        })
+      } else {
+        // TODO
+        // - validate JWK requirements
+        key = new CryptoKey({
+          type: 'public',
+          extractable: true,
+          usages: ['verify'],
+          handle: jwk2pem(jwk)
+        })
       }
     } else {
-      throw new NotSupportedError()
+      throw new KeyFormatNotSupportedError(format)
     }
 
     let alg = new RsaHashedKeyAlgorithm({
@@ -279,7 +284,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     // TODO
     // - should we type check key here?
     if (!key.handle) {
-      throw new OperationError()
+      throw new OperationError('Missing key material')
     }
 
     if (format === 'spki') {
@@ -310,7 +315,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       // conversion to ECMAScript Object is implicit
       result = jwk
     } else {
-      throw new NotSupportedError()
+      throw new KeyFormatNotSupportedError(format)
     }
 
     return result
