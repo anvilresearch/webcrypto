@@ -3,6 +3,7 @@
  */
 const RSA = require('node-rsa')
 const crypto = require('crypto')
+const {spawnSync} = require('child_process')
 const {pem2jwk, jwk2pem} = require('pem-jwk')
 
 /**
@@ -120,20 +121,27 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       }
     })
 
-    let keypair
+    let keypair = {}
 
     // Generate RSA keypair
     try {
-      // TODO
-      // - fallback on system OpenSSL + child_process
-      // - what is this bit option, where do we get the value from in this api?
-      let key = new RSA({b:512})
       let {modulusLength,publicExponent} = params
-      keypair = key.generateKeyPair()//(modulusLength, publicExponent)
+      // TODO
+      // - fallback on node-rsa if OpenSSL is not available on the system
+      let privateKey = spawnSync('openssl', ['genrsa', modulusLength || 4096]).stdout
+      let publicKey = spawnSync('openssl', ['rsa', '-pubout'], { input: privateKey }).stdout
+
+      keypair.privateKey = privateKey.toString('ascii')
+      keypair.publicKey = publicKey.toString('ascii')
+
+      // - what is this bit option, where do we get the value from in this api?
+      //let key = new RSA({b:512})
+      //let {modulusLength,publicExponent} = params
+      //keypair = key.generateKeyPair()//(modulusLength, publicExponent)
 
     // cast error
     } catch (error) {
-      throw new OperationError()
+      throw new OperationError(error.message)
     }
 
     // cast params to algorithm
@@ -145,7 +153,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       algorithm,
       extractable: true,
       usages: ['verify'],
-      handle: keypair.exportKey('public')
+      handle: keypair.publicKey
     })
 
     // instantiate privateKey
@@ -154,7 +162,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       algorithm,
       extractable: extractable,
       usages: ['sign'],
-      handle: keypair.exportKey('private')
+      handle: keypair.privateKey
     })
 
     // return a new keypair
