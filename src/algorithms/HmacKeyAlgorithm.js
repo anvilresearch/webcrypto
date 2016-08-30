@@ -1,7 +1,14 @@
 /**
+ * Native dependencies
+ */
+const crypto = require('crypto')
+
+/**
  * Local dependencies
  */
+const CryptoKey = require('../CryptoKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
+const OperationError = require('../errors/OperationError')
 
 /**
  * HmacKeyAlgorithm
@@ -9,9 +16,21 @@ const KeyAlgorithm = require('./KeyAlgorithm')
 class HmacKeyAlgorithm extends KeyAlgorithm {
 
   /**
-   * Constructor
+   * dictionaries
    */
-  constructor () {}
+  static get dictionaries () {
+    return [
+      KeyAlgorithm,
+      HmacKeyAlgorithm
+    ]
+  }
+
+  /**
+   * members
+   */
+  static get members () {
+    return {}
+  }
 
   /**
    * sign
@@ -52,7 +71,48 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    *
    * @returns {CryptoKey}
    */
-  generateKey (params, extractable, usages) {}
+  generateKey (params, extractable, usages) {
+    usages.forEach(usage => {
+      if (usage !== 'sign' && usage !== 'verify') {
+        throw new SyntaxError(
+          'Key usages can only include "sign" and "verify"'
+        )
+      }
+    })
+
+    let length
+
+    if (this.length === undefined) {
+      length = params.hash.name.match(/[0-9]+/)[0]
+    } else if (this.length > 0) {
+      length = this.length
+    } else {
+      new OperationError('Invalid HMAC length')
+    }
+
+    let generatedKey
+
+    try {
+      generatedKey = crypto.randomBytes(parseInt(length))
+    } catch (e) {
+      throw new OperationError('Failed to generate HMAC key')
+    }
+
+    let key = new CryptoKey({
+      type: 'secret',
+      algorithm: new HmacKeyAlgorithm({
+        name: 'HMAC',
+        hash: new KeyAlgorithm({
+          name: params.hash.name
+        })
+      }),
+      extractable,
+      usages,
+      handle: generatedKey
+    })
+
+    return key
+  }
 
   /**
    * importKey
