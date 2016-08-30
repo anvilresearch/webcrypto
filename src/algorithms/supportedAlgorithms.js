@@ -77,7 +77,7 @@ class SupportedAlgorithms {
       algName = registeredAlgorithms.getCaseInsensitive(algName)
 
       if (algName === undefined) {
-        return new NotSupportedError(algName)
+        return new NotSupportedError(alg.name)
       }
 
       let desiredType, normalizedAlgorithm
@@ -155,7 +155,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', './RsaHashedKeyAlgorithm
 //supportedAlgorithms.define('RSA-PSS', 'sign', )
 //supportedAlgorithms.define('ECDSA', 'sign', )
 //supportedAlgorithms.define('AES-CMAC', 'sign', )
-//supportedAlgorithms.define('HMAC', 'sign', )
+supportedAlgorithms.define('HMAC', 'sign', './HmacKeyAlgorithm')
 
 /**
  * verify
@@ -206,7 +206,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', './RsaHashedKeyAl
 //supportedAlgorithms.define('AES-GCM', 'generateKey', )
 //supportedAlgorithms.define('AES-CFB', 'generateKey', )
 //supportedAlgorithms.define('AES-KW', 'generateKey', )
-//supportedAlgorithms.define('HMAC', 'generateKey', )
+supportedAlgorithms.define('HMAC', 'generateKey', './HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'generateKey', )
 //supportedAlgorithms.define('PBKDF2', 'generateKey', )
 
