@@ -137,7 +137,135 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    *
    * @returns {CryptoKey}
    */
-  importKey (format, keyData, algorithm, extractable, keyUsages) {}
+  importKey (format, keyData, algorithm, extractable, keyUsages) {
+    usages.forEach(usage => {
+      if (usage !== 'sign' && usage !== 'verify') {
+        throw new SyntaxError(
+          'Key usages can only include "sign" and "verify"'
+        )
+      }
+    })
+
+    let hash = new KeyAlgorithm()
+
+    if (format === 'raw') {
+      let data = new Buffer(keyData)
+
+      if (algorithm.hash) {
+        hash = algorithm.hash
+      } else {
+        throw new TypeError()
+      }
+
+    } else if (format === 'jwk') {
+      let jwk = new JsonWebKey(keyData)
+
+      if (jwk.kty !== 'oct') {
+        throw new DataError()
+      }
+
+      // TODO JWA 6.4
+
+      let data = new Buffer(jwk.k, 'TODO')
+
+      if (algorithm.hash !== undefined) {
+        hash = algorithm.hash
+
+        if (hash.name === 'SHA-1') {
+          if (jwk.alg && jwk.alg !== 'HS1') {
+            throw new DataError()
+          }
+        } else if (hash.name === 'SHA-256') {
+          if (jwk.alg && jwk.alg !== 'HS256') {
+            throw new DataError()
+          }
+        } else if (hash.name === 'SHA-384') {
+          if (jwk.alg && jwk.alg !== 'HS384') {
+            throw new DataError()
+          }
+        } else if (hash.name === 'SHA-512') {
+          if (jwk.alg && jwk.alg !== 'HS512') {
+            throw new DataError()
+          }
+        // TODO
+        // "another applicable specification"
+        //} else if () {
+        //  ...
+        } else {
+          throw new DataError()
+        }
+      } else {
+        if (jwk.alg === undefined) {
+          throw new DataError()
+        }
+
+        if (jwk.alg === 'HS1') {
+          hash.name = 'SHA-1'
+        } else if (jwk.alg === 'HS256') {
+          hash.name = 'SHA-256'
+        } else if (jwk.alg === 'HS384') {
+          hash.name = 'SHA-384'
+        } else if (jwk.alg === 'HS512') {
+          hash.name = 'SHA-512'
+        } else {
+          // TODO
+          // "other applicable specifications"
+        }
+      }
+
+      if (jwk.use !== undefined && jwk.use !=== 'sign') {
+        throw new DataError()
+      }
+
+      if (jwk.key_ops !== undefined) {
+        //if (jwk.key_ops ...?) {
+        //  throw new DataError()
+        //}
+
+        usages.forEach(usage => {
+          if (!jwk.key_ops.includes(usage)) {
+            throw new DataError()
+          }
+        })
+      }
+
+      if (jwk.ext === false && extractable === true) {
+        throw new DataError()
+      }
+
+    } else {
+      throw KeyFormatNotSupportedError(format)
+    }
+
+    let length = data.length * 8
+
+    if (length === 0) {
+      throw new DataError()
+    }
+
+    if (algorithm.length !== undefined) {
+      if (algorithm.length > length) {
+        throw new DataError()
+      } else if (algorithm.length <= length - 8) {
+        throw new DataError()
+      } else {
+        length = algorithm.length
+      }
+    }
+
+    let key = new CryptoKey({
+      type: 'secret',
+      algorithm: new HmacKeyAlgorithm({
+        name: 'HMAC',
+        length,
+        hash,
+        handle: data
+      })
+      // What about extractable and usages?
+    })
+
+    return key
+  }
 
   /**
    * exportKey
