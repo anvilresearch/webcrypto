@@ -164,7 +164,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', './RsaHashedKeyAlgorit
 //supportedAlgorithms.define('RSA-PSS', 'verify', )
 //supportedAlgorithms.define('ECDSA', 'verify', )
 //supportedAlgorithms.define('AES-CMAC', 'verify', )
-//supportedAlgorithms.define('HMAC', 'verify', )
+supportedAlgorithms.define('HMAC', 'verify', './HmacKeyAlgorithm')
 
 /**
  * digest
