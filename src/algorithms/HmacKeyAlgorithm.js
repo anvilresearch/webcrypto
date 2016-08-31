@@ -140,7 +140,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    * @returns {CryptoKey}
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
-    usages.forEach(usage => {
+    keyUsages.forEach(usage => {
       if (usage !== 'sign' && usage !== 'verify') {
         throw new SyntaxError(
           'Key usages can only include "sign" and "verify"'
@@ -148,10 +148,11 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
       }
     })
 
-    let hash = new KeyAlgorithm()
+    let hash = new KeyAlgorithm({ name: 'HMAC' })
+    let data
 
     if (format === 'raw') {
-      let data = new Buffer(keyData)
+      data = new Buffer(keyData)
 
       if (algorithm.hash) {
         hash = algorithm.hash
@@ -166,9 +167,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
         throw new DataError()
       }
 
-      // TODO JWA 6.4
-
-      let data = new Buffer(jwk.k, 'TODO')
+      data = base64url.toBuffer(jwk.k)
 
       if (algorithm.hash !== undefined) {
         hash = algorithm.hash
@@ -224,7 +223,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
         //  throw new DataError()
         //}
 
-        usages.forEach(usage => {
+        keyUsages.forEach(usage => {
           if (!jwk.key_ops.includes(usage)) {
             throw new DataError()
           }
@@ -260,10 +259,11 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
       algorithm: new HmacKeyAlgorithm({
         name: 'HMAC',
         length,
-        hash,
-        handle: data
-      })
-      // What about extractable and usages?
+        hash
+      }),
+      extractable,
+      usages: keyUsages,
+      handle: data
     })
 
     return key
