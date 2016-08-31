@@ -224,7 +224,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', './RsaHashedKeyAlgo
 //supportedAlgorithms.define('AES-GCM', 'importKey', )
 //supportedAlgorithms.define('AES-CFB', 'importKey', )
 //supportedAlgorithms.define('AES-KW', 'importKey', )
-//supportedAlgorithms.define('HMAC', 'importKey', )
+supportedAlgorithms.define('HMAC', 'importKey', './HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'importKey', )
 //supportedAlgorithms.define('CONCAT', 'importKey', )
 //supportedAlgorithms.define('HKDF-CTR', 'importKey', )
@@ -244,7 +244,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', './RsaHashedKeyAlgo
 //supportedAlgorithms.define('AES-GCM', 'exportKey', )
 //supportedAlgorithms.define('AES-CFB', 'exportKey', )
 //supportedAlgorithms.define('AES-KW', 'exportKey', )
-//supportedAlgorithms.define('HMAC', 'exportKey', )
+supportedAlgorithms.define('HMAC', 'exportKey', './HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'exportKey', )
 
 /**
