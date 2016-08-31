@@ -9,6 +9,7 @@ const crypto = require('crypto')
 const CryptoKey = require('../CryptoKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const OperationError = require('../errors/OperationError')
+const {ab2buf, buf2ab} = require('../encodings')
 
 /**
  * HmacKeyAlgorithm
@@ -43,7 +44,12 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    *
    * @return {string}
    */
-  sign (key, data) {}
+  sign (key, data) {
+    let alg = key.algorithm.hash.name.replace('-', '').toLowerCase()
+    let hmac = crypto.createHmac(alg, key.handle)
+    hmac.update(ab2buf(data))
+    return buf2ab(hmac.digest())
+  }
 
   /**
    * verify
@@ -57,7 +63,11 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    *
    * @returns {Boolean}
    */
-  verify (key, signature, data) {}
+  verify (key, signature, data) {
+    let mac = ab2buf(this.sign(key, data))
+    signature = ab2buf(signature)
+    return mac.equals(signature)
+  }
 
   /**
    * generateKey
