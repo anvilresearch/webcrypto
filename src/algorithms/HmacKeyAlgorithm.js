@@ -1,12 +1,14 @@
 /**
- * Native dependencies
+ * Package dependencies
  */
+const base64url = require('base64url')
 const crypto = require('crypto')
 
 /**
  * Local dependencies
  */
 const CryptoKey = require('../CryptoKey')
+const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const OperationError = require('../errors/OperationError')
 const {ab2buf, buf2ab} = require('../encodings')
@@ -213,7 +215,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
         }
       }
 
-      if (jwk.use !== undefined && jwk.use !=== 'sign') {
+      if (jwk.use !== undefined && jwk.use !== 'sign') {
         throw new DataError()
       }
 
@@ -291,7 +293,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
     } else if (format === 'jwk') {
       let jwk = new JsonWebKey({
         kty: 'oct',
-        k: 'TODO'
+        k: base64url(key.handle)
       })
 
       let algorithm = key.algorithm
