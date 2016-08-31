@@ -277,7 +277,49 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    *
    * @returns {*}
    */
-  exportKey (format, key) {}
+  exportKey (format, key) {
+    if (!(key instanceof CryptoKey) || key.handle === undefined) {
+      throw new OperationError()
+    }
+
+    let result
+
+    if (format === 'raw') {
+      let data = key.handle
+      result = buf2ab(data)
+
+    } else if (format === 'jwk') {
+      let jwk = new JsonWebKey({
+        kty: 'oct',
+        k: 'TODO'
+      })
+
+      let algorithm = key.algorithm
+      let hash = algorithm.hash
+
+      if (hash.name === 'SHA-1') {
+        jwk.alg = 'HS1'
+      } else if (hash.name === 'SHA-256') {
+        jwk.alg = 'HS256'
+      } else if (hash.name === 'SHA-384') {
+        jwk.alg = 'HS384'
+      } else if (hash.name === 'SHA-512') {
+        jwk.alg = 'HS512'
+      } else {
+        // TODO
+        // "other applicable specifications"
+      }
+
+      jwk.key_ops = key.usages
+      jwk.ext = key.extractable
+
+      result = jwk
+    } else {
+      throw new NotSupportedError()
+    }
+
+    return result
+  }
 }
 
 /**
