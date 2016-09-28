@@ -10,13 +10,14 @@ const encodings = {
    * Convert a Buffer instance to an ArrayBuffer instance
    *
    * @param {Buffer} buffer
+   * @param {TypedArray} type
    * @returns {ArrayBuffer}
    */
-  buf2ab (buffer) {
-    let ab = new ArrayBuffer(buffer.length)
-    let view = new Uint8Array(ab)
+  buf2ab (buffer, type = Uint32Array) {
+    let ab = new ArrayBuffer(buffer.byteLength)
+    let view = new type(ab)
 
-    for (let i = 0; i < buffer.length; i++) {
+    for (let i = 0; i < buffer.byteLength; i++) {
       view[i] = buffer[i]
     }
 
