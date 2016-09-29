@@ -13,7 +13,7 @@ const encodings = {
    * @param {TypedArray} type
    * @returns {ArrayBuffer}
    */
-  buf2ab (buffer, type = Uint32Array) {
+  buf2ab (buffer, type = Uint8Array) {
     let ab = new ArrayBuffer(buffer.byteLength)
     let view = new type(ab)
 
@@ -33,9 +33,9 @@ const encodings = {
    * @param {ArrayBuffer} buffer
    * @returns {Buffer}
    */
-  ab2buf (ab) {
+  ab2buf (ab, type = Uint8Array) {
     let buf = new Buffer(ab.byteLength)
-    let view = new Uint8Array(ab)
+    let view = new type(ab)
 
     for (let i = 0; i < buf.length; ++i) {
       buf[i] = view[i]
@@ -53,9 +53,9 @@ const encodings = {
    * @param {string} str
    * @returns {ArrayBuffer}
    */
-  str2ab (str) {
+  str2ab (str, type = Uint8Array) {
     let buf = new ArrayBuffer(str.length * 2)
-    let view = new Uint16Array(buf)
+    let view = new type(buf)
 
     for (let i = 0, strLen = str.length; i < strLen; i++) {
       view[i] = str.charCodeAt(i)
@@ -73,8 +73,8 @@ const encodings = {
    * @param {ArrayBuffer} ab
    * @returns {string}
    */
-  ab2str (buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf))
+  ab2str (buf, type = Uint8Array) {
+    return String.fromCharCode.apply(null, new type(buf))
   }
 }
 
