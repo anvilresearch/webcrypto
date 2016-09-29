@@ -40,25 +40,27 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
   digest (algorithm, data) {
     let result
     let {name} = algorithm
+    let ab = data.buffer
+    let dataBuffer = new Buffer(new Uint8Array(ab))
 
     if (name === 'SHA-1') {
       let hash = crypto.createHash('sha1')
-      hash.update(ab2buf(data))
+      hash.update(dataBuffer)
       result = hash.digest()
 
     } else if (name === 'SHA-256') {
       let hash = crypto.createHash('sha256')
-      hash.update(ab2buf(data))
+      hash.update(dataBuffer)
       result = hash.digest()
 
     } else if (name === 'SHA-384') {
       let hash = crypto.createHash('sha384')
-      hash.update(ab2buf(data))
+      hash.update(dataBuffer)
       result = hash.digest()
 
     } else if (name === 'SHA-512') {
       let hash = crypto.createHash('sha512')
-      hash.update(ab2buf(data))
+      hash.update(dataBuffer)
       result = hash.digest()
 
     } else {
