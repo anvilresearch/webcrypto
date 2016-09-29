@@ -124,7 +124,7 @@ class SubtleCrypto {
    * @param {AlgorithmIdentifier} algorithm
    * @param {BufferSource} data
    *
-   * @returns {Promise}
+   * @returns {Promise.<ArrayBuffer>}
    */
   digest (algorithm, data) {
     data = data.slice()
