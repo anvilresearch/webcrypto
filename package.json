@@ -26,6 +26,7 @@
   "dependencies": {
     "base64url": "^2.0.0",
     "node-rsa": "^0.4.0",
-    "pem-jwk": "^1.5.1"
+    "pem-jwk": "^1.5.1",
+    "text-encoding": "^0.6.1"
   }
 }
