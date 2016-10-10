@@ -9,7 +9,7 @@ const {pem2jwk, jwk2pem} = require('pem-jwk')
 /**
  * Local dependencies
  */
-const {buf2ab,ab2buf} = require('../encodings')
+const {TextEncoder, TextDecoder} = require('text-encoding')
 const CryptoKey = require('../CryptoKey')
 const CryptoKeyPair = require('../CryptoKeyPair')
 const JsonWebKey = require('../JsonWebKey')
@@ -67,10 +67,11 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
     try {
       let pem = key.handle
+      data = new TextDecoder().decode(data)
       let signer = crypto.createSign('RSA-SHA256')
-
-      signer.update(ab2buf(data))
-      return buf2ab(signer.sign(pem))
+      signer.update(data)
+      let signature = signer.sign(pem).toString('base64')
+      return new TextEncoder().encode(signature)
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -94,10 +95,14 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
     try {
       let pem = key.handle
-      let verifier = crypto.createVerify('RSA-SHA256')
 
-      verifier.update(ab2buf(data))
-      return verifier.verify(pem, ab2buf(signature))
+      data = new TextDecoder().decode(data)
+      signature = new TextDecoder().decode(signature)
+
+      let verifier = crypto.createVerify('RSA-SHA256')
+      verifier.update(data)
+
+      return verifier.verify(pem, new Buffer(signature, 'base64'))
     } catch (error) {
       throw new OperationError(error.message)
     }
