@@ -3,7 +3,7 @@
  */
 const crypto = require('crypto')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const {ab2buf, buf2ab} = require('../encodings')
+const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
  * ShaKeyAlgorithm
@@ -67,7 +67,7 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
       throw new OperationError()
     }
 
-    return buf2ab(result)
+    return new TextEncoder().encode(result)
   }
 }
 
