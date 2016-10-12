@@ -35,7 +35,7 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
    * @param {AlgorithmIdentifier} algorithm
    * @param {BufferSource} data
    *
-   * @returns {ArrayBuffer}
+   * @returns {Uint8Array}
    */
   digest (algorithm, data) {
     let result
@@ -67,7 +67,7 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
       throw new OperationError()
     }
 
-    return new TextEncoder().encode(result)
+    return new Uint8Array(result.buffer)
   }
 }
 
