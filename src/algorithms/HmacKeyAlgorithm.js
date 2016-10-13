@@ -11,7 +11,6 @@ const CryptoKey = require('../CryptoKey')
 const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const OperationError = require('../errors/OperationError')
-const {ab2buf, buf2ab} = require('../encodings')
 
 /**
  * HmacKeyAlgorithm
@@ -49,8 +48,8 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
   sign (key, data) {
     let alg = key.algorithm.hash.name.replace('-', '').toLowerCase()
     let hmac = crypto.createHmac(alg, key.handle)
-    hmac.update(ab2buf(data))
-    return buf2ab(hmac.digest())
+    hmac.update(Buffer.from(data))
+    return new Uint8Array(hmac.digest())
   }
 
   /**
@@ -66,8 +65,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    * @returns {Boolean}
    */
   verify (key, signature, data) {
-    let mac = ab2buf(this.sign(key, data))
-    signature = ab2buf(signature)
+    let mac = this.sign(key, data)
     return mac.equals(signature)
   }
 
@@ -288,7 +286,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
 
     if (format === 'raw') {
       let data = key.handle
-      result = buf2ab(data)
+      result = Buffer.from(data)
 
     } else if (format === 'jwk') {
       let jwk = new JsonWebKey({
