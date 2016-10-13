@@ -21,9 +21,9 @@ const {
 
 const CryptoKey = require('../../src/CryptoKey')
 const CryptoKeyPair = require('../../src/CryptoKeyPair')
-const KeyAlgorithm = require('../../src/algorithms/KeyAlgorithm')
-const RsaKeyAlgorithm = require('../../src/algorithms/RsaKeyAlgorithm')
-const RsaHashedKeyAlgorithm = require('../../src/algorithms/RsaHashedKeyAlgorithm')
+const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
+const RsaKeyAlgorithm = require('../../src/dictionaries/RsaKeyAlgorithm')
+const RsaHashedKeyAlgorithm = require('../../src/dictionaries/RsaHashedKeyAlgorithm')
 const DataError = require('../../src/errors/DataError')
 const OperationError = require('../../src/errors/OperationError')
 const NotSupportedError = require('../../src/errors/NotSupportedError')

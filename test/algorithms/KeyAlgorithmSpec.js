@@ -12,7 +12,7 @@ const expect = chai.expect
 /**
  * Code under test
  */
-const KeyAlgorithm = require('../../src/algorithms/KeyAlgorithm')
+const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
 
 /**

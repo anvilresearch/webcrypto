@@ -16,7 +16,7 @@ const crypto = require('../src')
 const CryptoKey = require('../src/CryptoKey')
 const CryptoKeyPair = require('../src/CryptoKeyPair')
 const JsonWebKey = require('../src/JsonWebKey')
-const RsaHashedKeyAlgorithm = require('../src/algorithms/RsaHashedKeyAlgorithm')
+const RsaHashedKeyAlgorithm = require('../src/dictionaries/RsaHashedKeyAlgorithm')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
