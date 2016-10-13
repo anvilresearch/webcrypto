@@ -113,7 +113,7 @@ describe('RsaHashedKeyAlgorithm', () => {
           handle: RsaPrivateKey
         })
 
-        alg.sign(key, new ArrayBuffer()).should.be.instanceof(ArrayBuffer)
+        alg.sign(key, new ArrayBuffer()).should.be.instanceof(Uint8Array)
       })
 
       it('should sign with the correct hash')
