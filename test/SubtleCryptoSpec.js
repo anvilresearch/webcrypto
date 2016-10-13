@@ -17,7 +17,7 @@ const CryptoKey = require('../src/CryptoKey')
 const CryptoKeyPair = require('../src/CryptoKeyPair')
 const JsonWebKey = require('../src/JsonWebKey')
 const RsaHashedKeyAlgorithm = require('../src/algorithms/RsaHashedKeyAlgorithm')
-const {ab2str,str2ab,ab2buf,buf2ab} = require('../src/encodings')
+const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
  * RSA Key Pair
@@ -170,7 +170,7 @@ describe('SubtleCrypto', () => {
           handle: RsaPrivateKey
         })
 
-        let data = str2ab('data')
+        let data = new TextEncoder().encode('data')
 
         promise = crypto.subtle
           .sign(algorithm, privateKey, data)
@@ -189,7 +189,7 @@ describe('SubtleCrypto', () => {
       })
 
       it('should resolve the promise', () => {
-        result.should.be.instanceof(ArrayBuffer)
+        result.should.be.instanceof(Uint8Array)
       })
 
       it('should not reject the promise', () => {
@@ -275,7 +275,7 @@ describe('SubtleCrypto', () => {
     })
 
     describe('with valid arguments', () => {
-      let signature = buf2ab(new Buffer('X68EtkKcwZqcySv/NU6hucJg9b/uHojiOzQ2uttIH9V9kS5ACmTnsPY5Kk708foNACHcNrvAk2S8szAJWbK8RJPW1So4OyArqRjnTyjADpriLjCEIUZZBT6Igpeddv5unOZnrmLPXNePQLVGsOXcW6xmy7kZrSbXmsTJet6dvfku0AM0DNjpdZonKIewjZf6ALSkNiskpo8Fm14GRb3c9ZytQziD5mWHNvuUi4ZV3SiIzs7LBzUnmcB94E67fw7vhOP/OnYmVB5cM+ANTKmjIHJgWgXcUM6SrHMs8oy0ENvKQOMWUdbX4qetvBMOR1/3GV5oUWIVqj0wlDqH0wMqCA==', 'base64'))
+      let signature = new Buffer('X68EtkKcwZqcySv/NU6hucJg9b/uHojiOzQ2uttIH9V9kS5ACmTnsPY5Kk708foNACHcNrvAk2S8szAJWbK8RJPW1So4OyArqRjnTyjADpriLjCEIUZZBT6Igpeddv5unOZnrmLPXNePQLVGsOXcW6xmy7kZrSbXmsTJet6dvfku0AM0DNjpdZonKIewjZf6ALSkNiskpo8Fm14GRb3c9ZytQziD5mWHNvuUi4ZV3SiIzs7LBzUnmcB94E67fw7vhOP/OnYmVB5cM+ANTKmjIHJgWgXcUM6SrHMs8oy0ENvKQOMWUdbX4qetvBMOR1/3GV5oUWIVqj0wlDqH0wMqCA==', 'base64')
 
       let promise, result, error
 
@@ -290,7 +290,7 @@ describe('SubtleCrypto', () => {
           handle: RsaPublicKey
         })
 
-        let data = str2ab('data')
+        let data = new TextEncoder().encode('data')
 
         promise = crypto.subtle
           .verify(algorithm, publicKey, signature, data)
