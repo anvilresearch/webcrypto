@@ -1,7 +1,6 @@
 /**
  * Module dependencies
  */
-const {buf2ab} = require('./encodings')
 const legacyCrypto = require('crypto')
 const SubtleCrypto = require('./SubtleCrypto')
 const TypeMismatchError = require('./errors/TypeMismatchError')
@@ -54,8 +53,8 @@ class Crypto {
     let method = integerGetByConstructor[type.name]
     let totalBytes = byteLength * typedArray.length
     let buffer = legacyCrypto.randomBytes(totalBytes)
-    let arrayBuffer = buf2ab(buffer, type)
-    let dataView = new DataView(arrayBuffer)
+    let arrayBuffer = new Uint8Array(buffer)
+    let dataView = new DataView(arrayBuffer.buffer)
 
     for (let byteIndex = 0; byteIndex < totalBytes; byteIndex += byteLength) {
       let integer = dataView[method](byteIndex)
