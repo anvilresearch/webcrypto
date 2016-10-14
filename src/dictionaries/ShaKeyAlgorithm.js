@@ -3,7 +3,6 @@
  */
 const crypto = require('crypto')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const {TextEncoder, TextDecoder} = require('text-encoding')
 const {OperationError} = require('../errors')
 
 /**
