@@ -45,6 +45,18 @@ describe.only('ShaKeyAlgorithm', () => {
       result.should.be.instanceof(ArrayBuffer)
     })
 
+    it('should return a SHA-1 digest', () => {
+      let algorithm = { name: 'SHA-1' }
+      let data = new TextEncoder().encode('created with webcrypto in Chrome')
+      let digest = new Uint8Array([
+        240, 245, 162, 97, 158, 225, 111, 59, 198, 40,
+        103, 60, 84, 159, 139, 205, 10, 116, 39, 41
+      ])
+      let sha = new ShaKeyAlgorithm(algorithm)
+      let result = sha.digest(algorithm, data)
+      Buffer.from(result).should.eql(Buffer.from(digest.buffer))
+    })
+
     it('should return a SHA-256 digest', () => {
       let algorithm = { name: 'SHA-256' }
       let data = new TextEncoder().encode('created with webcrypto in Chrome')
