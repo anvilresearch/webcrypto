@@ -11,7 +11,7 @@ chai.should()
 /**
  * Code under test
  */
-const recognizedKeyUsages = require('../src/recognizedKeyUsages')
+const recognizedKeyUsages = require('../../src/keys/recognizedKeyUsages')
 const KeyUsage = recognizedKeyUsages.constructor
 
 /**

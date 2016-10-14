@@ -13,9 +13,9 @@ chai.should()
  * Code under test
  */
 const crypto = require('../src')
-const CryptoKey = require('../src/CryptoKey')
-const CryptoKeyPair = require('../src/CryptoKeyPair')
-const JsonWebKey = require('../src/JsonWebKey')
+const CryptoKey = require('../src/keys/CryptoKey')
+const CryptoKeyPair = require('../src/keys/CryptoKeyPair')
+const JsonWebKey = require('../src/keys/JsonWebKey')
 const RsaHashedKeyAlgorithm = require('../src/dictionaries/RsaHashedKeyAlgorithm')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 

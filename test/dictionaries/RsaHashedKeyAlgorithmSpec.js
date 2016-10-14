@@ -19,8 +19,8 @@ const {
   RsaPublicJwk
 } = require('../RsaKeyPairForTesting')
 
-const CryptoKey = require('../../src/CryptoKey')
-const CryptoKeyPair = require('../../src/CryptoKeyPair')
+const CryptoKey = require('../../src/keys/CryptoKey')
+const CryptoKeyPair = require('../../src/keys/CryptoKeyPair')
 const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
 const RsaKeyAlgorithm = require('../../src/dictionaries/RsaKeyAlgorithm')
 const RsaHashedKeyAlgorithm = require('../../src/dictionaries/RsaHashedKeyAlgorithm')
