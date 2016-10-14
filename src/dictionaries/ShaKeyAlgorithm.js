@@ -67,7 +67,7 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
       throw new OperationError()
     }
 
-    return new Uint8Array(result.buffer)
+    return Uint8Array.from(result)
   }
 }
 

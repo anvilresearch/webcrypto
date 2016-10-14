@@ -321,8 +321,48 @@ describe('SubtleCrypto', () => {
   /**
    * digest
    */
-  describe('digest', () => {
-    it('should return a Promise')
+  describe.only('digest', () => {
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'BAD-ALGORITHM' }
+        promise = crypto.subtle.digest(algorithm, new Uint8Array('whatever'))
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with valid arguments', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'SHA-256' }
+        promise = crypto.subtle.digest(algorithm, new Buffer('whatever'))
+        promise.then(digest => result = digest)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.be.instanceof(Uint8Array)
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+    })
   })
 
   /**
