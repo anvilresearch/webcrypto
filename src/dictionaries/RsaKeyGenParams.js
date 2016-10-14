@@ -2,7 +2,6 @@
  * Local dependencies
  */
 const Algorithm = require('./Algorithm')
-const BigInteger = require('../BigInteger')
 
 /**
  * RsaKeyGenParams
@@ -33,7 +32,7 @@ class RsaKeyGenParams extends Algorithm {
     }
 
     // validate publicExponent
-    if (!(this.publicExponent instanceof BigInteger)) {
+    if (!(this.publicExponent instanceof Uint8Array)) {
       throw new Error()
     }
   }

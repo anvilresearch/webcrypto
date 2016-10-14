@@ -321,7 +321,7 @@ describe('SubtleCrypto', () => {
   /**
    * digest
    */
-  describe.only('digest', () => {
+  describe('digest', () => {
     describe('with invalid algorithm', () => {
       let promise, error
 
