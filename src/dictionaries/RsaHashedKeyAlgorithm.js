@@ -16,10 +16,16 @@ const JsonWebKey = require('../keys/JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
 const supportedAlgorithms = require('../algorithms')
-const DataError = require('../errors/DataError')
-const OperationError = require('../errors/OperationError')
-const InvalidAccessError = require('../errors/InvalidAccessError')
-const KeyFormatNotSupportedError = require('../errors/KeyFormatNotSupportedError')
+
+/**
+ * Errors
+ */
+const {
+  DataError,
+  OperationError,
+  InvalidAccessError,
+  KeyFormatNotSupportedError
+} = require('../errors')
 
 /**
  * RsaHashedKeyAlgorithm

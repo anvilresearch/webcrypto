@@ -10,7 +10,7 @@ const crypto = require('crypto')
 const CryptoKey = require('../CryptoKey')
 const JsonWebKey = require('../JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const OperationError = require('../errors/OperationError')
+const {OperationError} = require('../errors')
 
 /**
  * HmacKeyAlgorithm

@@ -6,8 +6,7 @@ const CryptoKeyPair = require('./keys/CryptoKeyPair')
 const JsonWebKey = require('./keys/JsonWebKey')
 const recognizedKeyUsages = require('./keys/recognizedKeyUsages')
 const supportedAlgorithms = require('./algorithms')
-const InvalidAccessError = require('./errors/InvalidAccessError')
-const NotSupportedError = require('./errors/NotSupportedError')
+const {InvalidAccessError, NotSupportedError} = require('./errors')
 
 /**
  * SubtleCrypto

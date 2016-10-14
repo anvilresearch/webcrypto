@@ -4,7 +4,7 @@
 const Algorithm = require('../dictionaries/Algorithm')
 const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
 const RegisteredAlgorithms = require('./RegisteredAlgorithms')
-const NotSupportedError = require('../errors/NotSupportedError')
+const {NotSupportedError} = require('../errors')
 
 /**
  * Supported Operations

@@ -1,7 +1,7 @@
 /**
  * Local dependencies
  */
-const NotSupportedError = require('../errors/NotSupportedError')
+const {NotSupportedError} = require('../errors')
 
 /**
  * KeyAlgorithm dictionary
@@ -21,6 +21,15 @@ class KeyAlgorithm {
       throw new Error('KeyAlgorithm must have a name')
     }
   }
+
+  /**
+   * TODO
+   * If we split algorithm implementations away from dictionaries,
+   * we'll need to remove these abstract methods.
+   *
+   * It seems that SupportedAlgorithms covers the same ground of
+   * throwing a NotSupportedError, and these would never be invoked.
+   */
 
   /**
    * encrypt
