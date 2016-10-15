@@ -20,7 +20,7 @@ const OperationError = require('../../src/errors/OperationError')
 /**
  * Tests
  */
-describe.only('ShaKeyAlgorithm', () => {
+describe('ShaKeyAlgorithm', () => {
   describe('dictionaries getter', () => {
     it('should return an array', () => {
       ShaKeyAlgorithm.dictionaries.should.eql([
