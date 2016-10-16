@@ -15,8 +15,10 @@ chai.should()
 const {
   RsaPrivateKey,
   RsaPrivateJwk,
+  RsaPrivateCryptoKey,
   RsaPublicKey,
-  RsaPublicJwk
+  RsaPublicJwk,
+  RsaPublicCryptoKey
 } = require('../RsaKeyPairForTesting')
 
 const {TextEncoder} = require('text-encoding')
@@ -33,36 +35,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 /**
  * Tests
  */
-describe.only('RsaHashedKeyAlgorithm', () => {
-  let privateCryptoKey, publicCryptoKey
-
-  before(() => {
-    return Promise.all([
-      crypto.subtle.importKey(
-        'jwk',
-        RsaPrivateJwk,
-        {
-          name: "RSASSA-PKCS1-v1_5",
-          hash: { name: 'SHA-256' }
-        },
-        false,
-        ['sign']
-      ),
-      crypto.subtle.importKey(
-        'jwk',
-        RsaPublicJwk,
-        {
-          name: "RSASSA-PKCS1-v1_5",
-          hash: { name: 'SHA-256' }
-        },
-        false,
-        ['verify']
-      )
-    ])
-    .then(keys => {
-      [privateCryptoKey, publicCryptoKey] = keys
-    })
-  })
+describe('RsaHashedKeyAlgorithm', () => {
 
   /**
    * class
@@ -133,16 +106,16 @@ describe.only('RsaHashedKeyAlgorithm', () => {
 
     it('should throw with non-private key', () => {
       expect(() => {
-        rsa.sign(publicCryptoKey, new Uint8Array())
+        rsa.sign(RsaPublicCryptoKey, new Uint8Array())
       }).to.throw('Signing requires a private key')
     })
 
     it('should return an ArrayBuffer', () => {
-      rsa.sign(privateCryptoKey, data).should.be.instanceof(ArrayBuffer)
+      rsa.sign(RsaPrivateCryptoKey, data).should.be.instanceof(ArrayBuffer)
     })
 
     it('should return a RSASSA-PKCS1-v1_5 signature', () => {
-      Buffer.from(rsa.sign(privateCryptoKey, data))
+      Buffer.from(rsa.sign(RsaPrivateCryptoKey, data))
         .should.eql(Buffer.from(signature.buffer))
     })
   })
@@ -183,17 +156,17 @@ describe.only('RsaHashedKeyAlgorithm', () => {
 
     it('should throw with non-private key', () => {
       expect(() => {
-        rsa.verify(privateCryptoKey, new Uint8Array())
+        rsa.verify(RsaPrivateCryptoKey, new Uint8Array())
       }).to.throw('Verifying requires a public key')
     })
 
     it('should return true with valid signature', () => {
-      rsa.verify(publicCryptoKey, signature, data).should.equal(true)
+      rsa.verify(RsaPublicCryptoKey, signature, data).should.equal(true)
     })
 
     it('should return false with invalid signature', () => {
       let invalidData = new TextEncoder().encode('invalid signature')
-      rsa.verify(publicCryptoKey, signature, invalidData).should.equal(false)
+      rsa.verify(RsaPublicCryptoKey, signature, invalidData).should.equal(false)
     })
   })
 
