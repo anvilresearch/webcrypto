@@ -76,8 +76,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
       data = new TextDecoder().decode(data)
       let signer = crypto.createSign('RSA-SHA256')
       signer.update(data)
-      let signature = signer.sign(pem).toString('base64')
-      return new TextEncoder().encode(signature)
+      return signer.sign(pem).buffer
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -102,13 +101,13 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     try {
       let pem = key.handle
 
-      data = new TextDecoder().decode(data)
-      signature = new TextDecoder().decode(signature)
+      data = Buffer.from(data)
+      signature = Buffer.from(signature)
 
       let verifier = crypto.createVerify('RSA-SHA256')
       verifier.update(data)
 
-      return verifier.verify(pem, new Buffer(signature, 'base64'))
+      return verifier.verify(pem, signature)
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -128,7 +127,7 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     // validate usages
     usages.forEach(usage => {
       if (usage !== 'sign' && usage !== 'verify') {
-        throw new SyntaxError()
+        throw new SyntaxError('Key usages can only include "sign" and "verify"')
       }
     })
 

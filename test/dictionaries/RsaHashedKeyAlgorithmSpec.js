@@ -19,6 +19,8 @@ const {
   RsaPublicJwk
 } = require('../RsaKeyPairForTesting')
 
+const {TextEncoder} = require('text-encoding')
+const crypto = require('../../src')
 const CryptoKey = require('../../src/keys/CryptoKey')
 const CryptoKeyPair = require('../../src/keys/CryptoKeyPair')
 const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
@@ -31,7 +33,36 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 /**
  * Tests
  */
-describe('RsaHashedKeyAlgorithm', () => {
+describe.only('RsaHashedKeyAlgorithm', () => {
+  let privateCryptoKey, publicCryptoKey
+
+  before(() => {
+    return Promise.all([
+      crypto.subtle.importKey(
+        'jwk',
+        RsaPrivateJwk,
+        {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: { name: 'SHA-256' }
+        },
+        false,
+        ['sign']
+      ),
+      crypto.subtle.importKey(
+        'jwk',
+        RsaPublicJwk,
+        {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: { name: 'SHA-256' }
+        },
+        false,
+        ['verify']
+      )
+    ])
+    .then(keys => {
+      [privateCryptoKey, publicCryptoKey] = keys
+    })
+  })
 
   /**
    * class
@@ -70,53 +101,49 @@ describe('RsaHashedKeyAlgorithm', () => {
    * sign
    */
   describe('sign', () => {
-    describe('with non-private key', () => {
-      it('should throw InvalidAccessError', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'public',
-          algorithm: alg,
-          extractable: false,
-          usages: ['verify']
-        })
+    let alg, rsa, data, signature
 
-        expect(() => {
-          alg.sign(key, new ArrayBuffer())
-        }).to.throw('Signing requires a private key')
-      })
+    before(() => {
+      alg = { name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-256' } }
+      rsa = new RsaHashedKeyAlgorithm(alg)
+
+      data = new TextEncoder().encode('signed with Chrome webcrypto')
+
+      signature = new Uint8Array([
+        84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
+        243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
+        249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
+        0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
+        188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
+        88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
+        224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
+        45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
+        44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
+        184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
+        20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
+        235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
+        239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
+        166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
+        144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
+        247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
+        83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
+        144, 83
+      ])
     })
 
-    describe('with invalid arguments', () => {
-      it('should throw OperationError', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'private',
-          algorithm: alg,
-          extractable: false,
-          usages: ['verify']
-        })
-
-        expect(() => {
-          alg.sign(key, new ArrayBuffer())
-        }).to.throw(OperationError)
-      })
+    it('should throw with non-private key', () => {
+      expect(() => {
+        rsa.sign(publicCryptoKey, new Uint8Array())
+      }).to.throw('Signing requires a private key')
     })
 
-    describe('with valid arguments', () => {
-      it('should return ArrayBuffer', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'private',
-          algorithm: alg,
-          extractable: false,
-          usages: ['sign'],
-          handle: RsaPrivateKey
-        })
+    it('should return an ArrayBuffer', () => {
+      rsa.sign(privateCryptoKey, data).should.be.instanceof(ArrayBuffer)
+    })
 
-        alg.sign(key, new ArrayBuffer()).should.be.instanceof(Uint8Array)
-      })
-
-      it('should sign with the correct hash')
+    it('should return a RSASSA-PKCS1-v1_5 signature', () => {
+      Buffer.from(rsa.sign(privateCryptoKey, data))
+        .should.eql(Buffer.from(signature.buffer))
     })
   })
 
@@ -124,53 +151,49 @@ describe('RsaHashedKeyAlgorithm', () => {
    * verify
    */
   describe('verify', () => {
-    describe('with non-public key', () => {
-      it('should throw InvalidAccessError', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'private',
-          algorithm: alg,
-          extractable: false,
-          usages: ['verify']
-        })
+    let alg, rsa, data, signature
 
-        expect(() => {
-          alg.verify(key, new ArrayBuffer, new ArrayBuffer())
-        }).to.throw('Verifying requires a public key')
-      })
+    before(() => {
+      alg = { name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-256' } }
+      rsa = new RsaHashedKeyAlgorithm(alg)
+
+      data = new TextEncoder().encode('signed with Chrome webcrypto')
+
+      signature = new Uint8Array([
+        84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
+        243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
+        249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
+        0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
+        188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
+        88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
+        224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
+        45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
+        44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
+        184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
+        20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
+        235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
+        239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
+        166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
+        144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
+        247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
+        83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
+        144, 83
+      ])
     })
 
-    describe('with invalid arguments', () => {
-      it('should throw OperationError', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'public',
-          algorithm: alg,
-          extractable: false,
-          usages: ['verify']
-        })
-
-        expect(() => {
-          alg.verify(key, new ArrayBuffer(), new ArrayBuffer())
-        }).to.throw(OperationError)
-      })
+    it('should throw with non-private key', () => {
+      expect(() => {
+        rsa.verify(privateCryptoKey, new Uint8Array())
+      }).to.throw('Verifying requires a public key')
     })
 
-    describe('with valid arguments', () => {
-      it('should return ArrayBuffer', () => {
-        let alg = new RsaHashedKeyAlgorithm({ name: 'RSASSA-PKCS1-v1_5' })
-        let key = new CryptoKey({
-          type: 'public',
-          algorithm: alg,
-          extractable: false,
-          usages: ['verify'],
-          handle: RsaPublicKey
-        })
+    it('should return true with valid signature', () => {
+      rsa.verify(publicCryptoKey, signature, data).should.equal(true)
+    })
 
-        alg.verify(key, new ArrayBuffer, new ArrayBuffer()).should.equal(false)
-      })
-
-      it('should verify with the correct hash')
+    it('should return false with invalid signature', () => {
+      let invalidData = new TextEncoder().encode('invalid signature')
+      rsa.verify(publicCryptoKey, signature, invalidData).should.equal(false)
     })
   })
 
@@ -178,79 +201,98 @@ describe('RsaHashedKeyAlgorithm', () => {
    * generateKey
    */
   describe('generateKey', () => {
-    describe('with invalid usages', () => {
+    let alg, rsa, cryptoKeyPair
+
+    before(() => {
+      alg = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }
+      rsa = new RsaHashedKeyAlgorithm(alg)
+      return Promise.resolve()
+        .then(() => cryptoKeyPair = rsa.generateKey(alg, true, ['sign', 'verify']))
+
     })
 
-    describe('with invalid params', () => {
+    it('should throw with invalid usages', () => {
+      expect(() => {
+        rsa.generateKey(alg, true, ['sign', 'verify', 'wrong'])
+      }).to.throw('Key usages can only include "sign" and "verify"')
     })
 
-    describe('with valid arguments', () => {
-      let alg, keypair, publicKey, privateKey, error
+    it('should return CryptoKey', () => {
+      cryptoKeyPair.should.be.instanceof(CryptoKeyPair)
+    })
 
-      before(() => {
-        alg = new RsaHashedKeyAlgorithm({
-          name: 'RSASSA-PKCS1-v1_5',
-          modulusLength: 1024,
-          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: { name: 'SHA-256' }
-        })
+    it('should set public key type', () => {
+      cryptoKeyPair.publicKey.type.should.equal('public')
+    })
 
-        keypair = error = alg.generateKey(alg, false, ['sign', 'verify'])
-        publicKey = keypair.publicKey
-        privateKey = keypair.privateKey
-      })
+    it('should set private key type', () => {
+      cryptoKeyPair.privateKey.type.should.equal('private')
+    })
 
-      it('should return a CryptoKeyPair', () => {
-        keypair.should.be.instanceof(CryptoKeyPair)
-      })
+    it('should set public key algorithm', () => {
+      cryptoKeyPair.publicKey.algorithm
+        .should.be.instanceof(RsaHashedKeyAlgorithm)
+    })
 
-      it('should return a CryptoKey publicKey', () => {
-        publicKey.should.be.instanceof(CryptoKey)
-      })
+    it('should set private key algorithm', () => {
+      cryptoKeyPair.privateKey.algorithm
+        .should.be.instanceof(RsaHashedKeyAlgorithm)
+    })
 
-      it('should define publicKey type', () => {
-        publicKey.type.should.equal('public')
-      })
+    it('should set public key algorithm name', () => {
+      cryptoKeyPair.publicKey.algorithm.name
+        .should.equal('RSASSA-PKCS1-v1_5')
+    })
 
-      it('should define publicKey algorithm', () => {
-        publicKey.algorithm.should.eql(alg)
-      })
+    it('should set private key algorithm name', () => {
+      cryptoKeyPair.privateKey.algorithm.name
+        .should.equal('RSASSA-PKCS1-v1_5')
+    })
 
-      it('should define publicKey to be extractable', () => {
-        publicKey.extractable.should.equal(true)
-      })
+    //it('should set public key algorithm hash', () => {
+    //  cryptoKeyPair.publicKey.algorithm.hash
+    //    .should.be.instanceof(KeyAlgorithm)
+    //})
 
-      it('should define publicKey usages', () => {
-        publicKey.usages.should.eql(['verify'])
-      })
+    //it('should set private key algorithm hash', () => {
+    //  cryptoKeyPair.privateKey.algorithm.hash
+    //    .should.be.instanceof(KeyAlgorithm)
+    //})
 
-      it('should define publicKey handle', () => {
-        publicKey.handle.should.be.a.string
-      })
+    it('should set public key algorithm hash name', () => {
+      cryptoKeyPair.publicKey.algorithm.hash.name
+        .should.equal('SHA-256')
+    })
 
-      it('should return a CryptoKey privateKey', () => {
-        privateKey.should.be.instanceof(CryptoKey)
-      })
+    it('should set private key algorithm hash name', () => {
+      cryptoKeyPair.privateKey.algorithm.hash.name
+        .should.equal('SHA-256')
+    })
 
-      it('should define privateKey type', () => {
-        privateKey.type.should.equal('private')
-      })
+    it('should set public key extractable', () => {
+      cryptoKeyPair.publicKey.extractable.should.equal(true)
+    })
 
-      it('should define privateKey algorithm', () => {
-        privateKey.algorithm.should.eql(alg)
-      })
+    it('should set private key extractable', () => {
+      cryptoKeyPair.privateKey.extractable.should.equal(true)
+    })
 
-      it('should define privateKey extractable', () => {
-        privateKey.extractable.should.equal(false)
-      })
+    it('should set public key usages', () => {
+      cryptoKeyPair.publicKey.usages.should.eql(['verify'])
+    })
 
-      it('should define privateKey usages', () => {
-        privateKey.usages.should.eql(['sign'])
-      })
+    it('should set private key usages', () => {
+      cryptoKeyPair.privateKey.usages.should.eql(['sign'])
+    })
 
-      it('should define privateKey handle', () => {
-        publicKey.handle.should.be.a.string
-      })
+    it('should set public key handle', () => {
+      cryptoKeyPair.publicKey.handle
+        .should.include('-----BEGIN PUBLIC KEY-----')
+    })
+
+    it('should set private key handle', () => {
+      cryptoKeyPair.privateKey.handle
+        .should.include('-----BEGIN RSA PRIVATE KEY-----')
     })
   })
 
