@@ -2,6 +2,7 @@
  * Dependencies
  */
 const {pem2jwk} = require('pem-jwk')
+const CryptoKey = require('../src/keys/CryptoKey')
 
 /**
  * RsaPrivateKey
@@ -41,6 +42,17 @@ rrdlkni8537vUl2rwiG3U3LTi9vHMIbBQek5rxlbc8jS8ejGUFdc
 const RsaPrivateJwk = pem2jwk(RsaPrivateKey)
 
 /**
+ * RsaPrivateCryptoKey
+ */
+const RsaPrivateCryptoKey = new CryptoKey({
+  type: 'private',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  extractable: false,
+  usages: ['sign'],
+  handle: RsaPrivateKey
+})
+
+/**
  * RsaPublicKey
  */
 const RsaPublicKey =
@@ -60,6 +72,24 @@ BQIDAQAB
 const RsaPublicJwk = pem2jwk(RsaPublicKey)
 
 /**
+ * RsaPrivateCryptoKey
+ */
+const RsaPublicCryptoKey = new CryptoKey({
+  type: 'public',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  extractable: true,
+  usages: ['verify'],
+  handle: RsaPublicKey
+})
+
+/**
  * Export
  */
-module.exports = { RsaPrivateKey, RsaPrivateJwk, RsaPublicKey, RsaPublicJwk }
+module.exports = {
+  RsaPrivateKey,
+  RsaPrivateJwk,
+  RsaPrivateCryptoKey,
+  RsaPublicKey,
+  RsaPublicJwk,
+  RsaPublicCryptoKey
+}
