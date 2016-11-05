@@ -1,13 +1,12 @@
 /**
  * Local dependencies
  */
-const CryptoKey = require('./CryptoKey')
-const CryptoKeyPair = require('./CryptoKeyPair')
-const JsonWebKey = require('./JsonWebKey')
-const supportedAlgorithms = require('./algorithms/supportedAlgorithms')
-const recognizedKeyUsages = require('./recognizedKeyUsages')
-const InvalidAccessError = require('./errors/InvalidAccessError')
-const NotSupportedError = require('./errors/NotSupportedError')
+const CryptoKey = require('./keys/CryptoKey')
+const CryptoKeyPair = require('./keys/CryptoKeyPair')
+const JsonWebKey = require('./keys/JsonWebKey')
+const recognizedKeyUsages = require('./keys/recognizedKeyUsages')
+const supportedAlgorithms = require('./algorithms')
+const {InvalidAccessError, NotSupportedError} = require('./errors')
 
 /**
  * SubtleCrypto

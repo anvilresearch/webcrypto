@@ -13,54 +13,23 @@ chai.should()
  * Code under test
  */
 const crypto = require('../src')
-const CryptoKey = require('../src/CryptoKey')
-const CryptoKeyPair = require('../src/CryptoKeyPair')
-const JsonWebKey = require('../src/JsonWebKey')
-const RsaHashedKeyAlgorithm = require('../src/algorithms/RsaHashedKeyAlgorithm')
+const CryptoKey = require('../src/keys/CryptoKey')
+const CryptoKeyPair = require('../src/keys/CryptoKeyPair')
+const JsonWebKey = require('../src/keys/JsonWebKey')
+const RsaHashedKeyAlgorithm = require('../src/dictionaries/RsaHashedKeyAlgorithm')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
- * RSA Key Pair
+ * RSA Key Pair for testing
  */
-const RsaPrivateKey =
-`-----BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEAiEJoO1tBT1Yc9jdYWI5JUkMnOlFD+weoi1rkxsWvZoBRJJGi
-fjrdmIn/5xOaaW38Cg535lo6NEorsVsq7V6zGan2QCT1TRCb7vJq4UIEq6tL5uB0
-BZMyByKBYDKVGAinXYd502nJ1T7sbZQnSjZFC3HgDvrqb/4bDIbO0+sAiaTumt+2
-uyIYcGYBuIfTi8vmElz2ngUFh+8K/uQyH7YjrOrg6ThOldh8IVzaOSA7LAb/DjyC
-+H44F/J24qMRLGuWK53gz+2RazSBotiNUsGoxdZv30Sud3Yfbz9ZjSXxPWpRnG6m
-ZAZW76oSbn8FvTSTWrf0iU6MyNkv/QuAjF+1BQIDAQABAoIBAHb3G8/vDad59NFX
-Yu/2Urfa363/882BUztQQXv2bvycPbwi1u9E7+JVYjLbH667ExmopjBdSIIM2/b+
-NQ2H5/EZPmGkovME9E/8ISrInBFR/nP2NfYEHOKz0qctopSYQZ/cP5ZAv7JKPNwz
-RNZ7aW7jno8VrYfYIL+gF4ZYoGCLdIdw2rFaobZFGtUQ1ASpuBIS3NAQjxQLTdlz
-jUXCqqE02VKVW6Chr/ZPDnsjDmVxZjY5+vLoZRyS4jWBR64fgVrA+FoCFqtbKh5X
-ZCGUSRhGYs06XLlnjLn91ftgO6Di3FbQ2d4nrMRkD8ciOPv1iao429wKThiChTge
-0DRF5SECgYEAvblqHOYDjdRTPV2rumoWKPzREhebi0ljKeMBFPvqVBM/IvOhqpVa
-cBsDCNGHwkOo3lX+M+c8y381ZR66pJb5QpF7qfIjlOQEYQfLc31HErYcHiPtKSNj
-L4HP5kAoZT4ILFZlfnVJP8oZ/S+BKO27juMwDVUk/wlI2CiN0a1oPWkCgYEAt9vB
-+yjoWydrBXy5q4m0pMcTm9FZum9kahCXx/0QjYPLjxwX6+d8Tc1Y1/VROtQDAIxu
-yMZxkboQ0L8uXtVQCjVz8hG1UDeqzISxLyTVP+JtD6yijhyrtQdgtokgAFzBHpYa
-MKgr8tARtojF5EyWPTQJpBSI2+tl0GgwEOa3Gz0CgYB65SQLXCNpN+RDl+2pbxaz
-rjBvm8Mx0nPdqiIFSblchKsdJNvP97cBbz3j9HYQLGuyudlUHbGPz/LycZlNDE6i
-BEMqrqLFy33arIXpZXkocbZ8/6CcSUPyfhABggWoryn0LnLIG4k7PNrg2mi77mLU
-B+4UdNbmLUl2W66h58XiIQKBgDG6kMccE2zERqAfUiDhiCihZ95XS4uvoVtGzabb
-/eQo55/3m0jFPcvVZNhUk/nzajR1x2kqs4EU8INlkmc4DwQT3R52R7JAvEPBCCOW
-NM+osJLywKzreE3ohvIYOL2gWOOq+b57Xhe4y3GxoMTVKjW3o3vryfChxNIPvCB2
-JsSJAoGBAJV3gcwgFgAA6t8m7g4YStDKANJngttdfHZC1IhGFOtKPc/rneobgDCt
-48gw9bQD8gy87laRb/hjm/0Az4bjtDDOkKY5yhCUtipnpx4FR12nGRmMfRGedLJh
-rrdlkni8537vUl2rwiG3U3LTi9vHMIbBQek5rxlbc8jS8ejGUFdc
------END RSA PRIVATE KEY-----`
-
-const RsaPublicKey =
-`-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiEJoO1tBT1Yc9jdYWI5J
-UkMnOlFD+weoi1rkxsWvZoBRJJGifjrdmIn/5xOaaW38Cg535lo6NEorsVsq7V6z
-Gan2QCT1TRCb7vJq4UIEq6tL5uB0BZMyByKBYDKVGAinXYd502nJ1T7sbZQnSjZF
-C3HgDvrqb/4bDIbO0+sAiaTumt+2uyIYcGYBuIfTi8vmElz2ngUFh+8K/uQyH7Yj
-rOrg6ThOldh8IVzaOSA7LAb/DjyC+H44F/J24qMRLGuWK53gz+2RazSBotiNUsGo
-xdZv30Sud3Yfbz9ZjSXxPWpRnG6mZAZW76oSbn8FvTSTWrf0iU6MyNkv/QuAjF+1
-BQIDAQAB
------END PUBLIC KEY-----`
+const {
+  RsaPrivateKey,
+  RsaPrivateJwk,
+  RsaPrivateCryptoKey,
+  RsaPublicKey,
+  RsaPublicJwk,
+  RsaPublicCryptoKey
+} = require('./RsaKeyPairForTesting')
 
 /**
  * Tests
@@ -157,23 +126,36 @@ describe('SubtleCrypto', () => {
     })
 
     describe('with valid arguments', () => {
-      let promise, result, error
+      let promise, result, signature, error
 
       beforeEach((done) => {
         let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
 
-        let privateKey = new CryptoKey({
-          type: 'private',
-          algorithm: { name: 'RSASSA-PKCS1-v1_5' },
-          extractable: false,
-          usages: ['sign'],
-          handle: RsaPrivateKey
-        })
+        let data = new TextEncoder().encode('signed with Chrome webcrypto')
 
-        let data = new TextEncoder().encode('data')
+        signature = new Uint8Array([
+          84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
+          243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
+          249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
+          0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
+          188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
+          88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
+          224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
+          45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
+          44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
+          184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
+          20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
+          235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
+          239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
+          166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
+          144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
+          247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
+          83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
+          144, 83
+        ])
 
         promise = crypto.subtle
-          .sign(algorithm, privateKey, data)
+          .sign(algorithm, RsaPrivateCryptoKey, data)
           .then(res => {
             result = res
             done()
@@ -188,8 +170,12 @@ describe('SubtleCrypto', () => {
         promise.should.be.instanceof(Promise)
       })
 
-      it('should resolve the promise', () => {
-        result.should.be.instanceof(Uint8Array)
+      it('should resolve an ArrayBuffer', () => {
+        result.should.be.instanceof(ArrayBuffer)
+      })
+
+      it('should resolve a correct signature for the data and key', () => {
+        Buffer.from(result).should.eql(Buffer.from(signature.buffer))
       })
 
       it('should not reject the promise', () => {
@@ -275,25 +261,36 @@ describe('SubtleCrypto', () => {
     })
 
     describe('with valid arguments', () => {
-      let signature = new Buffer('X68EtkKcwZqcySv/NU6hucJg9b/uHojiOzQ2uttIH9V9kS5ACmTnsPY5Kk708foNACHcNrvAk2S8szAJWbK8RJPW1So4OyArqRjnTyjADpriLjCEIUZZBT6Igpeddv5unOZnrmLPXNePQLVGsOXcW6xmy7kZrSbXmsTJet6dvfku0AM0DNjpdZonKIewjZf6ALSkNiskpo8Fm14GRb3c9ZytQziD5mWHNvuUi4ZV3SiIzs7LBzUnmcB94E67fw7vhOP/OnYmVB5cM+ANTKmjIHJgWgXcUM6SrHMs8oy0ENvKQOMWUdbX4qetvBMOR1/3GV5oUWIVqj0wlDqH0wMqCA==', 'base64')
-
-      let promise, result, error
+      let promise, result, signature, error
 
       beforeEach((done) => {
         let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
 
-        let publicKey = new CryptoKey({
-          type: 'public',
-          algorithm: { name: 'RSASSA-PKCS1-v1_5' },
-          extractable: false,
-          usages: ['verify'],
-          handle: RsaPublicKey
-        })
+        let data = new TextEncoder().encode('signed with Chrome webcrypto')
 
-        let data = new TextEncoder().encode('data')
+        signature = new Uint8Array([
+          84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
+          243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
+          249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
+          0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
+          188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
+          88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
+          224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
+          45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
+          44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
+          184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
+          20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
+          235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
+          239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
+          166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
+          144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
+          247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
+          83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
+          144, 83
+        ])
 
         promise = crypto.subtle
-          .verify(algorithm, publicKey, signature, data)
+          .verify(algorithm, RsaPublicCryptoKey, signature, data)
           .then(res => {
             result = res
             done()
@@ -322,7 +319,47 @@ describe('SubtleCrypto', () => {
    * digest
    */
   describe('digest', () => {
-    it('should return a Promise')
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'BAD-ALGORITHM' }
+        promise = crypto.subtle.digest(algorithm, new Uint8Array('whatever'))
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with valid arguments', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'SHA-256' }
+        promise = crypto.subtle.digest(algorithm, new Buffer('whatever'))
+        promise.then(digest => result = digest)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve an ArrayBuffer', () => {
+        result.should.be.instanceof(ArrayBuffer)
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+    })
   })
 
   /**

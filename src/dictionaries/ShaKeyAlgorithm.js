@@ -3,7 +3,7 @@
  */
 const crypto = require('crypto')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const {TextEncoder, TextDecoder} = require('text-encoding')
+const {OperationError} = require('../errors')
 
 /**
  * ShaKeyAlgorithm
@@ -40,34 +40,34 @@ class ShaKeyAlgorithm extends KeyAlgorithm {
   digest (algorithm, data) {
     let result
     let {name} = algorithm
-    let ab = data.buffer
-    let dataBuffer = new Buffer(new Uint8Array(ab))
+
+    data = Buffer.from(data)
 
     if (name === 'SHA-1') {
       let hash = crypto.createHash('sha1')
-      hash.update(dataBuffer)
+      hash.update(data)
       result = hash.digest()
 
     } else if (name === 'SHA-256') {
       let hash = crypto.createHash('sha256')
-      hash.update(dataBuffer)
+      hash.update(data)
       result = hash.digest()
 
     } else if (name === 'SHA-384') {
       let hash = crypto.createHash('sha384')
-      hash.update(dataBuffer)
+      hash.update(data)
       result = hash.digest()
 
     } else if (name === 'SHA-512') {
       let hash = crypto.createHash('sha512')
-      hash.update(dataBuffer)
+      hash.update(data)
       result = hash.digest()
 
     } else {
-      throw new OperationError()
+      throw new OperationError(`${name} is not a supported algorithm`)
     }
 
-    return new Uint8Array(result.buffer)
+    return Uint8Array.from(result).buffer
   }
 }
 

@@ -12,7 +12,7 @@ const expect = chai.expect
 /**
  * Code under test
  */
-const Algorithm = require('../../src/algorithms/Algorithm')
+const Algorithm = require('../../src/dictionaries/Algorithm')
 
 /**
  * Tests

@@ -1,129 +1,7 @@
 /**
  * Local dependencies
  */
-const Algorithm = require('./Algorithm')
-const KeyAlgorithm = require('./KeyAlgorithm')
-const RegisteredAlgorithms = require('./RegisteredAlgorithms')
-//const RsaHashedKeyAlgorithm = require('./RsaHashedKeyAlgorithm')
-//const ShaKeyAlgorithm = require('./ShaKeyAlgorithm')
-const NotSupportedError = require('../errors/NotSupportedError')
-
-/**
- * Supported Operations
- */
-const operations = [
-  'encrypt',
-  'decrypt',
-  'sign',
-  'verify',
-  'deriveBits',
-  'digest', // THIS WASN'T IN THE LIST. PROBABLY GETTING SOMETHING WRONG HERE
-  'wrapKey',
-  'unwrapKey',
-  'generateKey',
-  'importKey',
-  'exportKey',
-  'getLength'
-]
-
-/**
- * SupportedAlgorithms
- */
-class SupportedAlgorithms {
-
-  /**
-   * Constructor
-   */
-  constructor () {
-    operations.forEach(op => {
-      this[op] = new RegisteredAlgorithms()
-    })
-  }
-
-  /**
-   * Supported Operations
-   */
-  static get operations () {
-    return operations
-  }
-
-  /**
-   * Define Algorithm
-   */
-  define (alg, op, type) {
-    let registeredAlgorithms = this[op]
-    registeredAlgorithms[alg] = type
-  }
-
-  /**
-   * Normalize
-   */
-  normalize (op, alg) {
-    if (typeof alg === 'string') {
-      return this.normalize(op, new KeyAlgorithm({ name: alg }))
-    }
-
-    if (typeof alg === 'object') {
-      let registeredAlgorithms = this[op]
-      let initialAlg
-
-      try {
-        initialAlg = new Algorithm(alg)
-      } catch (error) {
-        return error
-      }
-
-      let algName = initialAlg.name
-      algName = registeredAlgorithms.getCaseInsensitive(algName)
-
-      if (algName === undefined) {
-        return new NotSupportedError(alg.name)
-      }
-
-      let desiredType, normalizedAlgorithm
-
-      try {
-        desiredType = require(registeredAlgorithms[algName])
-        normalizedAlgorithm = new desiredType(alg)
-        normalizedAlgorithm.name = algName
-      } catch (error) {
-        return error
-      }
-
-      let dictionaries = desiredType.dictionaries
-
-      for (let i = 0; i < dictionaries.length; i++) {
-        let dictionary = dictionaries[i]
-        let members = dictionary.members
-
-        for (let key in members) {
-          let member = members[key]
-          let idlValue = normalizedAlgorithm[key]
-
-          try {
-            if (member === 'BufferSource' && idlValue !== undefined) {
-              normalizedAlgorithm[key] = idlValue.slice()
-            }
-
-            if (member === 'HashAlgorithmIdentifier') {
-              let hashAlgorithm = this.normalize('digest', idlValue)
-              if (hashAlgorithm instanceof Error) { return hashAlgorithm }
-              normalizedAlgorithm[key] = hashAlgorithm
-            }
-
-            if (member === 'AlgorithmIdentifier') {
-              normalizedAlgorithm[key] = this.normalize(WTF, idlValue)
-            }
-          } catch (error) {
-            return error
-          }
-        }
-      }
-
-      return normalizedAlgorithm
-    }
-  }
-}
+const SupportedAlgorithms = require('./SupportedAlgorithms')
 
 /**
  * Register Supported Algorithms
@@ -151,28 +29,28 @@ const supportedAlgorithms = new SupportedAlgorithms()
 /**
  * sign
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', './RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', '../dictionaries/RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'sign', )
 //supportedAlgorithms.define('ECDSA', 'sign', )
 //supportedAlgorithms.define('AES-CMAC', 'sign', )
-supportedAlgorithms.define('HMAC', 'sign', './HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'sign', '../dictionaries/HmacKeyAlgorithm')
 
 /**
  * verify
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', './RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', '../dictionaries/RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'verify', )
 //supportedAlgorithms.define('ECDSA', 'verify', )
 //supportedAlgorithms.define('AES-CMAC', 'verify', )
-supportedAlgorithms.define('HMAC', 'verify', './HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'verify', '../dictionaries/HmacKeyAlgorithm')
 
 /**
  * digest
  */
-supportedAlgorithms.define('SHA-1', 'digest', './ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-256', 'digest', './ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-384', 'digest', './ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-512', 'digest', './ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-1', 'digest', '../dictionaries/ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-256', 'digest', '../dictionaries/ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-384', 'digest', '../dictionaries/ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-512', 'digest', '../dictionaries/ShaKeyAlgorithm')
 
 /**
  * deriveKey
@@ -195,7 +73,7 @@ supportedAlgorithms.define('SHA-512', 'digest', './ShaKeyAlgorithm')
 /**
  * generateKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', './RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', '../dictionaries/RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'generateKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'generateKey', )
 //supportedAlgorithms.define('ECDSA', 'generateKey', )
@@ -206,14 +84,14 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', './RsaHashedKeyAl
 //supportedAlgorithms.define('AES-GCM', 'generateKey', )
 //supportedAlgorithms.define('AES-CFB', 'generateKey', )
 //supportedAlgorithms.define('AES-KW', 'generateKey', )
-supportedAlgorithms.define('HMAC', 'generateKey', './HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'generateKey', '../dictionaries/HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'generateKey', )
 //supportedAlgorithms.define('PBKDF2', 'generateKey', )
 
 /**
  * importKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', './RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', '../dictionaries/RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'importKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'importKey', )
 //supportedAlgorithms.define('ECDSA', 'importKey', )
@@ -224,7 +102,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', './RsaHashedKeyAlgo
 //supportedAlgorithms.define('AES-GCM', 'importKey', )
 //supportedAlgorithms.define('AES-CFB', 'importKey', )
 //supportedAlgorithms.define('AES-KW', 'importKey', )
-supportedAlgorithms.define('HMAC', 'importKey', './HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'importKey', '../dictionaries/HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'importKey', )
 //supportedAlgorithms.define('CONCAT', 'importKey', )
 //supportedAlgorithms.define('HKDF-CTR', 'importKey', )
@@ -233,7 +111,7 @@ supportedAlgorithms.define('HMAC', 'importKey', './HmacKeyAlgorithm')
 /**
  * exportKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', './RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', '../dictionaries/RsaHashedKeyAlgorithm')
 //supportedAlgorithms.define('RSA-PSS', 'exportKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'exportKey', )
 //supportedAlgorithms.define('ECDSA', 'exportKey', )
@@ -244,7 +122,7 @@ supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', './RsaHashedKeyAlgo
 //supportedAlgorithms.define('AES-GCM', 'exportKey', )
 //supportedAlgorithms.define('AES-CFB', 'exportKey', )
 //supportedAlgorithms.define('AES-KW', 'exportKey', )
-supportedAlgorithms.define('HMAC', 'exportKey', './HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'exportKey', '../dictionaries/HmacKeyAlgorithm')
 //supportedAlgorithms.define('DH', 'exportKey', )
 
 /**

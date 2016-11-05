@@ -7,10 +7,19 @@ const crypto = require('crypto')
 /**
  * Local dependencies
  */
-const CryptoKey = require('../CryptoKey')
-const JsonWebKey = require('../JsonWebKey')
+const CryptoKey = require('../keys/CryptoKey')
+const JsonWebKey = require('../keys/JsonWebKey')
 const KeyAlgorithm = require('./KeyAlgorithm')
-const OperationError = require('../errors/OperationError')
+
+/**
+ * Errors
+ */
+const {
+  DataError,
+  OperationError,
+  NotSupportedError,
+  KeyFormatNotSupportedError
+} = require('../errors')
 
 /**
  * HmacKeyAlgorithm
@@ -49,7 +58,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
     let alg = key.algorithm.hash.name.replace('-', '').toLowerCase()
     let hmac = crypto.createHmac(alg, key.handle)
     hmac.update(Buffer.from(data))
-    return new Uint8Array(hmac.digest())
+    return new Uint8Array(hmac.digest()).buffer
   }
 
   /**
@@ -65,8 +74,8 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    * @returns {Boolean}
    */
   verify (key, signature, data) {
-    let mac = this.sign(key, data)
-    return mac.equals(signature)
+    let mac = Buffer.from(this.sign(key, data))
+    return mac.equals(Buffer.from(signature))
   }
 
   /**
@@ -92,12 +101,12 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
 
     let length
 
-    if (this.length === undefined) {
+    if (params.length === undefined) {
       length = params.hash.name.match(/[0-9]+/)[0]
-    } else if (this.length > 0) {
-      length = this.length
+    } else if (params.length > 0) {
+      length = params.length
     } else {
-      new OperationError('Invalid HMAC length')
+      throw new OperationError('Invalid HMAC length')
     }
 
     let generatedKey
@@ -155,7 +164,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
       if (algorithm.hash) {
         hash = algorithm.hash
       } else {
-        throw new TypeError()
+        throw new TypeError('HmacKeyGenParams: hash: Missing or not an AlgorithmIdentifier')
       }
 
     } else if (format === 'jwk') {
@@ -233,13 +242,13 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
       }
 
     } else {
-      throw KeyFormatNotSupportedError(format)
+      throw new KeyFormatNotSupportedError(format)
     }
 
     let length = data.length * 8
 
     if (length === 0) {
-      throw new DataError()
+      throw new DataError('HMAC key data must not be empty')
     }
 
     if (algorithm.length !== undefined) {
@@ -279,7 +288,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
    */
   exportKey (format, key) {
     if (!(key instanceof CryptoKey) || key.handle === undefined) {
-      throw new OperationError()
+      throw new OperationError('argument must be CryptoKey')
     }
 
     let result
@@ -315,7 +324,7 @@ class HmacKeyAlgorithm extends KeyAlgorithm {
 
       result = jwk
     } else {
-      throw new NotSupportedError()
+      throw new KeyFormatNotSupportedError(format)
     }
 
     return result

@@ -3,8 +3,7 @@
  */
 const legacyCrypto = require('crypto')
 const SubtleCrypto = require('./SubtleCrypto')
-const TypeMismatchError = require('./errors/TypeMismatchError')
-const QuotaExceededError = require('./errors/QuotaExceededError')
+const {QuotaExceededError, TypeMismatchError} = require('./errors')
 
 /**
  * integerTypes

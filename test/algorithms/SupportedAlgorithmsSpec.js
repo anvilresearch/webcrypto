@@ -11,11 +11,11 @@ chai.should()
 /**
  * Code under test
  */
-const supportedAlgorithms = require('../../src/algorithms/supportedAlgorithms')
-const SupportedAlgorithms = supportedAlgorithms.constructor
+const supportedAlgorithms = require('../../src/algorithms')
+const SupportedAlgorithms = require('../../src/algorithms/SupportedAlgorithms')
 const RegisteredAlgorithms = require('../../src/algorithms/RegisteredAlgorithms')
-const RsaHashedKeyAlgorithm = require('../../src/algorithms/RsaHashedKeyAlgorithm')
-const ShaKeyAlgorithm = require('../../src/algorithms/ShaKeyAlgorithm')
+const RsaHashedKeyAlgorithm = require('../../src/dictionaries/RsaHashedKeyAlgorithm')
+const ShaKeyAlgorithm = require('../../src/dictionaries/ShaKeyAlgorithm')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
 
 /**
