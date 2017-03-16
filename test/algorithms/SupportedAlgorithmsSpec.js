@@ -14,8 +14,8 @@ chai.should()
 const supportedAlgorithms = require('../../src/algorithms')
 const SupportedAlgorithms = require('../../src/algorithms/SupportedAlgorithms')
 const RegisteredAlgorithms = require('../../src/algorithms/RegisteredAlgorithms')
-const RsaHashedKeyAlgorithm = require('../../src/dictionaries/RsaHashedKeyAlgorithm')
-const ShaKeyAlgorithm = require('../../src/dictionaries/ShaKeyAlgorithm')
+const RSASSA_PKCS1_v1_5 = require('../../src/algorithms/RSASSA-PKCS1-v1_5')
+const SHA               = require('../../src/algorithms/SHA')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
 
 /**
@@ -93,7 +93,8 @@ describe('SupportedAlgorithms', () => {
         })
 
         it('should return the normalized algorithm', () => {
-          normalizedAlgorithm.should.be.instanceof(ShaKeyAlgorithm)
+          console.log(normalizedAlgorithm)
+          normalizedAlgorithm.should.be.instanceof(SHA)
         })
       })
     })
@@ -142,7 +143,7 @@ describe('SupportedAlgorithms', () => {
         })
 
         it('should return the normalized algorithm', () => {
-          normalizedAlgorithm.should.be.instanceof(RsaHashedKeyAlgorithm)
+          normalizedAlgorithm.should.be.instanceof(RSASSA_PKCS1_v1_5)
         })
       })
     })

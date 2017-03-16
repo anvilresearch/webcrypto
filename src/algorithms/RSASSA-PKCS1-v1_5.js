@@ -13,9 +13,10 @@ const {TextEncoder, TextDecoder} = require('text-encoding')
 const CryptoKey = require('../keys/CryptoKey')
 const CryptoKeyPair = require('../keys/CryptoKeyPair')
 const JsonWebKey = require('../keys/JsonWebKey')
-const KeyAlgorithm = require('./KeyAlgorithm')
-const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
-const supportedAlgorithms = require('../algorithms')
+const KeyAlgorithm = require('../dictionaries/KeyAlgorithm') 
+const RsaKeyAlgorithm = require('../dictionaries/RsaKeyAlgorithm') 
+const RsaHashedKeyAlgorithm = require('../dictionaries/RsaHashedKeyAlgorithm')
+const supportedAlgorithms = require('../algorithms') 
 
 /**
  * Errors
@@ -28,32 +29,32 @@ const {
 } = require('../errors')
 
 /**
- * RsaHashedKeyAlgorithm
+ * RSASSA_PKCS1_v1_5
  */
-class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
+class RSASSA_PKCS1_v1_5 {
 
-  /**
-   * dictionaries
-   */
-  static get dictionaries () {
-    return [
-      KeyAlgorithm,
-      RsaKeyAlgorithm,
-      RsaHashedKeyAlgorithm
-    ]
-  }
+  // /**
+  //  * dictionaries
+  //  */
+  // static get dictionaries () {
+  //   return [
+  //     KeyAlgorithm,
+  //     RsaKeyAlgorithm,
+  //     RsaHashedKeyAlgorithm
+  //   ]
+  // }
 
-  /**
-   * members
-   */
-  static get members () {
-    return {
-      name: String,
-      modulusLength: Number,
-      publicExponent: 'BufferSource',
-      hash: 'HashAlgorithmIdentifier'
-    }
-  }
+  // /**
+  //  * members
+  //  */
+  // static get members () {
+  //   return {
+  //     name: String,
+  //     modulusLength: Number,
+  //     publicExponent: 'BufferSource',
+  //     hash: 'HashAlgorithmIdentifier'
+  //   }
+  // }
 
   /**
    * sign
@@ -179,112 +180,112 @@ class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
     return new CryptoKeyPair({publicKey,privateKey})
   }
 
-  // /**
-  //  * importKey
-  //  *
-  //  * @description
-  //  *
-  //  * @param {string} format
-  //  * @param {string|JsonWebKey} keyData
-  //  * @param {KeyAlgorithm} algorithm
-  //  * @param {Boolean} extractable
-  //  * @param {Array} keyUsages
-  //  *
-  //  * @returns {CryptoKey}
-  //  */
-  // importKey (format, keyData, algorithm, extractable, keyUsages) {
-  //   let key, hash, normalizedHash, jwk
+  /**
+   * importKey
+   *
+   * @description
+   *
+   * @param {string} format
+   * @param {string|JsonWebKey} keyData
+   * @param {KeyAlgorithm} algorithm
+   * @param {Boolean} extractable
+   * @param {Array} keyUsages
+   *
+   * @returns {CryptoKey}
+   */
+  importKey (format, keyData, algorithm, extractable, keyUsages) {
+    let key, hash, normalizedHash, jwk
 
-  //   if (format === 'spki') {
-  //     // ...
-  //   } else if (format === 'pkcs8') {
+    if (format === 'spki') {
+      // ...
+    } else if (format === 'pkcs8') {
 
-  //   } else if (format === 'jwk') {
-  //     jwk = new JsonWebKey(keyData)
+    } else if (format === 'jwk') {
+      jwk = new JsonWebKey(keyData)
 
-  //     if (jwk.d && keyUsages.some(usage => usage !== 'sign')) {
-  //       throw new SyntaxError('Key usages must include "sign"')
-  //     }
+      if (jwk.d && keyUsages.some(usage => usage !== 'sign')) {
+        throw new SyntaxError('Key usages must include "sign"')
+      }
 
-  //     if (jwk.d === undefined && !keyUsages.some(usage => usage === 'verify')) {
-  //       throw new SyntaxError('Key usages must include "verify"')
-  //     }
+      if (jwk.d === undefined && !keyUsages.some(usage => usage === 'verify')) {
+        throw new SyntaxError('Key usages must include "verify"')
+      }
 
-  //     if (jwk.kty !== 'RSA') {
-  //       throw new DataError('Key type must be RSA')
-  //     }
+      if (jwk.kty !== 'RSA') {
+        throw new DataError('Key type must be RSA')
+      }
 
-  //     if (jwk.use !== undefined && jwk.use !== 'sig') {
-  //       throw new DataError('Key use must be "sig"')
-  //     }
+      if (jwk.use !== undefined && jwk.use !== 'sig') {
+        throw new DataError('Key use must be "sig"')
+      }
 
-  //     // TODO
-  //     //if (jwk.key_ops ...) {
-  //     //  throw new DataError()
-  //     //}
+      // TODO
+      //if (jwk.key_ops ...) {
+      //  throw new DataError()
+      //}
 
-  //     if (jwk.alg === undefined) {
-  //       // leave hash undefined
-  //     } else if (jwk.alg === 'RS1') {
-  //       hash = 'SHA-1'
-  //     } else if (jwk.alg === 'RS256') {
-  //       hash = 'SHA-256'
-  //     } else if (jwk.alg === 'RS384') {
-  //       hash = 'SHA-384'
-  //     } else if (jwk.alg === 'RS512') {
-  //       hash = 'SHA-512'
-  //     } else {
-  //       // TODO
-  //       // perform any key import steps defined by other applicable
-  //       // specifications, passing format, jwk, and obtaining hash
-  //       throw new DataError(
-  //         'Key alg must be "RS1", "RS256", "RS384", or "RS512"'
-  //       )
-  //     }
+      if (jwk.alg === undefined) {
+        // leave hash undefined
+      } else if (jwk.alg === 'RS1') {
+        hash = 'SHA-1'
+      } else if (jwk.alg === 'RS256') {
+        hash = 'SHA-256'
+      } else if (jwk.alg === 'RS384') {
+        hash = 'SHA-384'
+      } else if (jwk.alg === 'RS512') {
+        hash = 'SHA-512'
+      } else {
+        // TODO
+        // perform any key import steps defined by other applicable
+        // specifications, passing format, jwk, and obtaining hash
+        throw new DataError(
+          'Key alg must be "RS1", "RS256", "RS384", or "RS512"'
+        )
+      }
 
-  //     if (hash !== undefined) {
-  //       normalizedHash = supportedAlgorithms.normalize('digest', hash)
+      if (hash !== undefined) {
+        normalizedHash = supportedAlgorithms.normalize('digest', hash)
 
-  //       //if (normalizedHash !== normalizedAlgorithm.hash) {
-  //       //  throw new DataError()
-  //       //}
+        //if (normalizedHash !== normalizedAlgorithm.hash) {
+        //  throw new DataError()
+        //}
 
-  //     }
+      }
 
-  //     if (jwk.d) {
-  //       // TODO
-  //       // - validate JWK requirements
-  //       key = new CryptoKey({
-  //         type: 'private',
-  //         extractable: extractable,
-  //         usages: ['sign'],
-  //         handle: jwk2pem(jwk)
-  //       })
-  //     } else {
-  //       // TODO
-  //       // - validate JWK requirements
-  //       key = new CryptoKey({
-  //         type: 'public',
-  //         extractable: true,
-  //         usages: ['verify'],
-  //         handle: jwk2pem(jwk)
-  //       })
-  //     }
-  //   } else {
-  //     throw new KeyFormatNotSupportedError(format)
-  //   }
+      if (jwk.d) {
+        // TODO
+        // - validate JWK requirements
+        key = new CryptoKey({
+          type: 'private',
+          extractable: extractable,
+          usages: ['sign'],
+          handle: jwk2pem(jwk)
+        })
+      } else {
+        // TODO
+        // - validate JWK requirements
+        key = new CryptoKey({
+          type: 'public',
+          extractable: true,
+          usages: ['verify'],
+          handle: jwk2pem(jwk)
+        })
+      }
+    } else {
+      throw new KeyFormatNotSupportedError(format)
+    }
 
-  //   let alg = new RsaHashedKeyAlgorithm({
-  //     name: 'RSASSA-PKCS1-v1_5',
-  //     modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
-  //     publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
-  //     hash: normalizedHash
-  //   })
+    let alg = new RsaHashedKeyAlgorithm({
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
+      hash: normalizedHash
+    })
 
-  //   key.algorithm = alg
+    key.algorithm = alg
 
-  //   return key
-  // }
+    return key
+  }
 
   /**
    * exportKey
