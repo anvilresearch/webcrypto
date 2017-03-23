@@ -10,6 +10,7 @@ const {TextEncoder, TextDecoder} = require('text-encoding')
 /**
  * Local dependencies
  */
+const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const CryptoKeyPair = require('../keys/CryptoKeyPair')
 const JsonWebKey = require('../keys/JsonWebKey')
@@ -31,30 +32,30 @@ const {
 /**
  * RSASSA_PKCS1_v1_5
  */
-class RSASSA_PKCS1_v1_5 {
+class RSASSA_PKCS1_v1_5 extends Algorithm {
 
-  // /**
-  //  * dictionaries
-  //  */
-  // static get dictionaries () {
-  //   return [
-  //     KeyAlgorithm,
-  //     RsaKeyAlgorithm,
-  //     RsaHashedKeyAlgorithm
-  //   ]
-  // }
+  /**
+   * dictionaries
+   */
+  static get dictionaries () {
+    return [
+      KeyAlgorithm,
+      RsaKeyAlgorithm,
+      RsaHashedKeyAlgorithm
+    ]
+  }
 
-  // /**
-  //  * members
-  //  */
-  // static get members () {
-  //   return {
-  //     name: String,
-  //     modulusLength: Number,
-  //     publicExponent: 'BufferSource',
-  //     hash: 'HashAlgorithmIdentifier'
-  //   }
-  // }
+  /**
+   * members
+   */
+  static get members () {
+    return {
+      name: String,
+      modulusLength: Number,
+      publicExponent: 'BufferSource',
+      hash: 'HashAlgorithmIdentifier'
+    }
+  }
 
   /**
    * sign
@@ -156,7 +157,7 @@ class RSASSA_PKCS1_v1_5 {
     }
 
     // cast params to algorithm
-    let algorithm = new RsaHashedKeyAlgorithm(params)
+    let algorithm = new RSASSA_PKCS1_v1_5(params)
 
     // instantiate publicKey
     let publicKey = new CryptoKey({
@@ -275,7 +276,7 @@ class RSASSA_PKCS1_v1_5 {
       throw new KeyFormatNotSupportedError(format)
     }
 
-    let alg = new RsaHashedKeyAlgorithm({
+    let alg = new RSASSA_PKCS1_v1_5({
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
       publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
@@ -344,4 +345,4 @@ class RSASSA_PKCS1_v1_5 {
 /**
  * Export
  */
-module.exports = RsaHashedKeyAlgorithm
+module.exports = RSASSA_PKCS1_v1_5

@@ -7,6 +7,7 @@ const crypto = require('crypto')
 /**
  * Local dependencies
  */
+const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const JsonWebKey = require('../keys/JsonWebKey')
 const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
@@ -25,7 +26,7 @@ const {
 /**
  * HMAC
  */
-class HMAC {
+class HMAC extends Algorithm {
 
   /**
    * dictionaries
@@ -120,7 +121,7 @@ class HMAC {
 
     let key = new CryptoKey({
       type: 'secret',
-      algorithm: new HmacKeyAlgorithm({
+      algorithm: new HMAC({
         name: 'HMAC',
         hash: new KeyAlgorithm({
           name: params.hash.name
@@ -264,7 +265,7 @@ class HMAC {
 
     let key = new CryptoKey({
       type: 'secret',
-      algorithm: new HmacKeyAlgorithm({
+      algorithm: new HMAC({
         name: 'HMAC',
         length,
         hash
@@ -335,4 +336,4 @@ class HMAC {
 /**
  * Export
  */
-module.exports = HmacKeyAlgorithm
+module.exports = HMAC

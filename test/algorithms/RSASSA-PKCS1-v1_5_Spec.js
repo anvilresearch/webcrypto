@@ -37,17 +37,6 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
  * Tests
  */
 describe('RSASSA_PKCS1_v1_5', () => {
-
-  /**
-   * class
-   */
-  describe('class', () => {
-    it('should inherit from RsaKeyAlgorithm', () => {
-      let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
-      alg.should.be.instanceof(RsaKeyAlgorithm)
-    })
-  })
-
   /**
    * dictionaries getter
    */
@@ -301,6 +290,7 @@ describe('RSASSA_PKCS1_v1_5', () => {
 
         it('should throw SyntaxError', () => {
           expect(() => {
+            console.log("alg is: ",alg)
             alg.importKey('jwk', key, alg, false, ['bad'])
           }).to.throw('Key usages must include "sign"')
         })

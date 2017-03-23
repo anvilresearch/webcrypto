@@ -16,7 +16,7 @@ const crypto = require('../src')
 const CryptoKey = require('../src/keys/CryptoKey')
 const CryptoKeyPair = require('../src/keys/CryptoKeyPair')
 const JsonWebKey = require('../src/keys/JsonWebKey')
-const RsaHashedKeyAlgorithm = require('../src/dictionaries/RsaHashedKeyAlgorithm')
+const RSASSA_PKCS1_v1_5 = require('../src/algorithms/RSASSA-PKCS1-v1_5')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
@@ -576,7 +576,7 @@ describe('SubtleCrypto', () => {
         let format = 'jwk'
         let key = new CryptoKey({
           type: 'public',
-          algorithm: new RsaHashedKeyAlgorithm({
+          algorithm: new RSASSA_PKCS1_v1_5({
             name: 'RSASSA-PKCS1-v1_5',
           }),
           extractable: false,
@@ -604,7 +604,7 @@ describe('SubtleCrypto', () => {
         let format = 'jwk'
         let key = new CryptoKey({
           type: 'public',
-          algorithm: new RsaHashedKeyAlgorithm({
+          algorithm: new RSASSA_PKCS1_v1_5({
             name: 'RSASSA-PKCS1-v1_5',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),

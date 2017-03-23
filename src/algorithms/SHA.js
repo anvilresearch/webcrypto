@@ -1,6 +1,8 @@
 /**
  * Module dependencies
  */
+
+const Algorithm = require ('../algorithms/Algorithm')
 const crypto = require('crypto')
 const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
 const ShaKeyAlgorithm = require('../dictionaries/ShaKeyAlgorithm')
@@ -9,8 +11,7 @@ const {OperationError} = require('../errors')
 /**
  * SHA
  */
-class SHA {
-
+class SHA extends Algorithm {
   /**
    * dictionaries
    */
@@ -75,4 +76,4 @@ class SHA {
 /**
  * Export
  */
-module.exports = ShaKeyAlgorithm
+module.exports = SHA
