@@ -76,7 +76,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     try {
       let pem = key.handle
       data = new TextDecoder().decode(data)
-      let signer = crypto.createSign('RSA-SHA256')
+      let signer = crypto.createSign('RSA-SHA256') // FIXME Paramaterize 
       signer.update(data)
       return signer.sign(pem).buffer
     } catch (error) {
