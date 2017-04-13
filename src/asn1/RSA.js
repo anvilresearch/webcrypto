@@ -1,22 +1,17 @@
-console.log("Starting...\n")
+// https://github.com/dannycoates/pem-jwk/blob/master/index.js
+// https://tools.ietf.org/html/rfc3447#page-44
 
 /**
  * Package dependencies
  */
-
-// https://github.com/dannycoates/pem-jwk/blob/master/index.js
-// https://tools.ietf.org/html/rfc3447#page-44
-
 const asn = require('asn1.js')
 const fs = require('fs')
 
-const testRSA = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqkGlLoTlAscAgZDK8wffqDpn5OP2gu/EPZ1AYEX5UbJz4DGTJQ3nDV6dVNDs8rAL+u4N9UrE46h90he0f/d99YcqMuZRrFTb1KcK36aErzJv7X2NPBHuuP5USXGe8100kNvAtmNr7aLbx2K92h42h75Nt6sZJ/WHO/hGosTNJQe7K/rWFwAt66mBBJFmqzt242EtMNZVjm8gZSOpSfrgFeF5kEgkaAPOp0SnRp/JymB8AyLn5qPAmwnpKPPUzQtGpIluIvGXDnhHix5KEvJ5vd6B6c+jBIxvV/L/IPRQ3Q06fmWyZSW4aT9BS1GmN1P8B5Rspq3NFRD+VRHjtGpNbQIDAQAB'
+const public_test  = fs.readFileSync('./public.pem').toString("ascii")
+const private_test = fs.readFileSync('./private.pem').toString("ascii")
 
-const test2 = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx2gB8RVp8io70LDPlqfDsVdcc+qSONU3KTkUhiTbWSUxhGXKGEMFa3TA8FgI/UqOwEwZUZwaj2p0yd/f1tGq2Zqbb0mMHcde2UlV98Uu1gzB5ROzJ2FexvrcGPxRjpcWLWaJrmmDa5irrT3ncHbrFf/ZJjM5NzCfReCEymVIVkTrXEwpEV6Uhm6G+kuTps4vYexTTpfALe8mg42MMWhosz9al7Y2Cvxz9cqb1J/JJPoA65Gy+ce+5cSHZNYGM5F5KdMNnWNeq9yid3HkmaeN1h68R5tj2JUXd0fVj9U9DUG2/h11UtbBkgdeUKJuvOBFOE24ghukcv4lVPanaiIt7wIDAQAB`
 
-const test3 = fs.readFileSync('./public.pem').toString("ascii")
 
-console.log(test3)
 
 function pad(hex) {
   return (hex.length % 2 === 1) ? '0' + hex : hex
@@ -47,6 +42,21 @@ function string2bn(str) {
   return base64url2bn(str)
 }
 
+var Version = asn.define('Version', function () {
+  this.int({
+    0: 'two-prime',
+    1: 'multi'
+  })
+})
+
+var OtherPrimeInfos = asn.define('OtherPrimeInfos', function () {
+  this.seq().obj(
+    this.key('ri').int(),
+    this.key('di').int(),
+    this.key('ti').int()
+  )
+})
+
 let RSAPublicKey = asn.define('RSAPublicKey', function () {
   this.seq().obj(
     this.key('n').int(),
@@ -61,6 +71,23 @@ var AlgorithmIdentifier = asn.define('AlgorithmIdentifier', function () {
   )
 })
 
+
+
+var RSAPrivateKey = asn.define('RSAPrivateKey', function () {
+  this.seq().obj(
+    this.key('version').use(Version),
+    this.key('n').int(),
+    this.key('e').int(),
+    this.key('d').int(),
+    this.key('p').int(),
+    this.key('q').int(),
+    this.key('dp').int(),
+    this.key('dq').int(),
+    this.key('qi').int(),
+    this.key('other').optional().use(OtherPrimeInfos)
+  )
+})
+
 var PublicKeyInfo = asn.define('PublicKeyInfo', function () {
   this.seq().obj(
     this.key('algorithm').use(AlgorithmIdentifier),
@@ -68,6 +95,13 @@ var PublicKeyInfo = asn.define('PublicKeyInfo', function () {
   )
 })
 
+var PrivateKeyInfo = asn.define('PrivateKeyInfo', function () {
+  this.seq().obj(
+    this.key('version').use(Version),
+    this.key('algorithm').use(AlgorithmIdentifier),
+    this.key('privateKey').bitstr()
+  )
+})
 
 function decodeRsaPublic(buffer,extras)
 {
@@ -81,12 +115,38 @@ function decodeRsaPublic(buffer,extras)
   return jwk
 }
 
-function decodePublic(buffer, extras) {
-  var info = PublicKeyInfo.decode(buffer, 'der')
-  return decodeRsaPublic(info.publicKey.data, extras)
+function decodeRsaPrivate(buffer, extras) {
+  console.log("decodeRsaPrivate")
+  var key = RSAPrivateKey.decode(buffer, 'der')
+  var e = pad(key.e.toString(16))
+  var jwk = {
+    kty: 'RSA',
+    n: bn2base64url(key.n),
+    e: hex2b64url(e),
+    d: bn2base64url(key.d),
+    p: bn2base64url(key.p),
+    q: bn2base64url(key.q),
+    dp: bn2base64url(key.dp),
+    dq: bn2base64url(key.dq),
+    qi: bn2base64url(key.qi)
+  }
+  return jwk
 }
 
-var pem = test3
+function decodePublic(buffer, extras) {
+  var info = PublicKeyInfo.decode(buffer, 'der')
+  return decodeRsaPublic(info.publicKey.data,extras)
+}
+
+function decodePrivate(buffer, extras) {
+  var info = PrivateKeyInfo.decode(buffer, 'der')
+  return decodeRsaPrivate(info.privateKey.data, extras)
+}
+
+
+var pem = private_test
+
+console.log(pem)
 
 var text = pem.split(/(\r\n|\r|\n)+/g)
 text = text.filter(function(line) {
@@ -97,9 +157,9 @@ let bufferInput = text.replace(/[^\w\d\+\/=]+/g, '')
 
 let buf = Buffer.from( bufferInput, 'base64' )
 
-console.log(buf)
+console.log(buf.toString("base64"))
 
-let returnVal = decodePublic(buf,'der')
+let returnVal = decodeRsaPrivate(buf,'der')
 console.log(returnVal)
 
 /*
@@ -113,4 +173,3 @@ Object.keys(decoded).forEach(key => {
   decoded[key] = decoded[key].toString('utf8')
 })
 */
-console.log("\n...ending")
