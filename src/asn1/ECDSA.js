@@ -33,9 +33,9 @@ function fromPEM(data) {
 
 var ECDSAPublicKey = asn.define('ECDSAPublicKey', function () {
   this.seq().obj(
-      // TODO Figure these parameters out!
-    this.key('x').bitstr(),
-    this.key('y').bitstr()
+      // TODO Figure out this format/sequence
+      this.key('x').int(),
+      this.key('y').int()
   )
 })
 
@@ -138,6 +138,8 @@ function decodeECDSAPrivate(buffer, extras) {
 function decodePublic(buffer, extras) {
   var info = PublicKeyInfo.decode(buffer, 'der')
   console.log(info)
+  var testBuf = info.subjectPublicKey.data.toString('hex')
+  console.log(testBuf)
   return decodeECDSAPublic(info.subjectPublicKey.data, extras)
 }
 
