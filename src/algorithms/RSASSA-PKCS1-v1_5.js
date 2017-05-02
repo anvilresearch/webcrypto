@@ -220,6 +220,8 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
         throw new DataError('Key use must be "sig"')
       }
 
+      // FIXME needs "ext" validation, see specification 6 under "jwk" 
+
       // TODO
       //if (jwk.key_ops ...) {
       //  throw new DataError()
