@@ -1,5 +1,5 @@
 {
-  "name": "webcrypto",
+  "name": "@trust/webcrypto",
   "version": "0.0.1",
   "description": "WebCrypto API for Node.js",
   "main": "src/index.js",
