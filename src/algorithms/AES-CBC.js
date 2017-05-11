@@ -7,6 +7,17 @@ const {spawnSync} = require('child_process')
 const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm') 
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
+const JsonWebKey = require('../keys/JsonWebKey')
+
+/**
+ * Errors
+ */
+const {
+  DataError,
+  OperationError,
+  InvalidAccessError,
+  KeyFormatNotSupportedError
+} = require('../errors')
 
 // https://github.com/diafygi/webcrypto-examples
 // https://tools.ietf.org/html/rfc7518#section-5.2.3
@@ -100,7 +111,7 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
     // 2.2 "jwk" format
     else if (format === 'jwk'){
       // 2.2.1 Ensure data is JsonWebKey dictionary 
-      // TODO Double check with Christian
+      // TODO Christian validate
       if (typeof keyData === 'object' && !Array.isArray(keyData)){
         jwk = new JsonWebKey(keyData)
       } else {
@@ -116,7 +127,7 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
         throw new DataError('k property must not be empty')
       }
       // 2.2.4 Assign data 
-      data = Buffer.from(jwk.k)
+      data = Buffer.from(jwk.k,'base64')
       // 2.2.5 Validate data lengths
       if (data.length === 16) {
         if (jwk.alg && jwk.alg !== 'A128CBC'){
@@ -154,20 +165,90 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
         throw new DataError('Cannot be extractable when "ext" is set to false')
       }
     }
-    // 2.3 Othwerwise...
+    // 2.3 Otherwise...
+    else {
+      throw new KeyFormatNotSupportedError(format)
+    }
+    // 3. Generate new key
+    // TODO Chrsitan verification
+    let key = new CryptoKey({
+          type: 'secret',
+          extractable,
+          usages: keyUsages
+      })
+    // 4-6. Generate algorithm
+    let aesAlgorithm = new AesKeyAlgorithm(
+      { name: 'AES-CBC',
+        length: data.length * 8
+      })
+    // 7. Set algorithm to internal algorithm property of key
+    key.algorithm = aesAlgorithm
+    // 8. Return key
+    return key
+}
+
+/**
+ * exportKey
+ *
+ * @description
+ *
+ * @param {string} format
+ * @param {CryptoKey} key
+ *
+ * @returns {*}
+ */
+function exportKey (format, key) {
+    let result, data, jwk
+
+    // 1. Validate handle slot
+    if (!key.handle) {
+      throw new OperationError('Missing key material')
+    }
+    // 2.1 "raw" format
+    if (format === 'raw'){
+        // 2.1.1 Let data be the raw octets of the key
+        data = key.handle 
+        // 2.1.2 Let result be containing data
+        // TODO Christian help 
+        // result = Buffer.from(this) 
+    }
+    // 2.2 "jwk" format
+    else if (format === 'jwk'){
+      // 2.2.1 Validate JsonWebKey
+      // TODO Christian validate
+      if (typeof keyData === 'object' && !Array.isArray(keyData)){
+        jwk = new JsonWebKey(keyData)
+      } else {
+        throw new DataError('Invalid jwk format')
+      }
+      // 2.2.2 Set kty property 
+      jwk.kty = 'oct'
+      // 2.2.3 Set k property
+      jwk.k = key.handle 
+      // 2.2.4 Validate length 
+      if (data.length === 16) {
+          jwk.alg = 'A128CBC'
+      } else if (data.length === 24) {
+          jwk.alg = 'A192CBC'
+      } else if (data.length === 32) {
+        jwk.alg = 'A256CBC'
+      }
+      // 2.2.5 Set keyops property 
+      jwk.key_ops = key.usages
+      // 2.2.6 Set ext property 
+      jwk.ext = key.extractable
+      // 2.2.7 Set result to the result of converting jwk to an ECMAScript object
+      result = jwk
+    }
+    // 2.3 Otherwise...
     else {
       throw new KeyFormatNotSupportedError(format)
     }
 
-    // 4. Generate algorithm
-    let aesAlgorithm = new AesKeyAlgorithm()
-
-    // 3. Generate new key
-    let key = new CryptoKey({
-      // TODO HERE
-      })
-
+    // 3. Return result
+    return result
 }
+
 
 let result = generateKey(
     {
@@ -178,5 +259,29 @@ let result = generateKey(
     ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
 )
 
-console.log(result)
-console.log(result.handle.length)
+// console.log(result)
+// console.log(result.handle.length)
+
+let result2 = importKey(
+    "jwk", //can be "jwk" or "raw"
+    {   //this is an example jwk key, "raw" would be an ArrayBuffer
+        kty: "oct",
+        k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+        alg: "A256CBC",
+        ext: true,
+    },
+    {   //this is the algorithm options
+        name: "AES-CBC",
+    },
+    false, //whether the key is extractable (i.e. can be used in exportKey)
+    ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
+)
+
+console.log(result2)
+
+let result3 = exportKey(
+    "jwk", //can be "jwk" or "raw"
+    key //extractable must be true
+)
+
+console.log(result3)
