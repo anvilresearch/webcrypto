@@ -2,12 +2,14 @@
  * Package dependencies
  */
 const crypto = require('crypto')
+const base64url = require('base64url') 
 const {spawnSync} = require('child_process')
 
 const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm') 
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const JsonWebKey = require('../keys/JsonWebKey')
+
 
 /**
  * Errors
@@ -100,7 +102,7 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
 
     // 2.1 "raw" format
     if (format === 'raw'){
-        // 2.1.1 Let data be the octet string contained in keyData
+        // 2.1.1 Let data be the octet string colacntained in keyData
         data = Buffer.from(keyData)
         // 2.1.2 Ensure data length is 128, 192 or 256
         if (![16,24,32].includes(data.length)){
@@ -111,7 +113,6 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
     // 2.2 "jwk" format
     else if (format === 'jwk'){
       // 2.2.1 Ensure data is JsonWebKey dictionary 
-      // TODO Christian validate
       if (typeof keyData === 'object' && !Array.isArray(keyData)){
         jwk = new JsonWebKey(keyData)
       } else {
@@ -127,7 +128,7 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
         throw new DataError('k property must not be empty')
       }
       // 2.2.4 Assign data 
-      data = Buffer.from(jwk.k,'base64')
+      data = base64url.toBuffer(jwk.k)
       // 2.2.5 Validate data lengths
       if (data.length === 16) {
         if (jwk.alg && jwk.alg !== 'A128CBC'){
@@ -170,11 +171,12 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
       throw new KeyFormatNotSupportedError(format)
     }
     // 3. Generate new key
-    // TODO Chrsitan verification
+    // TODO Christian verification
     let key = new CryptoKey({
           type: 'secret',
           extractable,
-          usages: keyUsages
+          usages: keyUsages,
+          handle: data 
       })
     // 4-6. Generate algorithm
     let aesAlgorithm = new AesKeyAlgorithm(
@@ -198,7 +200,7 @@ function importKey (format, keyData, algorithm, extractable, keyUsages) {
  * @returns {*}
  */
 function exportKey (format, key) {
-    let result, data, jwk
+    let result, data
 
     // 1. Validate handle slot
     if (!key.handle) {
@@ -210,28 +212,31 @@ function exportKey (format, key) {
         data = key.handle 
         // 2.1.2 Let result be containing data
         // TODO Christian help 
-        // result = Buffer.from(this) 
+        result = Buffer.from(data) 
     }
     // 2.2 "jwk" format
     else if (format === 'jwk'){
       // 2.2.1 Validate JsonWebKey
-      // TODO Christian validate
-      if (typeof keyData === 'object' && !Array.isArray(keyData)){
-        jwk = new JsonWebKey(keyData)
-      } else {
-        throw new DataError('Invalid jwk format')
-      }
+      // TODO Revisit this
+      // console.log("keyData:",keyData)
+      // if (typeof keyData === 'object' && !Array.isArray(keyData)){
+      //   jwk = new JsonWebKey(keyData)
+      // } else {
+      //   throw new DataError('Invalid jwk format')
+      // }
+      let jwk = new JsonWebKey(key)
       // 2.2.2 Set kty property 
       jwk.kty = 'oct'
       // 2.2.3 Set k property
-      jwk.k = key.handle 
+      jwk.k = base64url(key.handle)
+      data = key.handle 
       // 2.2.4 Validate length 
       if (data.length === 16) {
           jwk.alg = 'A128CBC'
       } else if (data.length === 24) {
           jwk.alg = 'A192CBC'
       } else if (data.length === 32) {
-        jwk.alg = 'A256CBC'
+          jwk.alg = 'A256CBC'
       }
       // 2.2.5 Set keyops property 
       jwk.key_ops = key.usages
@@ -277,11 +282,14 @@ let result2 = importKey(
     ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
 )
 
-console.log(result2)
+console.log("result2:",result2)
+console.log(result2.handle)
 
-let result3 = exportKey(
-    "jwk", //can be "jwk" or "raw"
-    key //extractable must be true
-)
+let somedata = new Uint8Array([99, 76, 237, 223, 177, 224, 59, 31, 129, 99, 180, 144, 141, 133, 102, 174, 168, 79, 144, 238, 56, 34, 45, 137, 113, 191, 114, 201, 213, 3, 61, 241])
 
-console.log(result3)
+let rawInport = importKey("raw",somedata,{ name: "AES-CBC" },true,["encrypt","decrypt"])
+let rawExport = exportKey("jwk",rawInport)
+
+console.log(somedata)
+console.log(rawInport)
+console.log(rawExport)
