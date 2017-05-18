@@ -27,6 +27,90 @@ const {
 
 var ivbytes = crypto.randomBytes(16)
 
+
+  /**
+   * encrypt
+   *
+   * @description
+   * Encrypts an AES-CBC digital signature
+   *
+   * @param {AesKeyAlgorithm} algorithm
+   * @param {CryptoKey} key
+   * @param {BufferSource|string} data
+   *
+   * @returns {string}
+   */
+  function encrypt (algorithm, key, data) {
+    // 1. Ensure correct iv length
+    if (algorithm.iv.length !== 16)
+    {
+      throw new OperationError('IV Length must be exactly 16 bytes')
+    }
+    // 2. Add padding to erronuous length text as described here:
+    // https://tools.ietf.org/html/rfc2315#section-10.3
+    // TODO: Verify this step with Christian
+    let paddedPlaintext = data
+
+    // 3. Do the encryption
+    let cipherName
+    if (key.algorithm.name === 'AES-CBC' && [128,192,256].includes(key.algorithm.length)){
+      cipherName = 'AES-' + key.algorithm.length + '-CBC'
+    }
+    else {
+      throw new DataError('Invalid AES-CBC and length pair.')
+    }
+    let cipher = crypto.createCipheriv(cipherName,key.handle,algorithm.iv)
+    let ciphertext = cipher.update(data,"utf8","hex")
+    ciphertext += cipher.final("hex")
+    // 4. Return result
+    return Buffer.from(ciphertext)
+  }
+
+  // /**
+  //  * decrypt
+  //  *
+  //  * @description
+  //  * Decrypts an AES-CBC digital signature
+  //  *
+  //  * @param {AesKeyAlgorithm} algorithm
+  //  * @param {CryptoKey} key
+  //  * @param {BufferSource|string} data
+  //  *
+  //  * @returns {string}
+  //  */
+  // function decrypt (algorithm, key, data) {
+  //   // 1. Ensure correct iv length
+  //   if (algorithm.iv.length !== 16)
+  //   {
+  //     throw new OperationError('IV Length must be exactly 16 bytes')
+  //   }
+  //   // 2. Add padding to erronuous length text as described here:
+  //   // https://tools.ietf.org/html/rfc2315#section-10.3
+  //   // TODO: Verify this step with Christian
+  //   let paddedPlaintext = data
+
+  //     // 3. Set p-value
+  //   let p = paddedPlaintext[paddedPlaintext.length-1]
+  //   // 4. Validate p-value 
+  //   // This is some serious garbage
+  //   // if (p === 0 || p > 16 )
+
+  //   // TODO Finish properly
+  //   // 3. Do the encryption
+  //   let cipherName
+  //   if (key.algorithm.name === 'AES-CBC' && [128,192,256].includes(key.algorithm.length)){
+  //     cipherName = 'AES-' + key.algorithm.length + '-CBC'
+  //   }
+  //   else {
+  //     throw new DataError('Invalid AES-CBC and length pair.')
+  //   }
+  //   let cipher = crypto.createDecipheriv(cipherName,key.handle,algorithm.iv)
+  //   let ciphertext = cipher.update(data,"utf8","hex")
+  //   ciphertext += cipher.final("hex")
+  //   // 4. Return result
+  //   return Buffer.from(ciphertext)
+  // }
+
   /**
    * generateKey
    *
@@ -36,7 +120,7 @@ var ivbytes = crypto.randomBytes(16)
    * @param {AesCbcParams} params
    * @returns {CryptoKeyPair}
    */
-function generateKey (params,extractable,usages) {
+function generateKey (params, extractable, usages) {
     // 1. Validate usages
     usages.forEach(usage => {
       if (usage !== 'encrypt' && usage !== 'decrypt' && usage !== 'wrapKey' && usage !== 'unwrapKey') {
@@ -282,14 +366,35 @@ let result2 = importKey(
     ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
 )
 
-console.log("result2:",result2)
-console.log(result2.handle)
+// console.log("result2:",result2)
+// console.log(result2.handle)
 
 let somedata = new Uint8Array([99, 76, 237, 223, 177, 224, 59, 31, 129, 99, 180, 144, 141, 133, 102, 174, 168, 79, 144, 238, 56, 34, 45, 137, 113, 191, 114, 201, 213, 3, 61, 241])
 
-let rawInport = importKey("raw",somedata,{ name: "AES-CBC" },true,["encrypt","decrypt"])
-let rawExport = exportKey("jwk",rawInport)
+let rawImport = importKey("raw",somedata,{ name: "AES-CBC" },true,["encrypt","decrypt"])
+let rawExport = exportKey("jwk",rawImport)
 
-console.log(somedata)
-console.log(rawInport)
-console.log(rawExport)
+// console.log(somedata)
+console.log(rawImport)
+// console.log(rawExport)
+
+let key = rawImport
+let data = "hello world" 
+let result3 = encrypt(
+    {
+        name: "AES-CBC",
+        //Don't re-use initialization vectors!
+        //Always generate a new iv every time your encrypt!
+        iv: ivbytes,
+    },
+    key, //from generateKey or importKey above
+    data //ArrayBuffer of data you want to encrypt
+)
+
+console.log(result3.toString())
+console.log(Array.from(ivbytes))
+
+// 260b4ab1676b3502d4920881c6e6d727
+// [ 172, 215, 83, 68, 197, 38, 78, 199, 145, 123, 122, 33, 62, 199, 120, 122 ]
+
+
