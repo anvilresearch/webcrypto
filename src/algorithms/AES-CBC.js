@@ -9,6 +9,7 @@ const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm')
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const JsonWebKey = require('../keys/JsonWebKey')
+const {TextEncoder, TextDecoder} = require('text-encoding')
 
 
 /**
@@ -25,7 +26,7 @@ const {
 // https://tools.ietf.org/html/rfc7518#section-5.2.3
 // https://www.w3.org/TR/WebCryptoAPI/#aes-cbc 
 
-var ivbytes = crypto.randomBytes(16)
+var ivbytes = crypto.randomBytes(16).buffer
 
 
   /**
@@ -36,13 +37,13 @@ var ivbytes = crypto.randomBytes(16)
    *
    * @param {AesKeyAlgorithm} algorithm
    * @param {CryptoKey} key
-   * @param {BufferSource|string} data
+   * @param {BufferSource} data
    *
    * @returns {string}
    */
   function encrypt (algorithm, key, data) {
     // 1. Ensure correct iv length
-    if (algorithm.iv.length !== 16)
+    if (algorithm.iv.byteLength !== 16)
     {
       throw new OperationError('IV Length must be exactly 16 bytes')
     }
@@ -59,11 +60,12 @@ var ivbytes = crypto.randomBytes(16)
     else {
       throw new DataError('Invalid AES-CBC and length pair.')
     }
-    let cipher = crypto.createCipheriv(cipherName,key.handle,algorithm.iv)
-    let ciphertext = cipher.update(data,"utf8","hex")
-    ciphertext += cipher.final("hex")
+    let cipher = crypto.createCipheriv(cipherName,key.handle,Buffer.from(algorithm.iv))
+    let ciphertext = cipher.update(Buffer.from(data))
+    // ciphertext += cipher.final()
+    // console.log("ciphertext:",ciphertext)
     // 4. Return result
-    return Buffer.from(ciphertext)
+    return Array.from(Buffer.concat([ciphertext,cipher.final()]))
   }
 
   // /**
@@ -380,6 +382,7 @@ console.log(rawImport)
 
 let key = rawImport
 let data = "hello world" 
+console.log(ivbytes)
 let result3 = encrypt(
     {
         name: "AES-CBC",
@@ -391,10 +394,28 @@ let result3 = encrypt(
     data //ArrayBuffer of data you want to encrypt
 )
 
-console.log(result3.toString())
-console.log(Array.from(ivbytes))
+console.log(ivbytes,Array.from(Buffer.from(ivbytes)))
+console.log("result3:",result3)
 
-// 260b4ab1676b3502d4920881c6e6d727
-// [ 172, 215, 83, 68, 197, 38, 78, 199, 145, 123, 122, 33, 62, 199, 120, 122 ]
+//iv: [ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ]
+// result: 
+/*
+ [ 162,
+  230,
+  200,
+  101,
+  47,
+  112,
+  26,
+  151,
+  250,
+  164,
+  78,
+  163,
+  251,
+  170,
+  212,
+  162 ] */
+
 
 
