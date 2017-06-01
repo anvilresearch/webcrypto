@@ -1,25 +1,67 @@
-# Web Cryptography API
+# W3C Web Cryptography API _(@trust/webcrypto)_
 
-[![Join the chat at https://gitter.im/anvilresearch/webcrypto](https://badges.gitter.im/anvilresearch/webcrypto.svg)](https://gitter.im/anvilresearch/webcrypto?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-This package provides a subset of W3C's [Web Cryptography API][webcrypto] for
-Node.js that is necessary to support protocols such as [JOSE][jose] and
-[OpenID Connect][oidc]. The purpose of the project is to enable development of
-isomorphic libraries that depend on the availability of cryptographic primitives
-in order to implement cryptographic protocols. The long term goal of the project
-is to encourage or provide a [native, if not core][wtf] Web Cryptography module.
+> W3C Web Cryptography API for Node.js
+
+W3C's [Web Cryptography API][webcrypto] defines a standard interface for performing
+cryptographic operations in JavaScript, such as key generation, hashing, signing, and
+encryption. This package implements the API for Node.js, in order to support universal
+crypto-dependent code required by protocols such as [JOSE][jose] and
+[OpenID Connect][oidc].
 
 [webcrypto]: https://www.w3.org/TR/WebCryptoAPI/
 [jose]: https://datatracker.ietf.org/wg/jose/documents/
 [oidc]: http://openid.net/connect/
+
+## Table of Contents
+
+* [Security](#security)
+* [Background](#background)
+* [Install](#install)
+* [Usage](#usage)
+* [Develop](#develop)
+* [Supported Algorithms](#supported-algorithms)
+* [API](#api)
+* [Contribute](#contribute)
+* [MIT License](#mit-license)
+
+## Security
+
+TBD
+
+## Background
+
+The purpose of this package is to enable development of universal JavaScript
+libraries that depend on the availability of cryptographic primitives in order
+to implement cryptographic protocols. The long term goal of the project is to
+encourage or provide a [native, if not core][wtf] Web Cryptography module.
+
 [wtf]: https://github.com/nodejs/node/issues/2833
 
-## Status
+## Install
 
-Note: This library is under active development. Expect breaking changes, do
-not use in production.
+```bash
+$ npm install @trust/webcrypto --save
+```
 
-## Running tests
+## Usage
+
+```javascript
+const crypto = require('@trust/webcrypto')
+```
+
+## Develop
+
+### Install
+
+```bash
+$ git clone git@github.com:anvilresearch/webcrypto.git
+$ cd webcrypto
+$ npm install
+```
+
+### Test
 
 ```bash
 $ npm test
@@ -50,6 +92,71 @@ Key:
 
 ` ✔ ` Implemented
 ` _ ` Need to implement
+
+## API
+
+See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto-examples][examples].
+
+[examples]: https://github.com/diafygi/webcrypto-examples
+
+## Contribute
+
+### Issues
+
+* please file [issues](https://github.com/anvilresearch/webcrypto/issues) :)
+* for bug reports, include relevant details such as platform, version, relevant data, and stack traces
+* be sure to check for existing issues before opening new ones
+* read the documentation before asking questions
+* it's strongly recommended to open an issue before hacking and submitting a PR
+* we reserve the right to close an issue for excessive bikeshedding
+
+### Pull requests
+
+#### Policy
+
+* we're not presently accepting *unsolicited* pull requests
+* create an issue to discuss proposed features before submitting a pull request
+* create an issue to propose changes of code style or introduce new tooling
+* ensure your work is harmonious with the overall direction of the project
+* ensure your work does not duplicate existing effort
+* keep the scope compact; avoid PRs with more than one feature or fix
+* code review with maintainers is required before any merging of pull requests
+* new code must respect the style guide and overall architecture of the project
+* be prepared to defend your work
+
+#### Style guide
+
+* ES6
+* Standard JavaScript
+* jsdocs
+
+#### Code reviews
+
+* required before merging PRs
+* reviewers MUST run and test the code under review
+
+### Collaborating
+
+#### Weekly project meeting
+
+* Thursdays from 1:00 PM to 2:00 Eastern US time at [TBD]
+* Join remotely with Google Hangouts
+
+#### Pair programming
+
+* Required for new contributors
+* Work directly with one or more members of the core development team
+
+### Code of conduct
+
+* @trust/webcrypto follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
+
+### Contributors
+
+* Christian Smith [@christiansmith](https://github.com/christiansmith)
+* Dmitri Zagidulin [@dmitrizagidulin](https://github.com/dmitrizagidulin)
+* Greg Linklater [@EternalDeiwos](https://github.com/EternalDeiwos)
+* JC Bailey [@thelunararmy](https://github.com/thelunararmy)
 
 ## MIT License
 
