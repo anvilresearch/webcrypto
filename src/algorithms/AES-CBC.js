@@ -85,7 +85,7 @@ class AES_CBC extends Algorithm {
       let ciphertext = cipher.update(Buffer.from(data))
       
       // 4. Return result
-      return Array.from(Buffer.concat([ciphertext,cipher.final()]))
+      return Uint8Array.from(Buffer.concat([ciphertext,cipher.final()])).buffer
     }
 
     /**
@@ -122,7 +122,7 @@ class AES_CBC extends Algorithm {
       // 3-5. Text de-padding performed by crypto.decipher
 
       // 6. Return resulting ArrayBuffer
-      return Array.from(Buffer.from(plaintext))
+      return Uint8Array.from(plaintext).buffer
     }
 
     /**
@@ -150,15 +150,14 @@ class AES_CBC extends Algorithm {
       // 3. Generate AES Key
       let symmetricKey
       try {
-        symmetricKey = crypto.randomBytes(params.length/4)
-
+        symmetricKey = crypto.randomBytes(params.length/8)
       // 4. Validate key generation
       } catch (error) {
         throw new OperationError(error.message)
       }
       
       // 6. Set new AesKeyAlgorithm
-      let algorithm = new AesKeyAlgorithm(params)
+      let algorithm = new AES_CBC(params)
 
       // 5. Define new CryptoKey names key
       let key = new CryptoKey({
@@ -192,16 +191,16 @@ class AES_CBC extends Algorithm {
       // 1. Validate keyUsages
       keyUsages.forEach(usage => {
         if (usage !== 'encrypt' 
-        && usage !== 'decrypt' 
-        && usage !== 'wrapKey' 
-        && usage !== 'unwrapKey') {
-          throw new SyntaxError('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
+         && usage !== 'decrypt' 
+         && usage !== 'wrapKey' 
+         && usage !== 'unwrapKey') {
+           throw new SyntaxError('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
         }
       })
 
       // 2.1 "raw" format
       if (format === 'raw'){
-          // 2.1.1 Let data be the octet string colacntained in keyData
+          // 2.1.1 Let data be the octet string contained in keyData
           data = Buffer.from(keyData)
 
           // 2.1.2 Ensure data length is 128, 192 or 256
@@ -268,7 +267,7 @@ class AES_CBC extends Algorithm {
         }
         
         // 2.2.8 validate "ext" field
-        if (jwk.ext && jwk.ext === false && extractable === true ){
+        if (jwk.ext === false && extractable === true){
           throw new DataError('Cannot be extractable when "ext" is set to false')
         }
       }
@@ -279,7 +278,6 @@ class AES_CBC extends Algorithm {
       }
       
       // 3. Generate new key
-      // TODO Christian verification
       let key = new CryptoKey({
             type: 'secret',
             extractable,
@@ -288,7 +286,7 @@ class AES_CBC extends Algorithm {
         })
       
       // 4-6. Generate algorithm
-      let aesAlgorithm = new AesKeyAlgorithm(
+      let aesAlgorithm = new AES_CBC(
         { name: 'AES-CBC',
           length: data.length * 8
         })
@@ -323,7 +321,6 @@ class AES_CBC extends Algorithm {
           // 2.1.1 Let data be the raw octets of the key
           data = key.handle 
           // 2.1.2 Let result be containing data
-          // TODO Christian help 
           result = Buffer.from(data) 
       }
       
@@ -347,10 +344,9 @@ class AES_CBC extends Algorithm {
         } else if (data.length === 32) {
             jwk.alg = 'A256CBC'
         }
-        
         // 2.2.5 Set keyops property 
-        jwk.key_ops = key.usages
-        
+        jwk.key_ops = key.usages 
+
         // 2.2.6 Set ext property 
         jwk.ext = key.extractable
         
@@ -372,93 +368,3 @@ class AES_CBC extends Algorithm {
  * Export
  */
 module.exports = AES_CBC
-
-/*
-let result = generateKey(
-    {
-        name: "AES-CBC",
-        length: 128, //can be  128, 192, or 256
-    },
-    false, //whether the key is extractable (i.e. can be used in exportKey)
-    ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
-)
-
-// console.log(result)
-// console.log(result.handle.length)
-
-let result2 = importKey(
-    "jwk", //can be "jwk" or "raw"
-    {   //this is an example jwk key, "raw" would be an ArrayBuffer
-        kty: "oct",
-        k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
-        alg: "A256CBC",
-        ext: true,
-    },
-    {   //this is the algorithm options
-        name: "AES-CBC",
-    },
-    false, //whether the key is extractable (i.e. can be used in exportKey)
-    ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
-)
-
-// console.log("result2:",result2)
-// console.log(result2.handle)
-
-let somedata = new Uint8Array([99, 76, 237, 223, 177, 224, 59, 31, 129, 99, 180, 144, 141, 133, 102, 174, 168, 79, 144, 238, 56, 34, 45, 137, 113, 191, 114, 201, 213, 3, 61, 241])
-
-let rawImport = importKey("raw",somedata,{ name: "AES-CBC" },true,["encrypt","decrypt"])
-let rawExport = exportKey("jwk",rawImport)
-
-// console.log(somedata)
-console.log(rawImport)
-// console.log(rawExport)
-
-let key = rawImport
-let data = "hello world" 
-
-let result3 = encrypt(
-    {
-        name: "AES-CBC",
-        //Don't re-use initialization vectors!
-        //Always generate a new iv every time your encrypt!
-        iv: ivbytes,
-    },
-    key, //from generateKey or importKey above
-    data //ArrayBuffer of data you want to encrypt
-)
-
-// console.log(ivbytes,Array.from(Buffer.from(ivbytes)))
-console.log("result3:",result3)
-
-//iv: [ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ]
-// result: 
-/*
- [ 162,
-  230,
-  200,
-  101,
-  47,
-  112,
-  26,
-  151,
-  250,
-  164,
-  78,
-  163,
-  251,
-  170,
-  212,
-  162 ] 
-
-let result4 = decrypt(
-    {
-        name: "AES-CBC",
-        iv: Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ]), //The initialization vector you used to encrypt
-    },
-    key, //from generateKey or importKey above
-    Array.from([129, 148, 134, 47, 143, 20, 68, 208, 22, 159, 78, 171, 141, 97, 106, 97, 173, 191, 85, 38, 124, 140, 69, 162, 195, 200, 16, 66, 231, 167, 77, 132]) //ArrayBuffer of the data
-)
-
-console.log("result4:",result4)
-console.log("result4:",result4.map(x=>String.fromCharCode(x),result4).join(''))
-*/

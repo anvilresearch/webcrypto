@@ -290,7 +290,6 @@ describe('RSASSA_PKCS1_v1_5', () => {
 
         it('should throw SyntaxError', () => {
           expect(() => {
-            console.log("alg is: ",alg)
             alg.importKey('jwk', key, alg, false, ['bad'])
           }).to.throw('Key usages must include "sign"')
         })
