@@ -25,7 +25,27 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   encrypt (algorithm, key, data) {
-    return new Promise()
+    data = data.slice()
+
+    let normalizedAlgorithm = supportedAlgorithms.normalize('encrypt', algorithm)
+
+    if (normalizedAlgorithm instanceof Error) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    return new Promise((resolve, reject) => {
+      if (normalizedAlgorithm.name !== key.algorithm.name) {
+        throw new InvalidAccessError('Algorithm does not match key')
+      }
+
+      if (!key.usages.includes('encrypt')) {
+        throw new InvalidAccessError('Key usages must include "encrypt"')
+      }
+
+      let ciphertext = normalizedAlgorithm.encrypt(algorithm,key, data)
+
+      resolve(ciphertext)
+    })
   }
 
   /**
@@ -40,7 +60,26 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   decrypt (algorithm, key, data) {
-    return new Promise()
+    let normalizedAlgorithm = supportedAlgorithms.normalize('decrypt', algorithm)
+
+    if (normalizedAlgorithm instanceof Error) {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    data = data.slice()
+
+    return new Promise((resolve, reject) => {
+      if (normalizedAlgorithm.name !== key.algorithm.name) {
+        throw new InvalidAccessError('Algorithm does not match key')
+      }
+
+      if (!key.usages.includes('decrypt')) {
+        throw new InvalidAccessError('Key usages must include "decrypt"')
+      }
+
+      let plaintext = normalizedAlgorithm.decrypt(algorithm, key, data)
+      resolve(plaintext)
+    })
   }
 
   /**

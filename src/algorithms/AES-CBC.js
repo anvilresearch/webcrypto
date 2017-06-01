@@ -8,6 +8,7 @@ const {TextEncoder, TextDecoder} = require('text-encoding')
 /**
  * Local dependencies
  */
+const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
 const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm') 
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
@@ -64,8 +65,7 @@ class AES_CBC extends Algorithm {
      */
     encrypt (algorithm, key, data) {
       // 1. Ensure correct iv length
-      if (algorithm.iv.byteLength !== 16)
-      {
+      if (algorithm.iv.byteLength !== 16) {
         throw new OperationError('IV Length must be exactly 16 bytes')
       }
       
@@ -77,8 +77,7 @@ class AES_CBC extends Algorithm {
       let cipherName
       if (key.algorithm.name === 'AES-CBC' && [128,192,256].includes(key.algorithm.length)){
         cipherName = 'AES-' + key.algorithm.length + '-CBC'
-      }
-      else {
+      } else {
         throw new DataError('Invalid AES-CBC and length pair.')
       }
       let cipher = crypto.createCipheriv(cipherName,key.handle,Buffer.from(algorithm.iv))
@@ -102,8 +101,7 @@ class AES_CBC extends Algorithm {
      */
     decrypt (algorithm, key, data) {
       // 1. Ensure correct iv length
-      if (algorithm.iv.byteLength !== 16)
-      {
+      if (algorithm.iv.byteLength !== 16){
         throw new OperationError('IV Length must be exactly 16 bytes')
       }
       
@@ -111,8 +109,7 @@ class AES_CBC extends Algorithm {
       let cipherName
       if (key.algorithm.name === 'AES-CBC' && [128,192,256].includes(key.algorithm.length)){
         cipherName = 'AES-' + key.algorithm.length + '-CBC'
-      }
-      else {
+      } else {
         throw new DataError('Invalid AES-CBC and length pair.')
       }
       let decipher = crypto.createDecipheriv(cipherName,key.handle,Buffer.from(algorithm.iv))
@@ -258,9 +255,9 @@ class AES_CBC extends Algorithm {
         if (jwk.key_ops){
           key_ops.forEach(op => {
             if (op !== 'encrypt' 
-            && op !== 'decrypt' 
-            && op !== 'wrapKey' 
-            && op !== 'unwrapKey') {
+             && op !== 'decrypt' 
+             && op !== 'wrapKey' 
+             && op !== 'unwrapKey') {
               throw new DataError('Key operation can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
             }
           })
