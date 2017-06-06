@@ -11,7 +11,10 @@ class AesKeyAlgorithm extends KeyAlgorithm {
   /**
    * Constructor
    */
-  constructor () {}
+  constructor (algorithm) {
+    super(algorithm)
+    //TODO Do more here.
+  }
 }
 
 /**

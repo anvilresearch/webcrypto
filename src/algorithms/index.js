@@ -13,7 +13,7 @@ const supportedAlgorithms = new SupportedAlgorithms()
  */
 //supportedAlgorithms.define('RSA-OAEP', 'encrypt', )
 //supportedAlgorithms.define('AES-CTR', 'encrypt', )
-//supportedAlgorithms.define('AES-CBC', 'encrypt', )
+supportedAlgorithms.define('AES-CBC', 'encrypt', '../algorithms/AES-CBC')
 //supportedAlgorithms.define('AES-GCM', 'encrypt', )
 //supportedAlgorithms.define('AES-CFB', 'encrypt', )
 
@@ -22,35 +22,35 @@ const supportedAlgorithms = new SupportedAlgorithms()
  */
 //supportedAlgorithms.define('RSA-OAEP', 'decrypt', )
 //supportedAlgorithms.define('AES-CTR', 'decrypt', )
-//supportedAlgorithms.define('AES-CBC', 'decrypt', )
+supportedAlgorithms.define('AES-CBC', 'decrypt', '../algorithms/AES-CBC')
 //supportedAlgorithms.define('AES-GCM', 'decrypt', )
 //supportedAlgorithms.define('AES-CFB', 'decrypt', )
 
 /**
  * sign
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', '../dictionaries/RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'sign', )
 //supportedAlgorithms.define('ECDSA', 'sign', )
 //supportedAlgorithms.define('AES-CMAC', 'sign', )
-supportedAlgorithms.define('HMAC', 'sign', '../dictionaries/HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'sign', '../algorithms/HMAC')
 
 /**
  * verify
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', '../dictionaries/RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'verify', )
 //supportedAlgorithms.define('ECDSA', 'verify', )
 //supportedAlgorithms.define('AES-CMAC', 'verify', )
-supportedAlgorithms.define('HMAC', 'verify', '../dictionaries/HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'verify', '../algorithms/HMAC')
 
 /**
  * digest
  */
-supportedAlgorithms.define('SHA-1', 'digest', '../dictionaries/ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-256', 'digest', '../dictionaries/ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-384', 'digest', '../dictionaries/ShaKeyAlgorithm')
-supportedAlgorithms.define('SHA-512', 'digest', '../dictionaries/ShaKeyAlgorithm')
+supportedAlgorithms.define('SHA-1', 'digest', '../algorithms/SHA')
+supportedAlgorithms.define('SHA-256', 'digest', '../algorithms/SHA')
+supportedAlgorithms.define('SHA-384', 'digest', '../algorithms/SHA')
+supportedAlgorithms.define('SHA-512', 'digest', '../algorithms/SHA')
 
 /**
  * deriveKey
@@ -73,36 +73,36 @@ supportedAlgorithms.define('SHA-512', 'digest', '../dictionaries/ShaKeyAlgorithm
 /**
  * generateKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', '../dictionaries/RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'generateKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'generateKey', )
 //supportedAlgorithms.define('ECDSA', 'generateKey', )
 //supportedAlgorithms.define('ECDH', 'generateKey', )
 //supportedAlgorithms.define('AES-CTR', 'generateKey', )
-//supportedAlgorithms.define('AES-CBC', 'generateKey', )
+supportedAlgorithms.define('AES-CBC', 'generateKey', '../algorithms/AES-CBC')
 //supportedAlgorithms.define('AES-CMAC', 'generateKey', )
 //supportedAlgorithms.define('AES-GCM', 'generateKey', )
 //supportedAlgorithms.define('AES-CFB', 'generateKey', )
 //supportedAlgorithms.define('AES-KW', 'generateKey', )
-supportedAlgorithms.define('HMAC', 'generateKey', '../dictionaries/HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'generateKey', '../algorithms/HMAC')
 //supportedAlgorithms.define('DH', 'generateKey', )
 //supportedAlgorithms.define('PBKDF2', 'generateKey', )
 
 /**
  * importKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', '../dictionaries/RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'importKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'importKey', )
 //supportedAlgorithms.define('ECDSA', 'importKey', )
 //supportedAlgorithms.define('ECDH', 'importKey', )
 //supportedAlgorithms.define('AES-CTR', 'importKey', )
-//supportedAlgorithms.define('AES-CBC', 'importKey', )
+supportedAlgorithms.define('AES-CBC', 'importKey', '../algorithms/AES-CBC')
 //supportedAlgorithms.define('AES-CMAC', 'importKey', )
 //supportedAlgorithms.define('AES-GCM', 'importKey', )
 //supportedAlgorithms.define('AES-CFB', 'importKey', )
 //supportedAlgorithms.define('AES-KW', 'importKey', )
-supportedAlgorithms.define('HMAC', 'importKey', '../dictionaries/HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'importKey', '../algorithms/HMAC')
 //supportedAlgorithms.define('DH', 'importKey', )
 //supportedAlgorithms.define('CONCAT', 'importKey', )
 //supportedAlgorithms.define('HKDF-CTR', 'importKey', )
@@ -111,18 +111,18 @@ supportedAlgorithms.define('HMAC', 'importKey', '../dictionaries/HmacKeyAlgorith
 /**
  * exportKey
  */
-supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', '../dictionaries/RsaHashedKeyAlgorithm')
+supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'exportKey', )
 //supportedAlgorithms.define('RSA-OAEP', 'exportKey', )
 //supportedAlgorithms.define('ECDSA', 'exportKey', )
 //supportedAlgorithms.define('ECDH', 'exportKey', )
 //supportedAlgorithms.define('AES-CTR', 'exportKey', )
-//supportedAlgorithms.define('AES-CBC', 'exportKey', )
+supportedAlgorithms.define('AES-CBC', 'exportKey', '../algorithms/AES-CBC')
 //supportedAlgorithms.define('AES-CMAC', 'exportKey', )
 //supportedAlgorithms.define('AES-GCM', 'exportKey', )
 //supportedAlgorithms.define('AES-CFB', 'exportKey', )
 //supportedAlgorithms.define('AES-KW', 'exportKey', )
-supportedAlgorithms.define('HMAC', 'exportKey', '../dictionaries/HmacKeyAlgorithm')
+supportedAlgorithms.define('HMAC', 'exportKey', '../algorithms/HMAC')
 //supportedAlgorithms.define('DH', 'exportKey', )
 
 /**

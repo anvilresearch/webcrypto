@@ -16,7 +16,8 @@ const crypto = require('../src')
 const CryptoKey = require('../src/keys/CryptoKey')
 const CryptoKeyPair = require('../src/keys/CryptoKeyPair')
 const JsonWebKey = require('../src/keys/JsonWebKey')
-const RsaHashedKeyAlgorithm = require('../src/dictionaries/RsaHashedKeyAlgorithm')
+const RSASSA_PKCS1_v1_5 = require('../src/algorithms/RSASSA-PKCS1-v1_5')
+const AES_CBC = require('../src/algorithms/AES-CBC')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
@@ -40,14 +41,263 @@ describe('SubtleCrypto', () => {
    * encrypt
    */
   describe('encrypt', () => {
-    it('should return a Promise')
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'BAD-ALGORITHM' }
+        let key = new CryptoKey({})
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.encrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+  describe('with mismatched algorithm name', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'AES-CBC' }
+        let key = new CryptoKey({ algorithm: { name: 'AES-CCC' } })
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.encrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Algorithm does not match key')
+      })
+    })
+
+  describe('with invalid usages', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'AES-CBC' }
+
+        let key = new CryptoKey({
+          algorithm: { name: 'AES-CBC', length: 128 },
+          usages: ['decrypt']
+        })
+
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.encrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Key usages must include "encrypt"')
+      })
+    })
+
+    describe('with valid arguments', () => {
+      let algorithm,aes, key, iv, promise, result, signature, error
+
+      beforeEach((done) => {
+
+        aes = new AES_CBC({ name: 'AES-CBC', length: 256}) 
+        i =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
+        algorithm = { name: 'AES-CBC', iv:i }
+        key = aes.importKey(
+            "jwk", 
+            {   
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256CBC",
+                ext: true,
+            },
+            {   
+                name: "AES-CBC",
+            },
+            true, 
+            ["encrypt","decrypt"] 
+        )
+        let data = new TextEncoder().encode('signed with Chrome Webcrypto')
+
+        signature = new Uint8Array([
+            76, 82, 211, 155, 13, 154, 24, 6, 156, 203, 50, 
+            171, 210, 17, 88, 145, 32, 225, 125, 119, 179, 
+            197, 224, 210, 122, 43, 255, 159, 59, 195, 206, 210])
+
+        promise = crypto.subtle
+          .encrypt(algorithm, key, data)
+          .then(res => {
+            result = res 
+            done()
+          })
+          .catch(err => {
+            error = err 
+            done()  
+          })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve an ArrayBuffer', () => {
+        result.should.be.instanceof(ArrayBuffer)
+      })
+
+      it('should resolve a correct encryption for the data and key', () => {
+        Buffer.from(result).should.eql(Buffer.from(signature.buffer))
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+    })
   })
 
   /**
    * decrypt
    */
   describe('decrypt', () => {
-    it('should return a Promise')
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'BAD-ALGORITHM' }
+        let key = new CryptoKey({algorithm})
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.decrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with mismatched algorithm name', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'AES-CBC' }
+        let key = new CryptoKey({ algorithm: { name: 'AES-CCC' } })
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.decrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Algorithm does not match key')
+      })
+    })
+
+    describe('with invalid usages', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let algorithm = { name: 'AES-CBC' }
+        let key = new CryptoKey({
+          algorithm: { name: 'AES-CBC', length: 128 },
+          usages: ['encrypt']
+        })
+        let data = new ArrayBuffer()
+
+        promise = crypto.subtle.decrypt(algorithm, key, data)
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('Key usages must include "decrypt"')
+      })
+    })
+
+    describe('with valid arguments', () => {
+      let algorithm,aes, key, iv, promise, result, signature, error
+
+      beforeEach((done) => {
+
+        aes = new AES_CBC({ name: 'AES-CBC', length: 256}) 
+        i =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
+        algorithm = { name: 'AES-CBC', iv:i }
+        key = aes.importKey(
+            "jwk", 
+            {   
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256CBC",
+                ext: true,
+            },
+            {   
+                name: "AES-CBC",
+            },
+            true, 
+            ["encrypt","decrypt"] 
+        )
+        let data = new Uint8Array([
+            76, 82, 211, 155, 13, 154, 24, 6, 156, 203, 50, 
+            171, 210, 17, 88, 145, 32, 225, 125, 119, 179, 
+            197, 224, 210, 122, 43, 255, 159, 59, 195, 206, 210])
+
+        signature = new TextEncoder().encode('signed with Chrome Webcrypto')
+
+
+        promise = crypto.subtle
+          .decrypt(algorithm, key,  data)
+          .then(res => {
+            result = res
+            done()
+          })
+          .catch(err => {
+            error = err
+            done()
+          })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve a correct decryption for the data and key', () => {
+        Buffer.from(result).should.eql(Buffer.from(signature.buffer)) 
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })
+    })
   })
 
   /**
@@ -576,7 +826,7 @@ describe('SubtleCrypto', () => {
         let format = 'jwk'
         let key = new CryptoKey({
           type: 'public',
-          algorithm: new RsaHashedKeyAlgorithm({
+          algorithm: new RSASSA_PKCS1_v1_5({
             name: 'RSASSA-PKCS1-v1_5',
           }),
           extractable: false,
@@ -604,7 +854,7 @@ describe('SubtleCrypto', () => {
         let format = 'jwk'
         let key = new CryptoKey({
           type: 'public',
-          algorithm: new RsaHashedKeyAlgorithm({
+          algorithm: new RSASSA_PKCS1_v1_5({
             name: 'RSASSA-PKCS1-v1_5',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
