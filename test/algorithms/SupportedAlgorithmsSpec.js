@@ -93,7 +93,6 @@ describe('SupportedAlgorithms', () => {
         })
 
         it('should return the normalized algorithm', () => {
-          console.log(normalizedAlgorithm)
           normalizedAlgorithm.should.be.instanceof(SHA)
         })
       })
