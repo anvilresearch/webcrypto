@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/anvilresearch/webcrypto#README",
   "dependencies": {
-    "@trust/keyto": "^0.1.0",
+    "@trust/keyto": "^0.1.2",
     "base64url": "^2.0.0",
     "node-rsa": "^0.4.0",
     "text-encoding": "^0.6.1"
