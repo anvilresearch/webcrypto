@@ -25,8 +25,10 @@ const {
   DataError,
   OperationError,
   InvalidAccessError,
-  KeyFormatNotSupportedError
+  KeyFormatNotSupportedError,
+  CurrentlyNotSupportedError
 } = require('../errors')
+
 
 /**
  * SECP256K1
@@ -54,7 +56,76 @@ class SECP256K1 extends Algorithm {
       }
     }
 
-      /**
+
+  /**
+   * sign
+   *
+   * @description
+   * Create an RSA digital signature
+   *
+   * @param {CryptoKey} key
+   * @param {BufferSource} data
+   *
+   * @returns {string}
+   */
+  sign (key, data) {
+    let result
+    // 1. Ensure the key is a private type only
+    if (key.type !== 'private') {
+      throw new InvalidAccessError('Signing requires a private key')
+    }
+    // 2-5. Ommitted due to support by Crypto
+    // 6. Attempt to sign using Crypto lib
+    try {
+        data = Buffer.from(data)
+
+        let signer = crypto.createSign('sha256')
+        signer.update(data)
+
+        result = base64url(signer.sign(key.handle),'base64')
+    } catch (error) {
+      throw new OperationError(error.message)
+    }
+    // 7. Return resulting buffer
+    return result
+  }//sign
+
+
+  /**
+   * verify
+   *
+   * @description
+   *
+   * @param {CryptoKey} key
+   * @param {BufferSource} signature
+   * @param {BufferSource} data
+   *
+   * @returns {Boolean}
+   */
+  verify (key, signature, data) {
+    let result
+    // 1. Ensure the key is a public type only
+    if (key.type !== 'public') {
+      throw new InvalidAccessError('Verifying requires a public key')
+    }
+    // 2-5. Ommitted due to support by Crypto
+    // 6. Attempt to verify using Crypto lib
+    try {
+      data = Buffer.from(data)
+      signature = Buffer.from(signature)
+
+      let verifier = crypto.createVerify('sha256')
+      verifier.update(data)
+
+      result = verifier.verify(key.handle, base64url.decode(signature), 'base64')
+    } catch (error) {
+      throw new OperationError(error.message)
+    }
+    return result
+  }//verify
+
+
+  /**
    * generateKey
    *
    * @description
@@ -84,11 +155,6 @@ class SECP256K1 extends Algorithm {
     // 3. If any operation fails then throw error
       throw new OperationError(error.message)
     }
-    // TODO Clean me
-    // console.log(keyto.from(keypair.publicKey, 'pem').toString('pem', 'public_pkcs8'))
-    // console.log(keypair.publicKey)
-    // console.log(keyto.from(keypair.publicKey , 'pem').toJwk('public'))
-    // console.log(keyto.from(keypair.privateKey , 'pem').toJwk('public'))
 
     // 4. Set algorithm be a new SECP256K1
     let algorithm = new SECP256K1(params)
@@ -118,16 +184,29 @@ class SECP256K1 extends Algorithm {
     return new CryptoKeyPair({publicKey,privateKey})
     }//generateKey
 
+    /**
+     * importKey
+     *
+     * @description
+     *
+     * @param {string} format
+     * @param {string|JsonWebKey} keyData
+     * @param {KeyAlgorithm} algorithm
+     * @param {Boolean} extractable
+     * @param {Array} keyUsages
+     *
+     * @returns {CryptoKey}
+     */
     importKey (format, keyData, algorithm, extractable, keyUsages) {
         let key, hash, normalizedHash, jwk, privateKeyInfo
         // 1-2. Check formatting
         // 2.1. "spki" format
         if (format === 'spki') {
-            
+            throw new CurrentlyNotSupportedError(format,'jwk')
         }
         // 2.2. "pkcs8" format
         else if (format === 'pkcs8') {          
-            
+            throw new CurrentlyNotSupportedError(format,'jwk')
         }
         // 2.3. "jwk" format
         else if (format === 'jwk') {
@@ -187,7 +266,7 @@ class SECP256K1 extends Algorithm {
                         type: 'private',
                         extractable,
                         usages: ['sign'],
-                        handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs8')
+                        handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs1')
                     })
                 }
                 // 2.3.9.1.4.2. Otherwise...
@@ -217,7 +296,7 @@ class SECP256K1 extends Algorithm {
         }
         // 2.4. "raw" format
         else if (format === 'raw') {
-        
+            throw new CurrentlyNotSupportedError(format,'jwk')
         } 
         // 2.5. Otherwise bad format
         else {
@@ -228,46 +307,135 @@ class SECP256K1 extends Algorithm {
     }//importKey
 
 
+    /**
+     * exportKey
+     *
+     * @description
+     *
+     * @param {string} format
+     * @param {CryptoKey} key
+     *
+     * @returns {*}
+     */
+    exportKey (format, key) {
+        // 1. Setup resulting var
+        let result
+
+        // 2. Validate handle slot
+        if (!key.handle) {
+            throw new OperationError('Missing key material')
+        }
+
+        // 3.1. "spki" format
+        if (format === 'spki') {
+            throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+        }
+        // 3.2. "pkcs8" format
+        else if (format === 'pkcs8') {          
+            throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")            
+        }
+        // 2.3. "jwk" format
+        else if (format === 'jwk') {
+            // 2.3.1-3 Create new jwk
+            let jwk = keyto.from(key.handle, 'pem').toJwk(key.type)
+            
+            // 2.3.4. Set "key_ops" field
+            jwk.key_ops = key.usages
+      
+            // 2.3.5. Set "ext" field 
+            jwk.ext = key.extractable
+
+            // 2.3.6. Set result to jwk object
+            result = jwk
+        }
+        // 3.4. "raw" format
+        else if (format === 'raw') {
+            // 3.4.1. Validate that the internal use is public
+            if (key.type !== 'public'){
+                throw new InvalidAccessError('Can only access public key data.')
+            }
+            // 3.4.2. Omitted due to redundancy
+            // 3.4.3. Let resulting data be Buffer containing data
+            result = Buffer.from(key.handle) 
+        } 
+        // 3.5. Otherwise bad format
+        else {
+            throw new KeyFormatNotSupportedError(format)
+        }
+        
+        // 4. Result result
+        return result
+    }
+
 }//SECP256K1
 
 
-// TODO Clean me
+// TODO Clean me -- still WIP
 let secp256k1 = new SECP256K1({name:"K-256"})
-
+// --------------------------------------------------------------
 console.log("secp256k1: generateKey Test")
 let keys = secp256k1.generateKey({name:"K-256"},true,['sign','verify'])
 console.log("genrated keys:",keys,'\n')
-
+// --------------------------------------------------------------
 console.log("secp256k1: importKey Test")
-// console.log(keyto.from(keys.publicKey.handle,'pem').toJwk('public'))
+console.log(keyto.from(keys.privateKey.handle,'pem').toJwk('private'))
+console.log(keyto.from(keys.publicKey.handle,'pem').toJwk('public'))
 let pvKey = secp256k1.importKey(
     'jwk',
-    { 
-        kty: 'EC',
-        crv: 'K-256',
-        d: 'O9uFxQ3tJp0Kb8lRhwX47CJVClpsHJDsGeH4aEsKW8w',
-        x: 'z_w_IzNCnWUYLQKXfw6RYJaC2PvlD7xaBVm4-RAAEEA',
-        y: '1sNwYlenam_6vcFOZ0jY4Ud7EbGoP2PVAlYAWCx0Sr0'
-    },
+    { kty: 'EC',
+    crv: 'K-256',
+    d: 'PR587JJiuSE3aFthaonYf3VJtB9WXaZcN7Vi0OmBUtw',
+    x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
+    y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' },
     {
         name: 'K-256'
     },
     true,
     ['sign']
 )
-console.log('imported private Key:',pvKey.handle)
+console.log('imported private Key:',pvKey)
 let pbKey = secp256k1.importKey(
     'jwk',
-    {
-        kty: 'EC',
-        crv: 'K-256',
-        x: '5mM2bJEnLy41gJohQoSanAUgYsWFJQjr4toNEEgNVbw',
-        y: 'rGGYPDp0FbzcBQWu-yqzUDMpjgd1T22iqbkEKMIz_dQ' 
-    },
+    { kty: 'EC',
+    crv: 'K-256',
+    x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
+    y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' },
     {
         name: 'K-256'
     },
     true,
     ['verify']
 )
-console.log('imported public Key:',pbKey.handle,'\n')
+console.log('imported public Key:',pbKey,'\n')
+// --------------------------------------------------------------
+console.log("secp256k1: exportKey Test")
+let pvKey2jwk = secp256k1.exportKey(
+    'jwk',
+    keys.privateKey
+)
+console.log('exported private Key:',pvKey2jwk)
+let pbKey2jwk = secp256k1.exportKey(
+    'jwk',
+    keys.publicKey
+)
+console.log('exported public Key (jwk):',pbKey2jwk)
+let pbKey2raw = secp256k1.exportKey(
+    'raw',
+    keys.publicKey
+)
+console.log('exported public Key (raw):',pbKey2raw,'\n')
+// --------------------------------------------------------------
+console.log("secp256k1: sign Test")
+let signed = secp256k1.sign(
+    pvKey,
+    new TextEncoder().encode("Testing this sample text")
+)
+console.log(signed,'\n')
+// --------------------------------------------------------------
+console.log("secp256k1: verify Test")
+let verify = secp256k1.verify(
+    pbKey,
+    signed,
+    new TextEncoder().encode("Testing this sample text")
+)
+console.log(verify)
