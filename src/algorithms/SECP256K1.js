@@ -61,7 +61,7 @@ class SECP256K1 extends Algorithm {
    * sign
    *
    * @description
-   * Create an RSA digital signature
+   * Create a digital signature
    *
    * @param {CryptoKey} key
    * @param {BufferSource} data
@@ -82,12 +82,12 @@ class SECP256K1 extends Algorithm {
         let signer = crypto.createSign('sha256')
         signer.update(data)
 
-        result = base64url(signer.sign(key.handle),'base64')
+        result = signer.sign(key.handle)
     } catch (error) {
       throw new OperationError(error.message)
     }
     // 7. Return resulting buffer
-    return result
+    return result.buffer
   }//sign
 
 
@@ -95,6 +95,7 @@ class SECP256K1 extends Algorithm {
    * verify
    *
    * @description
+   * Verifies a digital signature
    *
    * @param {CryptoKey} key
    * @param {BufferSource} signature
@@ -117,7 +118,7 @@ class SECP256K1 extends Algorithm {
       let verifier = crypto.createVerify('sha256')
       verifier.update(data)
 
-      result = verifier.verify(key.handle, base64url.decode(signature), 'base64')
+      result = verifier.verify(key.handle, signature)
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -369,24 +370,32 @@ class SECP256K1 extends Algorithm {
 
 }//SECP256K1
 
+/**
+ * Export
+ */
+module.exports = SECP256K1
 
 // TODO Clean me -- still WIP
+/*
 let secp256k1 = new SECP256K1({name:"K-256"})
 // --------------------------------------------------------------
 console.log("secp256k1: generateKey Test")
 let keys = secp256k1.generateKey({name:"K-256"},true,['sign','verify'])
-console.log("genrated keys:",keys,'\n')
+console.log("genrated keys:",keys)
+console.log('\n')
 // --------------------------------------------------------------
 console.log("secp256k1: importKey Test")
-console.log(keyto.from(keys.privateKey.handle,'pem').toJwk('private'))
-console.log(keyto.from(keys.publicKey.handle,'pem').toJwk('public'))
+// console.log(keyto.from(keys.privateKey.handle,'pem').toJwk('private'))
+// console.log(keyto.from(keys.publicKey.handle,'pem').toJwk('public'))
 let pvKey = secp256k1.importKey(
     'jwk',
-    { kty: 'EC',
-    crv: 'K-256',
-    d: 'PR587JJiuSE3aFthaonYf3VJtB9WXaZcN7Vi0OmBUtw',
-    x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
-    y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' },
+    { 
+        kty: 'EC',
+        crv: 'K-256',
+        d: 'PR587JJiuSE3aFthaonYf3VJtB9WXaZcN7Vi0OmBUtw',
+        x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
+        y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' 
+    },
     {
         name: 'K-256'
     },
@@ -396,17 +405,20 @@ let pvKey = secp256k1.importKey(
 console.log('imported private Key:',pvKey)
 let pbKey = secp256k1.importKey(
     'jwk',
-    { kty: 'EC',
-    crv: 'K-256',
-    x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
-    y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' },
+    { 
+        kty: 'EC',
+        crv: 'K-256',
+        x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
+        y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo' 
+    },
     {
         name: 'K-256'
     },
     true,
     ['verify']
 )
-console.log('imported public Key:',pbKey,'\n')
+console.log('imported public Key:',pbKey)
+console.log('\n')
 // --------------------------------------------------------------
 console.log("secp256k1: exportKey Test")
 let pvKey2jwk = secp256k1.exportKey(
@@ -423,19 +435,21 @@ let pbKey2raw = secp256k1.exportKey(
     'raw',
     keys.publicKey
 )
-console.log('exported public Key (raw):',pbKey2raw,'\n')
+console.log('exported public Key (raw):',pbKey2raw)
+console.log('\n')
 // --------------------------------------------------------------
 console.log("secp256k1: sign Test")
 let signed = secp256k1.sign(
     pvKey,
     new TextEncoder().encode("Testing this sample text")
 )
-console.log(signed,'\n')
+console.log(signed)
+console.log('\n')
 // --------------------------------------------------------------
 console.log("secp256k1: verify Test")
-let verify = secp256k1.verify(
+let verified = secp256k1.verify(
     pbKey,
-    signed,
+    new Uint8Array(signed),
     new TextEncoder().encode("Testing this sample text")
 )
-console.log(verify)
+console.log(verified)*/
