@@ -557,7 +557,7 @@ describe('RSASSA_PKCS1_v1_5', () => {
         })
 
         it('should define handle', () => {
-          key.handle.should.contain('-----BEGIN RSA PUBLIC KEY-----')
+          key.handle.should.contain('-----BEGIN PUBLIC KEY-----')
         })
       })
     })
