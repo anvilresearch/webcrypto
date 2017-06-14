@@ -51,8 +51,8 @@ class ECDSA extends Algorithm {
   static get members () {
     return {
       name: String,
-      modulusLength: Number,
-      publicExponent: 'BufferSource'
+      namedCurve: String,
+      hash: 'HashAlgorithmIdentifier'
     }
   }
 
@@ -151,10 +151,8 @@ class ECDSA extends Algorithm {
       throw new DataError('namedCurve is a required parameter for ECDSA')
     }
 
-    if (namedCurve === 'P-256'
-      || namedCurve === 'P-384'
-      || namedCurve === 'P-512') {
-      throw new CurrentlyNotSupportedError(namedCurve, 'jwk')
+    if (namedCurve !== 'K-256') {
+      throw new CurrentlyNotSupportedError(namedCurve, 'K-256')
     }
 
     let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === namedCurve)
@@ -248,7 +246,7 @@ class ECDSA extends Algorithm {
       }
 
       // 2.3.4. Validate 'use' field
-      if (keyUsages !== undefined && jwk.use !== undefined && jwk.use === 'sig'){
+      if (keyUsages !== undefined && jwk.use !== undefined && jwk.use !== 'sig'){
         throw new DataError('Key use must be "sig".')
       }
 
@@ -387,82 +385,3 @@ class ECDSA extends Algorithm {
  * Export
  */
 module.exports = ECDSA
-
-// TODO Clean me -- still WIP
-/*
-let secp256k1 = new ECDSA({name:"K-256"})
-// --------------------------------------------------------------
-console.log("secp256k1: generateKey Test")
-let keys = secp256k1.generateKey({name:"K-256"},true,['sign','verify'])
-console.log("genrated keys:",keys)
-console.log('\n')
-// --------------------------------------------------------------
-console.log("secp256k1: importKey Test")
-// console.log(keyto.from(keys.privateKey.handle,'pem').toJwk('private'))
-// console.log(keyto.from(keys.publicKey.handle,'pem').toJwk('public'))
-let pvKey = secp256k1.importKey(
-    'jwk',
-    {
-        kty: 'EC',
-        crv: 'K-256',
-        d: 'PR587JJiuSE3aFthaonYf3VJtB9WXaZcN7Vi0OmBUtw',
-        x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
-        y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo'
-    },
-    {
-        name: 'K-256'
-    },
-    true,
-    ['sign']
-)
-console.log('imported private Key:',pvKey)
-let pbKey = secp256k1.importKey(
-    'jwk',
-    {
-        kty: 'EC',
-        crv: 'K-256',
-        x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
-        y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo'
-    },
-    {
-        name: 'K-256'
-    },
-    true,
-    ['verify']
-)
-console.log('imported public Key:',pbKey)
-console.log('\n')
-// --------------------------------------------------------------
-console.log("secp256k1: exportKey Test")
-let pvKey2jwk = secp256k1.exportKey(
-    'jwk',
-    keys.privateKey
-)
-console.log('exported private Key:',pvKey2jwk)
-let pbKey2jwk = secp256k1.exportKey(
-    'jwk',
-    keys.publicKey
-)
-console.log('exported public Key (jwk):',pbKey2jwk)
-let pbKey2raw = secp256k1.exportKey(
-    'raw',
-    keys.publicKey
-)
-console.log('exported public Key (raw):',pbKey2raw)
-console.log('\n')
-// --------------------------------------------------------------
-console.log("secp256k1: sign Test")
-let signed = secp256k1.sign(
-    pvKey,
-    new TextEncoder().encode("Testing this sample text")
-)
-console.log(signed)
-console.log('\n')
-// --------------------------------------------------------------
-console.log("secp256k1: verify Test")
-let verified = secp256k1.verify(
-    pbKey,
-    new Uint8Array(signed),
-    new TextEncoder().encode("Testing this sample text")
-)
-console.log(verified)*/
