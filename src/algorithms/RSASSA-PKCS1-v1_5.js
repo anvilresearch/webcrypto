@@ -66,7 +66,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    * @param {CryptoKey} key
    * @param {BufferSource} data
    *
-   * @returns {string}
+   * @returns {ArrayBuffer}
    */
   sign (key, data) {
     if (key.type !== 'private') {
@@ -271,7 +271,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
           type: 'public',
           extractable: true,
           usages: ['verify'],
-          handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs1')
+          handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs8')
         })
       }
     } else {
