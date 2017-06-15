@@ -43,38 +43,6 @@ const {
   ECDSA_P512_PublicPem,
 } = require('../EcdsaKeyPairsForTesting')
 
-// K256
-ECDSATest({
-  ECPrivateKey: ECDSA_K256_PrivateKey,
-  ECPublicKey: ECDSA_K256_PublicKey,
-  ECPrivatePem: ECDSA_K256_PrivatePem,
-  ECPublicPem: ECDSA_K256_PublicPem,
-}, 'K-256', 'SHA-256')
-
-// P256
-ECDSATest({
-  ECPrivateKey: ECDSA_P256_PrivateKey,
-  ECPublicKey: ECDSA_P256_PublicKey,
-  ECPrivatePem: ECDSA_P256_PrivatePem,
-  ECPublicPem: ECDSA_P256_PublicPem,
-}, 'P-256', 'SHA-256')
-
-// P384
-ECDSATest({
-  ECPrivateKey: ECDSA_P384_PrivateKey,
-  ECPublicKey: ECDSA_P384_PublicKey,
-  ECPrivatePem: ECDSA_P384_PrivatePem,
-  ECPublicPem: ECDSA_P384_PublicPem,
-}, 'P-384', 'SHA-384')
-
-// P512
-ECDSATest({
-  ECPrivateKey: ECDSA_P512_PrivateKey,
-  ECPublicKey: ECDSA_P512_PublicKey,
-  ECPrivatePem: ECDSA_P512_PrivatePem,
-  ECPublicPem: ECDSA_P512_PublicPem,
-}, 'P-512', 'SHA-512')
-
 /**
  * Tests
  */
@@ -269,12 +237,14 @@ const ECDSATest = ({ ECPrivateKey, ECPublicKey, ECPrivatePem, ECPublicPem }, ecc
               x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
               y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo'
             }
-            ec = new ECDSA({
-                name: 'ECDSA',
-                namedCurve: eccrv,
-                hash: { name: echash }
-            })
-            alg = { name: eccrv }
+            alg = {
+              name: 'ECDSA',
+              namedCurve: eccrv,
+              hash: {
+                name: echash
+              }
+            }
+            ec = new ECDSA(alg)
           })
 
           it('should throw SyntaxError', () => {
@@ -294,12 +264,14 @@ const ECDSATest = ({ ECPrivateKey, ECPublicKey, ECPrivatePem, ECPublicPem }, ecc
               x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
               y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo'
             }
-            ec = new ECDSA({
-                name: 'ECDSA',
-                namedCurve: eccrv,
-                hash: { name: echash }
-            })
-            alg = { name: eccrv }
+            alg = {
+              name: 'ECDSA',
+              namedCurve: eccrv,
+              hash: {
+                name: echash
+              }
+            }
+            ec = new ECDSA(alg)
           })
 
           it('should throw SyntaxError', () => {
@@ -319,12 +291,14 @@ const ECDSATest = ({ ECPrivateKey, ECPublicKey, ECPrivatePem, ECPublicPem }, ecc
               x: 'L_yAQbK4Kg95AknFkfVO8V5rWkN1shsz7jrEyDZ3McA',
               y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo'
             }
-            ec = new ECDSA({
-                name: 'ECDSA',
-                namedCurve: eccrv,
-                hash: { name: echash }
-              })
-            alg = { name: eccrv }
+            alg = {
+              name: 'ECDSA',
+              namedCurve: eccrv,
+              hash: {
+                name: echash
+              }
+            }
+            ec = new ECDSA(alg)
           })
 
           it('should throw DataError', () => {
@@ -345,12 +319,14 @@ const ECDSATest = ({ ECPrivateKey, ECPublicKey, ECPrivatePem, ECPublicPem }, ecc
               y: '2Na7_YUSHDMn68XsnIGOfo3TwiIqfbaTXvavUKzT6qo',
               use: "WRONG"
             }
-            ec = new ECDSA({
-                name: 'ECDSA',
-                namedCurve: eccrv,
-                hash: { name: echash }
-            })
-            alg = { name: eccrv }
+            alg = {
+              name: 'ECDSA',
+              namedCurve: eccrv,
+              hash: {
+                name: echash
+              }
+            }
+            ec = new ECDSA(alg)
           })
 
           it('should throw DataError', () => {
@@ -516,3 +492,35 @@ const ECDSATest = ({ ECPrivateKey, ECPublicKey, ECPrivatePem, ECPublicPem }, ecc
 
   })//ECDSA TESTS
 }
+
+// K256
+ECDSATest({
+  ECPrivateKey: ECDSA_K256_PrivateKey,
+  ECPublicKey: ECDSA_K256_PublicKey,
+  ECPrivatePem: ECDSA_K256_PrivatePem,
+  ECPublicPem: ECDSA_K256_PublicPem,
+}, 'K-256', 'SHA-256')
+
+// P256
+ECDSATest({
+  ECPrivateKey: ECDSA_P256_PrivateKey,
+  ECPublicKey: ECDSA_P256_PublicKey,
+  ECPrivatePem: ECDSA_P256_PrivatePem,
+  ECPublicPem: ECDSA_P256_PublicPem,
+}, 'P-256', 'SHA-256')
+
+// P384
+ECDSATest({
+  ECPrivateKey: ECDSA_P384_PrivateKey,
+  ECPublicKey: ECDSA_P384_PublicKey,
+  ECPrivatePem: ECDSA_P384_PrivatePem,
+  ECPublicPem: ECDSA_P384_PublicPem,
+}, 'P-384', 'SHA-384')
+
+// P512
+ECDSATest({
+  ECPrivateKey: ECDSA_P512_PrivateKey,
+  ECPublicKey: ECDSA_P512_PublicKey,
+  ECPrivatePem: ECDSA_P512_PrivatePem,
+  ECPublicPem: ECDSA_P512_PublicPem,
+}, 'P-512', 'SHA-512')
