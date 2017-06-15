@@ -1,8 +1,8 @@
 /**
  * Dependencies
  */
-const {pem2jwk} = require('pem-jwk')
 const CryptoKey = require('../src/keys/CryptoKey')
+const keyto = require('@trust/keyto')
 
 /**
  * RsaPrivateKey
@@ -39,7 +39,7 @@ rrdlkni8537vUl2rwiG3U3LTi9vHMIbBQek5rxlbc8jS8ejGUFdc
 /**
  * RsaPrivateJwk
  */
-const RsaPrivateJwk = pem2jwk(RsaPrivateKey)
+const RsaPrivateJwk = keyto.from(RsaPrivateKey,'pem').toJwk('private')
 
 /**
  * RsaPrivateCryptoKey
@@ -69,7 +69,7 @@ BQIDAQAB
 /**
  * RsaPublicJwk
  */
-const RsaPublicJwk = pem2jwk(RsaPublicKey)
+const RsaPublicJwk = keyto.from(RsaPublicKey,'pem').toJwk('public')
 
 /**
  * RsaPrivateCryptoKey
