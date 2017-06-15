@@ -4,7 +4,6 @@
 const RSA = require('node-rsa')
 const crypto = require('crypto')
 const {spawnSync} = require('child_process')
-const {pem2jwk, jwk2pem} = require('pem-jwk')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
