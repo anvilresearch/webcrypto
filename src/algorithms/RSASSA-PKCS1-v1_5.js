@@ -4,7 +4,7 @@
 const RSA = require('node-rsa')
 const crypto = require('crypto')
 const {spawnSync} = require('child_process')
-const {pem2jwk, jwk2pem} = require('pem-jwk')
+const keyto = require('@trust/keyto')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
@@ -14,10 +14,10 @@ const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const CryptoKeyPair = require('../keys/CryptoKeyPair')
 const JsonWebKey = require('../keys/JsonWebKey')
-const KeyAlgorithm = require('../dictionaries/KeyAlgorithm') 
-const RsaKeyAlgorithm = require('../dictionaries/RsaKeyAlgorithm') 
+const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
+const RsaKeyAlgorithm = require('../dictionaries/RsaKeyAlgorithm')
 const RsaHashedKeyAlgorithm = require('../dictionaries/RsaHashedKeyAlgorithm')
-const supportedAlgorithms = require('../algorithms') 
+const supportedAlgorithms = require('../algorithms')
 
 /**
  * Errors
@@ -66,7 +66,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    * @param {CryptoKey} key
    * @param {BufferSource} data
    *
-   * @returns {string}
+   * @returns {ArrayBuffer}
    */
   sign (key, data) {
     if (key.type !== 'private') {
@@ -76,8 +76,8 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     try {
       let pem = key.handle
       data = new TextDecoder().decode(data)
-      let signer = crypto.createSign('RSA-SHA256') // FIXME Paramaterize 
-      signer.update(data) 
+      let signer = crypto.createSign('RSA-SHA256') // FIXME Paramaterize
+      signer.update(data)
       return signer.sign(pem).buffer
     } catch (error) {
       throw new OperationError(error.message)
@@ -220,7 +220,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
         throw new DataError('Key use must be "sig"')
       }
 
-      // FIXME needs "ext" validation, see specification 6 under "jwk" 
+      // FIXME needs "ext" validation, see specification 6 under "jwk"
 
       // TODO
       //if (jwk.key_ops ...) {
@@ -262,7 +262,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
           type: 'private',
           extractable: extractable,
           usages: ['sign'],
-          handle: jwk2pem(jwk)
+          handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs1')
         })
       } else {
         // TODO
@@ -271,7 +271,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
           type: 'public',
           extractable: true,
           usages: ['verify'],
-          handle: jwk2pem(jwk)
+          handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs8')
         })
       }
     } else {
@@ -329,7 +329,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
         // TODO other applicable specifications
       }
 
-      Object.assign(jwk, pem2jwk(key.handle))
+      Object.assign(jwk, keyto.from(key.handle, 'pem').toJwk(key.type))
 
       jwk.key_ops = key.usages
       jwk.ext = key.extractable

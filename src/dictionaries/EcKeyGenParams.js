@@ -11,7 +11,13 @@ class EcKeyGenParams extends Algorithm {
   /**
    * Constructor
    */
-  constructor () {}
+  constructor (params) {
+    super(params)
+  }
+
+  static get mapping () {
+
+  }
 }
 
 /**

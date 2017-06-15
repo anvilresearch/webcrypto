@@ -11,7 +11,9 @@ class EcKeyImportParams extends Algorithm {
   /**
    * Constructor
    */
-  constructor () {}
+  constructor (params) {
+    super(params)
+  }
 }
 
 /**
