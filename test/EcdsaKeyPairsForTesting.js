@@ -23,7 +23,11 @@ const ECDSA_K256_PublicKey = ECDSA_K256.importKey(
           y: 'JGGVfZjuI_25bBbEuwI5PA4M2DMyoS5d07BlA5dWr0E'
       },
       {
-          name: 'K-256'
+          name: 'ECDSA',
+          namedCurve: 'K-256',
+          hash: {
+            name: 'SHA-256'
+          }
       },
       true,
       ['verify'])
@@ -50,7 +54,11 @@ const ECDSA_K256_PrivateKey = ECDSA_K256.importKey(
           y: 'JGGVfZjuI_25bBbEuwI5PA4M2DMyoS5d07BlA5dWr0E'
       },
       {
-          name: 'K-256'
+          name: 'ECDSA',
+          namedCurve: 'K-256',
+          hash: {
+            name: 'SHA-256'
+          }
       },
       true,
       ['sign'])
@@ -77,7 +85,11 @@ const ECDSA_P256_PublicKey = ECDSA_P256.importKey(
         "y": "CM1wRrk_90vXDVymupli0yyHAcRBVS3MdQFUCSq5BV0"
       },
       {
-          name: 'K-256'
+          name: 'ECDSA',
+          namedCurve: 'P-256',
+          hash: {
+            name: 'SHA-256'
+          }
       },
       true,
       ['verify'])
@@ -103,7 +115,11 @@ const ECDSA_P256_PrivateKey = ECDSA_P256.importKey(
         "y": "CM1wRrk_90vXDVymupli0yyHAcRBVS3MdQFUCSq5BV0"
       },
       {
-          name: 'P-256'
+          name: 'ECDSA',
+          namedCurve: 'P-256',
+          hash: {
+            name: 'SHA-256'
+          }
       },
       true,
       ['sign'])
@@ -129,7 +145,11 @@ const ECDSA_P384_PublicKey = ECDSA_P384.importKey(
         "y": "NVey0D8e2Kjx1iqge8-KTCCd7VMs3o6mSPnVjdC6ls6ntN7-0M7yFNUNqh_LPCKz"
       },
       {
-          name: 'P-384'
+          name: 'ECDSA',
+          namedCurve: 'P-384',
+          hash: {
+            name: 'SHA-384'
+          }
       },
       true,
       ['verify'])
@@ -156,7 +176,11 @@ const ECDSA_P384_PrivateKey = ECDSA_P384.importKey(
         "y": "NVey0D8e2Kjx1iqge8-KTCCd7VMs3o6mSPnVjdC6ls6ntN7-0M7yFNUNqh_LPCKz"
       },
       {
-          name: 'P-384'
+          name: 'ECDSA',
+          namedCurve: 'P-384',
+          hash: {
+            name: 'SHA-384'
+          }
       },
       true,
       ['sign'])
@@ -183,7 +207,11 @@ const ECDSA_P512_PublicKey = ECDSA_P512.importKey(
         "y": "AQc6m4W2GVAfWKxf3qhCtKj6nGCQxCNTHF54AX-Yh4g271LYf8VgW8bshT877SJOJjkYabKJc8NOG_lp1cwffOfq"
       },
       {
-          name: 'P-512'
+          name: 'ECDSA',
+          namedCurve: 'P-512',
+          hash: {
+            name: 'SHA-512'
+          }
       },
       true,
       ['verify'])
@@ -211,7 +239,11 @@ const ECDSA_P512_PrivateKey = ECDSA_P512.importKey(
         "y": "AQc6m4W2GVAfWKxf3qhCtKj6nGCQxCNTHF54AX-Yh4g271LYf8VgW8bshT877SJOJjkYabKJc8NOG_lp1cwffOfq"
       },
       {
-          name: 'P-512'
+          name: 'ECDSA',
+          namedCurve: 'P-512',
+          hash: {
+            name: 'SHA-512'
+          }
       },
       true,
       ['sign'])
