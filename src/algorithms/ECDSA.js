@@ -76,16 +76,16 @@ class ECDSA extends Algorithm {
     }
     // 2-5. Ommitted due to support by Crypto
     // 6. Attempt to sign using Crypto lib
-    try {
+    // try {
         data = Buffer.from(data)
 
         let signer = crypto.createSign('sha256')
         signer.update(data)
 
         result = signer.sign(key.handle)
-    } catch (error) {
-      throw new OperationError(error.message)
-    }
+    // } catch (error) {
+    //   throw new OperationError(error.message)
+    // }
     // 7. Return resulting buffer
     return result.buffer
   }//sign
@@ -151,8 +151,8 @@ class ECDSA extends Algorithm {
       throw new DataError('namedCurve is a required parameter for ECDSA')
     }
 
-    if (namedCurve !== 'K-256') {
-      throw new CurrentlyNotSupportedError(namedCurve, 'K-256')
+    if (!EcKeyAlgorithm.mapping.map(alg => alg.namedCurve).includes(namedCurve)) {
+      throw new DataError('namedCurve is not valid')
     }
 
     let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === namedCurve)
@@ -271,7 +271,7 @@ class ECDSA extends Algorithm {
       // 2.3.8. Ommitted due to redundancy
 
       // 2.3.9.1. If namedCurve is equal to 'secp256k1' then...
-      if (namedCurve === 'K-256'){
+      if (EcKeyAlgorithm.mapping.map(alg => alg.namedCurve).includes(namedCurve)){
         // 2.3.9.1.1-3 Ommited due to redundancy
         // 2.3.9.1.4.1. Validate 'd' property
         if (jwk.d) {
