@@ -77,7 +77,7 @@ class ECDSA extends Algorithm {
     // 2-5. Ommitted due to support by Crypto
     // 6. Attempt to sign using Crypto lib
     try {
-      let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === key.algorithm.name)
+      let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === key.algorithm.namedCurve)
       data = Buffer.from(data)
 
       let signer = crypto.createSign(osslCurveName.hash)
@@ -113,7 +113,7 @@ class ECDSA extends Algorithm {
     // 2-5. Ommitted due to support by Crypto
     // 6. Attempt to verify using Crypto lib
     try {
-      let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === key.algorithm.name)
+      let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === key.algorithm.namedCurve)
       data = Buffer.from(data)
       signature = Buffer.from(signature)
 
