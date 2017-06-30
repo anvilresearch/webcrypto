@@ -1,7 +1,10 @@
+'use strict'
+
 /**
  * Local dependencies
  */
 const KeyAlgorithm = require('./KeyAlgorithm')
+const DataError = require('../errors/DataError')
 
 /**
  * RsaKeyAlgorithm
@@ -9,34 +12,42 @@ const KeyAlgorithm = require('./KeyAlgorithm')
 class RsaKeyAlgorithm extends KeyAlgorithm {
 
   /**
-   * constructor
+   * Constructor
    *
-   * @param {object} algorithm
+   * @param {Object} algorithm
+   * @param {String} algorithm.name
+   * @param {Number} algorithm.modulusLength
+   * @param {BigInteger} algorithm.publicExponent
    */
   constructor (algorithm) {
-    // Call parent constructor then validate sundry tests
     super(algorithm)
-    /* FIXME Implement to pass tests
-    // validate type of modulusLength
-    if (typeof this.modulusLength !== 'number') {
-      throw new Error(
-        'modulusLength of RsaKeyAlgorithm must be a number'
-      )
+
+    // required
+    if (!this.modulusLength) {
+      throw new SyntaxError('modulusLength is required')
     }
 
-    // validate range of modulusLength
+    if (typeof this.modulusLength !== 'number') {
+      throw new TypeError('modulusLength must be a number')
+    }
+
+    // unsigned long
+    this.modulusLength = RsaKeyAlgorithm.coerceNumber(this.modulusLength, 'unsigned long')
+
+    // Minimum modulusLength
     if (this.modulusLength < 1024) {
-      throw new Error(
-        'modulusLength of RsaKeyAlgorithm must be at least 1024'
-      )
+      throw new DataError('modulusLength must be at least 1024')
+    }
+
+    // required
+    if (!this.publicExponent) {
+      throw new SyntaxError('publicExponent is required')
     }
 
     // validate publicExponent
     if (!(this.publicExponent instanceof Uint8Array)) {
-      throw new Error(
-        'publicExponent of RsaKeyAlgorithm must be a BigInteger'
-      )
-    }*/
+      throw new TypeError('publicExponent must be a BigInteger')
+    }
   }
 }
 
