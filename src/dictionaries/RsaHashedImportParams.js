@@ -1,11 +1,26 @@
+'use strict'
+
+/**
+ * Local dependencies
+ */
+const Algorithm = require('./Algorithm')
+
 /**
  * RsaHashedImportParams
  */
-class RsaHashedImportParams {
-  constructor (hash) {
-    // validate and set hash
-    //if (!(hash instanceof HashAlgorithmIdentifier)) { throw new Error() }
-    this.hash = hash
+class RsaHashedImportParams extends Algorithm {
+
+  /**
+   * constructor
+   */
+  constructor (algorithm) {
+    super(algorithm)
+
+    if (!this.hash) {
+      throw new SyntaxError('hash is required')
+    }
+
+    this.hash = new Algorithm(this.hash)
   }
 }
 
