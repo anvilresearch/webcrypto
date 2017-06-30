@@ -1,36 +1,28 @@
-/**
- * Package dependencies
- */
-const RSA = require('node-rsa')
-const crypto = require('crypto')
-const {spawnSync} = require('child_process')
-const {TextEncoder, TextDecoder} = require('text-encoding')
+'use strict'
 
 /**
  * Local dependencies
  */
-const CryptoKey = require('../keys/CryptoKey')
-const CryptoKeyPair = require('../keys/CryptoKeyPair')
-const JsonWebKey = require('../keys/JsonWebKey')
-const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyAlgorithm = require('./RsaKeyAlgorithm')
-const supportedAlgorithms = require('../algorithms')
-
-/**
- * Errors
- */
-const {
-  DataError,
-  OperationError,
-  InvalidAccessError,
-  KeyFormatNotSupportedError
-} = require('../errors')
+const Algorithm = require('./Algorithm')
 
 /**
  * RsaHashedKeyAlgorithm
  */
 class RsaHashedKeyAlgorithm extends RsaKeyAlgorithm {
 
+  /**
+   * constructor
+   */
+  constructor (algorithm) {
+    super(algorithm)
+
+    if (!this.hash) {
+      throw new SyntaxError('hash is required')
+    }
+
+    this.hash = new Algorithm(this.hash)
+  }
 }
 
 /**
