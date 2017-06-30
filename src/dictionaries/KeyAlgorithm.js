@@ -1,31 +1,40 @@
-/**
- * Local dependencies
- */
-const {NotSupportedError} = require('../errors')
+'use strict'
 
 /**
- * KeyAlgorithm dictionary
+ * Module Dependencies
+ * @ignore
  */
-class KeyAlgorithm {
+const Dictionary = require('./Dictionary')
+
+/**
+ * KeyAlgorithm
+ */
+class KeyAlgorithm extends Dictionary {
 
   /**
    * constructor
    *
-   * @param {object} algorithm
+   * @description
+   * The KeyAlgorithm dictionary represents information about the contents of a given CryptoKey
+   * object.
+   *
+   * @param {String|Object} algorithm
    */
   constructor (algorithm) {
-    Object.assign(this, algorithm)
+    super(algorithm)
 
-    // validate name
-    if (this.name === undefined) {
-      throw new Error('KeyAlgorithm must have a name')
+    if (!this.name) {
+      throw new SyntaxError('KeyAlgorithm must have a name')
+    }
+
+    if (typeof this.name !== 'string') {
+      throw new TypeError('KeyAlgorithm name must be a string')
     }
   }
 }
 
-
-
 /**
  * Export
+ * @ignore
  */
 module.exports = KeyAlgorithm
