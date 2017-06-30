@@ -1,8 +1,10 @@
+'use strict'
+
 /**
  * Local dependencies
  */
-const KeyAlgorithm = require('./KeyAlgorithm')
 const RsaKeyGenParams = require('./RsaKeyGenParams')
+const Algorithm = require('./Algorithm')
 
 /**
  * RsaHashedKeyGenParams
@@ -14,18 +16,12 @@ class RsaHashedKeyGenParams extends RsaKeyGenParams {
    */
   constructor (algorithm) {
     super(algorithm)
-  }
 
-  /**
-   * validate
-   */
-  validate () {
-    // validate hash is an object
-    if (typeof this.hash !== 'object') {
-      throw new Error(
-        'hash of RsaHashedKeyGenParams must be an object'
-      )
+    if (!this.hash) {
+      throw new SyntaxError('hash is required')
     }
+
+    this.hash = new Algorithm(this.hash)
   }
 }
 
