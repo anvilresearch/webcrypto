@@ -1,7 +1,15 @@
+'use strict'
+
+/**
+ * Module Dependencies
+ * @ignore
+ */
+const Dictionary = require('./Dictionary')
+
 /**
  * Algorithm
  */
-class Algorithm {
+class Algorithm extends Dictionary {
 
   /**
    * constructor
@@ -11,21 +19,23 @@ class Algorithm {
    * to specify an algorithm and any additional parameters required to
    * fully specify the desired operation.
    *
-   * @param {string|Object} algorithm
+   * @param {String|Object} algorithm
    */
   constructor (algorithm) {
-    if (typeof algorithm === 'string') {
-      this.name = algorithm
-    } else {
-      Object.assign(this, algorithm)
-      if (typeof this.name !== 'string') {
-        throw new Error('Algorithm name must be a string')
-      }
+    super(algorithm)
+
+    if (!this.name) {
+      throw new SyntaxError('Algorithm must have a name')
+    }
+
+    if (typeof this.name !== 'string') {
+      throw new TypeError('Algorithm name must be a string')
     }
   }
 }
 
 /**
  * Export
+ * @ignore
  */
 module.exports = Algorithm
