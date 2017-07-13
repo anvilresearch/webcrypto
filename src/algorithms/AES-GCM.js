@@ -148,7 +148,6 @@ class AES_GCM extends Algorithm {
       } else {
         tagLength = algorithm.tagLength
       }
-      console.log(tagLength)
 
       // 2. Verify data length
       if (algorithm.tagLength === undefined || (data.length * 8) < algorithm.tagLength){
@@ -452,7 +451,10 @@ let key = aes.generateKey(
     false, //whether the key is extractable (i.e. can be used in exportKey)
     ["encrypt", "decrypt"] //can "encrypt", "decrypt", "wrapKey", or "unwrapKey"
 )
-console.log("key",key)
+console.log("key",key,key.handle.byteLength)
+console.log("keyH",new Uint8Array(key.handle))
+
+
 
 let ikey = aes.importKey(
       "jwk", //can be "jwk" or "raw"
@@ -476,12 +478,12 @@ let ekey = aes.exportKey(
 )
 console.log("ekey",ekey)
 
-let data = new TextEncoder().encode("Encoded Text for verification.")
+let data = new TextEncoder().encode("Encoded Text for verification")
 iv =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
 let enc = aes.encrypt(
-      {
-        name: "AES-GCM",
-        iv,
+    {
+      name: "AES-GCM",
+      iv,
     },
     ikey,
     data
@@ -502,3 +504,4 @@ let dec8 = new Uint8Array(dec)
 console.log(dec8)
 console.log(new TextDecoder().decode(dec8))
 */
+
