@@ -77,7 +77,7 @@ class AES_GCM extends Algorithm {
 
       // 3. Ensure correct additionalData
       if (algorithm.additionalData !== undefined 
-          && (algorithm.additionalData.length !== undefined 
+          && (algorithm.additionalData.length === undefined 
           || algorithm.additionalData.length > 18446744073709551615)) { // 2^64-1 
         throw new OperationError('AdditionalData must be less than 18446744073709551615 in length.')
       }
@@ -92,6 +92,8 @@ class AES_GCM extends Algorithm {
         throw new CurrentlyNotSupportedError('Node currently only supports 128 tagLength.', '128')
       } else if (algorithm.tagLength !== 128) {
         throw new OperationError('TagLength is an invalid size.')
+      } else {
+        tagLength = algorithm.tagLength
       }
       
       // 5. Assign additionalData
@@ -115,7 +117,8 @@ class AES_GCM extends Algorithm {
       ciphertext = Buffer.concat([ciphertext,cipher.final()])
       
       // 7. Concat C and T
-      ciphertext = Buffer.concat([ciphertext,cipher.getAuthTag()])
+      let authTag = cipher.getAuthTag()
+      ciphertext = Buffer.concat([ciphertext,authTag])
       
       // 8. Return result
       return Uint8Array.from(ciphertext).buffer
@@ -142,10 +145,13 @@ class AES_GCM extends Algorithm {
         throw new CurrentlyNotSupportedError('Node currently only supports 128 tagLength.', '128')
       } else if (algorithm.tagLength !== 128) {
         throw new OperationError('TagLength is an invalid size.')
+      } else {
+        tagLength = algorithm.tagLength
       }
+      console.log(tagLength)
 
       // 2. Verify data length
-      if (algorithm.tagLength === undefined || data.length < algorithm.tagLength){
+      if (algorithm.tagLength === undefined || (data.length * 8) < algorithm.tagLength){
         throw new OperationError('Data length cannot be less than tagLength.')
       } 
 
@@ -153,20 +159,29 @@ class AES_GCM extends Algorithm {
       if (algorithm.iv.byteLength === undefined || algorithm.iv.byteLength > 18446744073709551615) { // 2^64-1 
         throw new OperationError('IV Length must be less than 18446744073709551615 in length.')
       }
-            
-      // 4. Ensure correct additionalData
-      if (algorithm.additionalData !== undefined 
-          && (algorithm.additionalData.length !== undefined 
-          || algorithm.additionalData.length > 18446744073709551615)) { // 2^64-1 
-        throw new OperationError('AdditionalData must be less than 18446744073709551615 in length.')
+
+      // 4 & 7. Ensure correct additionalData
+      let additionalData
+      if (algorithm.additionalData !== undefined){
+           if (algorithm.additionalData.length === undefined 
+              || algorithm.additionalData.length > 18446744073709551615) { // 2^64-1 
+            throw new OperationError('AdditionalData must be less than 18446744073709551615 in length.')
+          } else {
+            additionalData = Buffer.from(algorithm.additionalData)
+          }
+      } else{
+        additionalData = Buffer.from('')
       }
       
-      // 5. Ommited due to lack of Node crypto support. Tag size can only be 128
-      // Note: node only support tag length up to 128, so there is some discrepancy between 
-      // this, and the spec outline: https://www.w3.org/TR/WebCryptoAPI/#aes-gcm
-      // TODO Continue here
+      // 5. Get the AuthTag 
+      data = Buffer.from(data)
+      let tagLengthBytes = tagLength/8
+      let tag = data.slice(-tagLengthBytes)
 
-      // 2. Perform the decryption 
+      // 6. Get the actualCiphertext
+      let actualCiphertext = data.slice(0,-tagLengthBytes)
+
+      // 8. Perform the decryption 
       let cipherName
       if (key.algorithm.name === 'AES-GCM' && [128,192,256].includes(key.algorithm.length)){
         cipherName = 'aes-' + key.algorithm.length + '-gcm'
@@ -174,11 +189,12 @@ class AES_GCM extends Algorithm {
         throw new DataError('Invalid AES-GCM and length pair.')
       }
       let decipher = crypto.createDecipheriv(cipherName,key.handle,Buffer.from(algorithm.iv))
-      let ciphertext = decipher.update(Buffer.from(data))
-      let plaintext = Array.from(Buffer.concat([ciphertext,decipher.final()]))
-    
+      decipher.setAAD(additionalData)
+      decipher.setAuthTag(tag)
+      let plaintext = decipher.update(Buffer.from(actualCiphertext))
+      plaintext = Buffer.concat([plaintext,decipher.final()])
 
-      // 6. Return resulting ArrayBuffer
+      // 9. Return resulting ArrayBuffer
       return Uint8Array.from(plaintext).buffer
     }
 
@@ -426,7 +442,7 @@ class AES_GCM extends Algorithm {
  */
 module.exports = AES_GCM
 
-
+/*
 let aes = new AES_GCM({name: "AES-GCM", length: 128})
 let key = aes.generateKey(
     {
@@ -460,20 +476,29 @@ let ekey = aes.exportKey(
 )
 console.log("ekey",ekey)
 
-let data = new TextEncoder().encode("Encoded Text for verification")
+let data = new TextEncoder().encode("Encoded Text for verification.")
 iv =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
 let enc = aes.encrypt(
       {
         name: "AES-GCM",
-
-        //Don't re-use initialization vectors!
-        //Always generate a new iv every time your encrypt!
-        //Recommended to use 12 bytes length
         iv,
     },
     ikey,
     data
 )
-enc = new Uint8Array(enc)
+enc2 = new Uint8Array(enc)
 let browserData = new Uint8Array([28, 37, 34, 19, 165, 194, 33, 41, 10, 76, 126, 127, 135, 14, 117, 111, 210, 155, 113, 94, 77, 33, 26, 189, 22, 66, 159, 66, 92, 83, 254, 10, 255, 22, 241, 179, 160, 195, 220, 120, 138, 47, 251, 198, 168])
-console.log(JSON.stringify(enc)==JSON.stringify(browserData))
+console.log(JSON.stringify(enc2)==JSON.stringify(browserData))
+
+let dec = aes.decrypt({
+        name: "AES-GCM",
+        iv, //The initialization vector you used to encrypt
+        tagLength:128
+    },
+    ikey,
+    enc)
+
+let dec8 = new Uint8Array(dec)
+console.log(dec8)
+console.log(new TextDecoder().decode(dec8))
+*/
