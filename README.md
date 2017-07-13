@@ -41,6 +41,13 @@ encourage or provide a [native, if not core][wtf] Web Cryptography module.
 
 ## Install
 
+`@trust/webcrypto` requires recent versions of [node][node] and [npm][npm] to run. For key generation operations, it also requires [OpenSSL][openssl] to be installed on the system.
+
+[node]: https://nodejs.org
+[npm]: https://www.npmjs.com/
+[openssl]: https://www.openssl.org/
+
+
 ```bash
 $ npm install @trust/webcrypto --save
 ```
