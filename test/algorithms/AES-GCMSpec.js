@@ -55,7 +55,7 @@ describe('AES_GCM', () => {
   /**
    * encrypt
    */
-  describe.skip('encrypt', () => {
+  describe('encrypt', () => {
     let aes, key, data, signature
 
     before(() => {     
@@ -79,13 +79,13 @@ describe('AES_GCM', () => {
             [28, 37, 34, 19, 165, 194, 33, 41, 41, 64, 114, 99, 135, 63, 127, 127, 177, 159, 109, 92, 80, 40, 168, 117, 38, 124, 35, 180, 244, 74, 59, 140, 210, 236, 134, 182, 126, 180])
     })
 
-    it("should throw with invalid iv length", () => {
+    it.skip("should throw with invalid iv length", () => {
         expect(() => {
             aes.encrypt({name: "AES-GCM", iv: bad_iv},key,new Uint8Array())
         }).to.throw('IV Length must be exactly 16 bytes')
     })
 
-    it('should return an ArrayBuffer', () => {
+    it.skip('should return an ArrayBuffer', () => {
       aes.encrypt({name: "AES-GCM", iv: good_iv},key,data).should.be.instanceof(ArrayBuffer)
     })
 
@@ -98,7 +98,7 @@ describe('AES_GCM', () => {
 /**
  * decrypt
  */
-  describe.skip('decrypt', () => {
+  describe('decrypt', () => {
     let aes, key, data, signature
     before(() => {     
         aes = new AES_GCM({ name: "AES-GCM", length: 256 }) 
@@ -120,18 +120,18 @@ describe('AES_GCM', () => {
         signature = new TextEncoder().encode('Encoded with WebCrypto')
     })
 
-    it("should throw with invalid iv length", () => {
+    it.skip("should throw with invalid iv length", () => {
         expect(() => {
             aes.decrypt({name: "AES-GCM", iv: bad_iv},key,new Uint8Array())
         }).to.throw('IV Length must be exactly 16 bytes')
     })
 
-    it('should return an ArrayBuffer', () => {
+    it.skip('should return an ArrayBuffer', () => {
       aes.decrypt({name: "AES-GCM", iv: good_iv},key,data).should.be.instanceof(ArrayBuffer)
     }) 
 
     it('should return a valid encryption', () => {
-        Buffer.from(aes.decrypt({name: "AES-GCM", iv: good_iv},key,data))
+        Buffer.from(aes.decrypt({name: "AES-GCM", iv: good_iv, tagLength:128},key,data))
         .should.eql(Buffer.from(signature.buffer)) 
     })
   }) // decrypt
