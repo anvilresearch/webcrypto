@@ -163,8 +163,12 @@ class ECDSA extends Algorithm {
         // TODO may need to remove -noout if ec params is needed
         let privateKey = spawnSync('openssl', ['ecparam','-name',osslCurveName.name,'-genkey','-noout']).stdout
         let publicKey = spawnSync('openssl', ['ec', '-pubout'], { input: privateKey }).stdout
-        keypair.privateKey = privateKey.toString('ascii').trim()
-        keypair.publicKey = publicKey.toString('ascii').trim()
+        try {
+          keypair.privateKey = privateKey.toString('ascii').trim()
+          keypair.publicKey = publicKey.toString('ascii').trim()
+        } catch(error){
+          throw new OperationError(error.message)
+        }
     } catch (error) {
     // 3. If any operation fails then throw error
       throw new OperationError(error.message)
