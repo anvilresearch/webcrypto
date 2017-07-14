@@ -143,9 +143,12 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       let privateKey = spawnSync('openssl', ['genrsa', modulusLength || 4096]).stdout
       let publicKey = spawnSync('openssl', ['rsa', '-pubout'], { input: privateKey }).stdout
 
+	  try{
       keypair.privateKey = privateKey.toString('ascii')
       keypair.publicKey = publicKey.toString('ascii')
-
+	  } catch (error){
+	    throw new OperationError(error.message)
+	  }
       // - what is this bit option, where do we get the value from in this api?
       //let key = new RSA({b:512})
       //let {modulusLength,publicExponent} = params
