@@ -2,14 +2,14 @@
  * Package dependencies
  */
 const crypto = require('crypto')
-const base64url = require('base64url') 
+const base64url = require('base64url')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
  * Local dependencies
  */
 const KeyAlgorithm = require('../dictionaries/KeyAlgorithm')
-const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm') 
+const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm')
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const JsonWebKey = require('../keys/JsonWebKey')
@@ -71,19 +71,19 @@ class AES_GCM extends Algorithm {
       }
 
       // 2. Ensure correct iv length
-      if (algorithm.iv.byteLength === undefined || algorithm.iv.byteLength > 18446744073709551615) { // 2^64-1 
+      if (algorithm.iv.byteLength === undefined || algorithm.iv.byteLength > 18446744073709551615) { // 2^64-1
         throw new OperationError('IV Length must be less than 18446744073709551615 in length.')
       }
 
       // 3. Ensure correct additionalData
-      if (algorithm.additionalData !== undefined 
-          && (algorithm.additionalData.length === undefined 
-          || algorithm.additionalData.length > 18446744073709551615)) { // 2^64-1 
+      if (algorithm.additionalData !== undefined
+          && (algorithm.additionalData.length === undefined
+          || algorithm.additionalData.length > 18446744073709551615)) { // 2^64-1
         throw new OperationError('AdditionalData must be less than 18446744073709551615 in length.')
       }
 
-      // 4. Verify tagLength 
-      // Note: node only support tag length up to 128, so there is some discrepancy between 
+      // 4. Verify tagLength
+      // Note: node only support tag length up to 128, so there is some discrepancy between
       // this, and the spec outline: https://www.w3.org/TR/WebCryptoAPI/#aes-gcm
       let tagLength
       if (algorithm.tagLength === undefined){
@@ -95,7 +95,7 @@ class AES_GCM extends Algorithm {
       } else {
         tagLength = algorithm.tagLength
       }
-      
+
       // 5. Assign additionalData
       let additionalData
       if (algorithm.additionalData !== undefined){
@@ -115,11 +115,11 @@ class AES_GCM extends Algorithm {
       cipher.setAAD(additionalData)
       let ciphertext = cipher.update(Buffer.from(data))
       ciphertext = Buffer.concat([ciphertext,cipher.final()])
-      
+
       // 7. Concat C and T
       let authTag = cipher.getAuthTag()
       ciphertext = Buffer.concat([ciphertext,authTag])
-      
+
       // 8. Return result
       return Uint8Array.from(ciphertext).buffer
     }
@@ -152,18 +152,18 @@ class AES_GCM extends Algorithm {
       // 2. Verify data length
       if (algorithm.tagLength === undefined || (data.length * 8) < algorithm.tagLength){
         throw new OperationError('Data length cannot be less than tagLength.')
-      } 
+      }
 
       // 3. Ensure correct iv length
-      if (algorithm.iv.byteLength === undefined || algorithm.iv.byteLength > 18446744073709551615) { // 2^64-1 
+      if (algorithm.iv.byteLength === undefined || algorithm.iv.byteLength > 18446744073709551615) { // 2^64-1
         throw new OperationError('IV Length must be less than 18446744073709551615 in length.')
       }
 
       // 4 & 7. Ensure correct additionalData
       let additionalData
       if (algorithm.additionalData !== undefined){
-           if (algorithm.additionalData.length === undefined 
-              || algorithm.additionalData.length > 18446744073709551615) { // 2^64-1 
+           if (algorithm.additionalData.length === undefined
+              || algorithm.additionalData.length > 18446744073709551615) { // 2^64-1
             throw new OperationError('AdditionalData must be less than 18446744073709551615 in length.')
           } else {
             additionalData = Buffer.from(algorithm.additionalData)
@@ -171,8 +171,8 @@ class AES_GCM extends Algorithm {
       } else{
         additionalData = Buffer.from('')
       }
-      
-      // 5. Get the AuthTag 
+
+      // 5. Get the AuthTag
       data = Buffer.from(data)
       let tagLengthBytes = tagLength/8
       let tag = data.slice(-tagLengthBytes)
@@ -180,7 +180,7 @@ class AES_GCM extends Algorithm {
       // 6. Get the actualCiphertext
       let actualCiphertext = data.slice(0,-tagLengthBytes)
 
-      // 8. Perform the decryption 
+      // 8. Perform the decryption
       let cipherName
       if (key.algorithm.name === 'AES-GCM' && [128,192,256].includes(key.algorithm.length)){
         cipherName = 'aes-' + key.algorithm.length + '-gcm'
@@ -213,7 +213,7 @@ class AES_GCM extends Algorithm {
           throw new SyntaxError('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
         }
       })
-      
+
       // 2. Validate length
       if (![128,192,256].includes(params.length)) {
           throw new OperationError('Member length must be 128, 192, or 256.')
@@ -227,7 +227,7 @@ class AES_GCM extends Algorithm {
       } catch (error) {
         throw new OperationError(error.message)
       }
-      
+
       // 6. Set new AesKeyAlgorithm
       let algorithm = new AES_GCM(params)
 
@@ -259,12 +259,12 @@ class AES_GCM extends Algorithm {
      */
     importKey (format, keyData, algorithm, extractable, keyUsages) {
       let data, jwk
-      
+
       // 1. Validate keyUsages
       keyUsages.forEach(usage => {
-        if (usage !== 'encrypt' 
-         && usage !== 'decrypt' 
-         && usage !== 'wrapKey' 
+        if (usage !== 'encrypt'
+         && usage !== 'decrypt'
+         && usage !== 'wrapKey'
          && usage !== 'unwrapKey') {
            throw new SyntaxError('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
         }
@@ -283,27 +283,27 @@ class AES_GCM extends Algorithm {
 
       // 2.2 "jwk" format
       else if (format === 'jwk'){
-        // 2.2.1 Ensure data is JsonWebKey dictionary 
+        // 2.2.1 Ensure data is JsonWebKey dictionary
         if (typeof keyData === 'object' && !Array.isArray(keyData)){
           jwk = new JsonWebKey(keyData)
         } else {
           throw new DataError('Invalid jwk format')
         }
-        
+
         // 2.2.2 Validate "kty" field heuristic
         if (jwk.kty !== "oct"){
           throw new DataError('kty property must be "oct"')
         }
-        
-        // 2.2.3 Ensure jwk meets these requirements: 
-        // https://tools.ietf.org/html/rfc7518#section-6.4 
+
+        // 2.2.3 Ensure jwk meets these requirements:
+        // https://tools.ietf.org/html/rfc7518#section-6.4
         if (!jwk.k){
           throw new DataError('k property must not be empty')
         }
-        
-        // 2.2.4 Assign data 
+
+        // 2.2.4 Assign data
         data = base64url.toBuffer(jwk.k)
-        
+
         // 2.2.5 Validate data lengths
         if (data.length === 16) {
           if (jwk.alg && jwk.alg !== 'A128GCM'){
@@ -320,52 +320,52 @@ class AES_GCM extends Algorithm {
         } else {
           throw new DataError('Algorithm and data length mismatch')
         }
-       
+
         // 2.2.6 Validate "use" field
         if (keyUsages && jwk.use && jwk.use !== 'enc'){
           throw new DataError('Key use must be "enc"')
         }
-        
+
         // 2.2.7 Validate "key_ops" field
         if (jwk.key_ops){
           key_ops.forEach(op => {
-            if (op !== 'encrypt' 
-             && op !== 'decrypt' 
-             && op !== 'wrapKey' 
+            if (op !== 'encrypt'
+             && op !== 'decrypt'
+             && op !== 'wrapKey'
              && op !== 'unwrapKey') {
               throw new DataError('Key operation can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
             }
           })
         }
-        
+
         // 2.2.8 validate "ext" field
         if (jwk.ext === false && extractable === true){
           throw new DataError('Cannot be extractable when "ext" is set to false')
         }
       }
-      
+
       // 2.3 Otherwise...
       else {
         throw new KeyFormatNotSupportedError(format)
       }
-      
+
       // 3. Generate new key
       let key = new CryptoKey({
             type: 'secret',
             extractable,
             usages: keyUsages,
-            handle: data 
+            handle: data
         })
-      
+
       // 4-6. Generate algorithm
       let aesAlgorithm = new AES_GCM(
         { name: 'AES-GCM',
           length: data.length * 8
         })
-      
+
       // 7. Set algorithm to internal algorithm property of key
       key.algorithm = aesAlgorithm
-      
+
       // 8. Return key
       return key
   }
@@ -387,28 +387,28 @@ class AES_GCM extends Algorithm {
       if (!key.handle) {
         throw new OperationError('Missing key material')
       }
-      
+
       // 2.1 "raw" format
       if (format === 'raw'){
           // 2.1.1 Let data be the raw octets of the key
-          data = key.handle 
+          data = key.handle
           // 2.1.2 Let result be containing data
-          result = Buffer.from(data) 
+          result = Buffer.from(data)
       }
-      
+
       // 2.2 "jwk" format
       else if (format === 'jwk'){
         // 2.2.1 Validate JsonWebKey
         let jwk = new JsonWebKey(key)
-        
-        // 2.2.2 Set kty property 
+
+        // 2.2.2 Set kty property
         jwk.kty = 'oct'
-        
+
         // 2.2.3 Set k property
         jwk.k = base64url(key.handle)
-        data = key.handle 
-        
-        // 2.2.4 Validate length 
+        data = key.handle
+
+        // 2.2.4 Validate length
         if (data.length === 16) {
             jwk.alg = 'A128GCM'
         } else if (data.length === 24) {
@@ -416,16 +416,16 @@ class AES_GCM extends Algorithm {
         } else if (data.length === 32) {
             jwk.alg = 'A256GCM'
         }
-        // 2.2.5 Set keyops property 
-        jwk.key_ops = key.usages 
+        // 2.2.5 Set keyops property
+        jwk.key_ops = key.usages
 
-        // 2.2.6 Set ext property 
+        // 2.2.6 Set ext property
         jwk.ext = key.extractable
-        
+
         // 2.2.7 Set result to the result of converting jwk to an ECMAScript object
         result = jwk
       }
-      
+
       // 2.3 Otherwise...
       else {
         throw new KeyFormatNotSupportedError(format)
@@ -504,4 +504,3 @@ let dec8 = new Uint8Array(dec)
 console.log(dec8)
 console.log(new TextDecoder().decode(dec8))
 */
-
