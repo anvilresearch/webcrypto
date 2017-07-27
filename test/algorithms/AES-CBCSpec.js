@@ -21,7 +21,7 @@ const OperationError = require('../../src/errors/OperationError')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
 
 /**
- * Test code  
+ * Test code
  */
 const good_iv =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
 const bad_iv = Buffer.from([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ]) // too short
@@ -57,26 +57,26 @@ describe('AES_CBC', () => {
   describe('encrypt', () => {
     let aes, key, data, signature
 
-    before(() => {     
-        aes = new AES_CBC({ name: "AES-CBC", length: 256 }) 
+    before(() => {
+        aes = new AES_CBC({ name: "AES-CBC", length: 256 })
         key = aes.importKey(
-            "jwk", 
-            {   
+            "jwk",
+            {
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
                 ext: true,
             },
-            {   
+            {
                 name: "AES-CBC",
             },
-            true, 
-            ["encrypt", "decrypt"] 
+            true,
+            ["encrypt", "decrypt"]
         )
         data = new TextEncoder().encode('signed with Chrome Webcrypto')
         signature = new Uint8Array([
-            76, 82, 211, 155, 13, 154, 24, 6, 156, 203, 50, 
-            171, 210, 17, 88, 145, 32, 225, 125, 119, 179, 
+            76, 82, 211, 155, 13, 154, 24, 6, 156, 203, 50,
+            171, 210, 17, 88, 145, 32, 225, 125, 119, 179,
             197, 224, 210, 122, 43, 255, 159, 59, 195, 206, 210])
     })
 
@@ -92,7 +92,7 @@ describe('AES_CBC', () => {
 
     it('should return a valid encryption', () => {
         Buffer.from(aes.encrypt({name: "AES-CBC", iv: good_iv},key,data))
-        .should.eql(Buffer.from(signature.buffer)) 
+        .should.eql(Buffer.from(signature.buffer))
     })
   }) // encrypt
 
@@ -101,26 +101,26 @@ describe('AES_CBC', () => {
  */
   describe('decrypt', () => {
     let aes, key, data, signature
-    before(() => {     
-        aes = new AES_CBC({ name: "AES-CBC", length: 256 }) 
+    before(() => {
+        aes = new AES_CBC({ name: "AES-CBC", length: 256 })
         key = aes.importKey(
-            "jwk", 
-            {   
+            "jwk",
+            {
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
                 ext: true,
             },
-            {   
+            {
                 name: "AES-CBC",
             },
-            true, 
-            ["encrypt", "decrypt"] 
+            true,
+            ["encrypt", "decrypt"]
         )
         data = new Uint8Array([
-            76, 82, 211, 155, 13, 154, 24, 6, 156, 
-            203, 50, 171, 210, 17, 88, 145, 32, 225, 
-            125, 119, 179, 197, 224, 210, 122, 43, 
+            76, 82, 211, 155, 13, 154, 24, 6, 156,
+            203, 50, 171, 210, 17, 88, 145, 32, 225,
+            125, 119, 179, 197, 224, 210, 122, 43,
             255, 159, 59, 195, 206, 210])
         signature = new TextEncoder().encode('signed with Chrome Webcrypto')
     })
@@ -133,11 +133,11 @@ describe('AES_CBC', () => {
 
     it('should return an ArrayBuffer', () => {
       aes.decrypt({name: "AES-CBC", iv: good_iv},key,data).should.be.instanceof(ArrayBuffer)
-    }) 
+    })
 
     it('should return a valid encryption', () => {
         Buffer.from(aes.decrypt({name: "AES-CBC", iv: good_iv},key,data))
-        .should.eql(Buffer.from(signature.buffer)) 
+        .should.eql(Buffer.from(signature.buffer))
     })
   }) // decrypt
 
@@ -146,17 +146,17 @@ describe('AES_CBC', () => {
  */
   describe('generateKey', () => {
     let alg, aes, cryptoKey
-    
+
     before(() => {
         alg = {
             name: "AES-CBC",
             length: 256,
         }
-        aes = new AES_CBC(alg) 
+        aes = new AES_CBC(alg)
         return Promise.resolve()
         .then(() => cryptoKey = aes.generateKey(alg,true,["encrypt", "decrypt"]))
     })
-    
+
     it('should throw with invalid usages', () => {
       expect(() => {
          aes.generateKey(alg, true, ['encrypt', 'decrypt', 'wrong'])
@@ -169,7 +169,7 @@ describe('AES_CBC', () => {
         }).to.throw('Member length must be 128, 192, or 256.')
     })
 
-    it('should return CryptoKey', () => { 
+    it('should return CryptoKey', () => {
       cryptoKey.should.be.instanceof(CryptoKey)
     })
 
@@ -219,7 +219,7 @@ describe('AES_CBC', () => {
             aes.importKey('WRONG',{},{},true,[])
           }).to.throw('WRONG is not a supported key format')
         })
-      
+
     describe('with "raw" format', () => {
         let alg, aes, raw, cryptoKey
         before(() => {
@@ -231,7 +231,7 @@ describe('AES_CBC', () => {
             raw = new Uint8Array([99, 76, 237, 223, 177, 224, 59, 31, 129, 99, 180, 144, 141, 133, 102, 174, 168, 79, 144, 238, 56, 34, 45, 137, 113, 191, 114, 201, 213, 3, 61, 241])
             return Promise.resolve()
             .then(() => cryptoKey = aes.importKey("raw",raw,{name:"AES-CBC"},true,["encrypt", "decrypt"]) )
-        }) 
+        })
 
         it('should expect a suitable raw length', () => {
           expect(() => {
@@ -265,7 +265,7 @@ describe('AES_CBC', () => {
         })
     })//raw
 
-    describe('with "jwk" format', () => { 
+    describe('with "jwk" format', () => {
         let alg, aes, key, cryptoKey
         before(() => {
             alg = {
@@ -273,7 +273,7 @@ describe('AES_CBC', () => {
                 length: 256,
             }
             aes = new AES_CBC(alg)
-            key = {   
+            key = {
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
@@ -291,7 +291,7 @@ describe('AES_CBC', () => {
 
         it('should expect correct kty format', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "WRONG",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
@@ -302,7 +302,7 @@ describe('AES_CBC', () => {
 
         it('should expect data in k property', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 alg: "A256CBC",
                 ext: true,
@@ -312,51 +312,51 @@ describe('AES_CBC', () => {
 
         it('should expect A128CBC when data length is 16', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "c7WsUB6msAgIdDxTnT13Yw",
                 alg: "A256CBC",
                 ext: true,
             }, {name:"AES-CBC"} , false, ['encrypt','decrypt'])
-          }).to.throw('Algorithm "A128CBC" must be 128 bits in length') 
+          }).to.throw('Algorithm "A128CBC" must be 128 bits in length')
         })
 
         it('should expect A192CBC when data length is 24', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "c7WsUB6msAgIdDxTnT13YwY7SQjYVmrq",
                 alg: "A256CBC",
                 ext: true,
             }, {name:"AES-CBC"} , false, ['encrypt','decrypt'])
-          }).to.throw('Algorithm "A192CBC" must be 192 bits in length') 
+          }).to.throw('Algorithm "A192CBC" must be 192 bits in length')
         })
 
         it('should expect A256CBC when data length is 32', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A192CBC",
                 ext: true,
             }, {name:"AES-CBC"} , false, ['encrypt','decrypt'])
-          }).to.throw('Algorithm "A256CBC" must be 256 bits in length') 
+          }).to.throw('Algorithm "A256CBC" must be 256 bits in length')
         })
 
         it('should expect mismatched length when k is not appropriate base64url', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "Y0zt37",
                 alg: "A256CBC",
                 ext: true,
             }, {name:"AES-CBC"} , false, ['encrypt','decrypt'])
-          }).to.throw('Algorithm and data length mismatch') 
+          }).to.throw('Algorithm and data length mismatch')
         })
 
         it('should expect correct value when "use" field is used', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
@@ -371,10 +371,10 @@ describe('AES_CBC', () => {
             aes.importKey('jwk',key, {name:"AES-CBC"} , false, ['encrypt','decrypt','WRONG'])
           }).to.throw('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
         })
-        
+
         it('should expect non extractable to not be extractable', () => {
           expect(() => {
-            aes.importKey('jwk',{   
+            aes.importKey('jwk',{
                 kty: "oct",
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256CBC",
@@ -421,13 +421,13 @@ describe('AES_CBC', () => {
 
     it('should have a valid handle in the key', () => {
         expect(() => {
-        aes.exportKey('raw',{}) 
-        }).to.throw('Missing key material') 
+        aes.exportKey('raw',{})
+        }).to.throw('Missing key material')
     })
 
     it('should expect only "raw" or "jwk" formats', () => {
         expect(() => {
-        aes.exportKey('WRONG',{handle:"Something"}) 
+        aes.exportKey('WRONG',{handle:"Something"})
         }).to.throw('WRONG is not a supported key format')
     })
 
@@ -452,7 +452,7 @@ describe('AES_CBC', () => {
             raw.should.instanceof(Object)
         })
     })//raw
-    
+
     describe('with "jwk" format', () => {
         let alg, aes, key, jwk
         before(() => {
@@ -481,7 +481,7 @@ describe('AES_CBC', () => {
         it('should expect A128CBC when data length is 16', () => {
             aes.exportKey("jwk",aes.importKey("jwk",{
                 kty: "oct",
-                k: "c7WsUB6msAgIdDxTnT13Yw", 
+                k: "c7WsUB6msAgIdDxTnT13Yw",
                 alg: "A128CBC",
                 ext: true
             },{name:"AES-CBC"},true,["encrypt", "decrypt"])).alg.should.eql("A128CBC")
@@ -490,7 +490,7 @@ describe('AES_CBC', () => {
         it('should expect A192CBC when data length is 24', () => {
             aes.exportKey("jwk",aes.importKey("jwk",{
                 kty: "oct",
-                k: "c7WsUB6msAgIdDxTnT13YwY7SQjYVmrq", 
+                k: "c7WsUB6msAgIdDxTnT13YwY7SQjYVmrq",
                 alg: "A192CBC",
                 ext: true
             },{name:"AES-CBC"},true,["encrypt", "decrypt"])).alg.should.eql("A192CBC")
@@ -508,5 +508,3 @@ describe('AES_CBC', () => {
   })//exportKey
 
 })
-
-

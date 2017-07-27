@@ -1,2 +1,4 @@
 node_modules
 docs/build
+
+package-lock\.json
