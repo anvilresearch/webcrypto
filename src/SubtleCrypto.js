@@ -363,7 +363,27 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   wrapKey (format, key, wrappingKey, wrapAlgorithm) {
-    return new Promise()
+    // 1. Parameters
+    // 2. Setup normalizedAlgorithm with op as 'unwrap'
+    let normalizedAlgorithm = supportedAlgorithms.normalize('wrapKey', algorithm)
+    if (normalizedAlgorithm instanceof Error) {
+      // 3. If failed, then try again with op as 'encrypt'
+      normalizedAlgorithm = supportedAlgorithms.normalize('encrypt', algorithm)
+    }
+    // 4. Otherwise reject outright
+    if (normalizedAlgorithm instanceof Error)  {
+      return Promise.reject(normalizedAlgorithm)
+    }
+    // 5-6. Setup and asynchronously return a new promise
+    return new Promise((resolve, reject) => {
+      // 7. Try catch the following step...
+      // if anything goes wrong then reject the promise outright
+      try {
+          // TODO continue here
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 
   /**
