@@ -7,6 +7,7 @@ const JsonWebKey = require('./keys/JsonWebKey')
 const recognizedKeyUsages = require('./keys/recognizedKeyUsages')
 const supportedAlgorithms = require('./algorithms')
 const {InvalidAccessError, NotSupportedError} = require('./errors')
+const {TextEncoder} = require('text-encoding')
 
 /**
  * SubtleCrypto
@@ -365,10 +366,10 @@ class SubtleCrypto {
   wrapKey (format, key, wrappingKey, wrapAlgorithm) {
     // 1. Parameters
     // 2. Setup normalizedAlgorithm with op as 'unwrap'
-    let normalizedAlgorithm = supportedAlgorithms.normalize('wrapKey', algorithm)
+    let normalizedAlgorithm = supportedAlgorithms.normalize('wrapKey', wrapAlgorithm)
     if (normalizedAlgorithm instanceof Error) {
       // 3. If failed, then try again with op as 'encrypt'
-      normalizedAlgorithm = supportedAlgorithms.normalize('encrypt', algorithm)
+      normalizedAlgorithm = supportedAlgorithms.normalize('encrypt', wrapAlgorithm)
     }
     // 4. Otherwise reject outright
     if (normalizedAlgorithm instanceof Error)  {
@@ -379,7 +380,53 @@ class SubtleCrypto {
       // 7. Try catch the following step...
       // if anything goes wrong then reject the promise outright
       try {
-          // TODO continue here
+          // 8. Validate normalizedAlgorithm name property
+          if (normalizedAlgorithm.name !== wrappingKey.algorithm.name) {
+            throw new InvalidAccessError('NormalizedAlgorthm name must be same as wrappingKey algorithm name')
+          } 
+
+          // 9. Validate usages property contains wrap
+          if (!wrappingKey.usages.includes('wrapKey')) {
+            throw new InvalidAccessError('Wrapping key usages must include "wrapKey"')
+          }
+
+          // 10. Validate algorithm contains exportKey
+          let exportKeyAlgorithms = supportedAlgorithms['exportKey']
+          if (!exportKeyAlgorithms[key.algorithm.name]) {
+            throw new NotSupportedError(key.algorithm.name)
+          }
+
+          // 11. Validate extractable property
+          if (key.extractable === false) {
+            throw new InvalidAccessError('Key is not extractable')
+          }
+
+          // 12. Generate extracted key
+          return this.exportKey(format,key)
+                .then(exportedKey => { 
+                  let bytes
+                  // 13.1. If format is "raw", "pkcs8", or "spki":
+                   if (["raw", "pkcs8","spki"].includes(format)) {
+                    bytes = exportedKey
+                  }
+                  // 13.2. If format is "jwk"
+                  else if (format === "jwk"){
+                    let json = JSON.stringify(exportedKey)
+                    bytes = new TextEncoder().encode(json)
+                  } 
+                  // 14.1. If the normalizedAlgorithm supports wrapKey then use it
+                  if (supportedAlgorithms['wrapKey'][normalizedAlgorithm.name]){
+                    return this.encrypt(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                  }
+                  // 14.2. Otherwise try with encrypt
+                  else if (supportedAlgorithms['encrypt'][normalizedAlgorithm.name]){
+                    return this.encrypt(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                  } 
+                  // 14.3. Otherwise throw error
+                  else {
+                    return reject (new NotSupportedError(normalizedAlgorithm.name))
+                  }
+                })
       } catch (error) {
         return reject(error)
       }
@@ -410,3 +457,25 @@ class SubtleCrypto {
  * Export
  */
 module.exports = SubtleCrypto
+
+// const AES_GCM = require('./algorithms/AES-GCM')
+
+// aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+// key = aes.importKey(
+//     "jwk",
+//     {
+//         kty: "oct",
+//         k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+//         alg: "A256GCM",
+//         ext: true,
+//     },
+//     {
+//         name: "AES-GCM",
+//     },
+//     true,
+//     ["encrypt", "decrypt","wrapKey",]
+// )
+// let SC = new SubtleCrypto()
+// let x = SC.wrapKey('jwk',key,key,{name:"AES-GCM",iv: new Uint8Array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])})
+// // console.log("x:",x)
+// x.then(console.log)
