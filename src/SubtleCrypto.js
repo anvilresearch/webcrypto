@@ -416,11 +416,11 @@ class SubtleCrypto {
                   } 
                   // 14.1. If the normalizedAlgorithm supports wrapKey then use it
                   if (normalizedAlgorithm['wrapKey']){
-                    return this.wrapKey(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                    return normalizedAlgorithm.wrapKey(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
                   }
                   // 14.2. Otherwise try with encrypt
                   else if (normalizedAlgorithm['encrypt']){
-                    return this.encrypt(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                    return normalizedAlgorithm.encrypt(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
                   } 
                   // 14.3. Otherwise throw error
                   else {
@@ -475,9 +475,9 @@ module.exports = SubtleCrypto
 //         name: "AES-GCM",
 //     },
 //     true,
-//     ["encrypt", "decrypt","wrapKey",]
+//     ["encrypt", "decrypt","wrapKey"]
 // )
 // let SC = new SubtleCrypto()
 // let x = SC.wrapKey('jwk',key,key,{name:"AES-GCM",iv: new Uint8Array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])})
-// console.log("x:",x)
-// x.then(result => console.log("is this working?",result))
+// x.then(result => console.log("is this working?",new Uint8Array(result)))
+
