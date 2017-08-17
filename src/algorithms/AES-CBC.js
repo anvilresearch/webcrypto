@@ -324,7 +324,7 @@ class AES_CBC extends Algorithm {
       // 2.2 "jwk" format
       else if (format === 'jwk'){
         // 2.2.1 Validate JsonWebKey
-        let jwk = new JsonWebKey(key)
+        let jwk = new JsonWebKey()
         
         // 2.2.2 Set kty property 
         jwk.kty = 'oct'
