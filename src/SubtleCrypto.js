@@ -452,7 +452,7 @@ class SubtleCrypto {
    */
   unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
     // 1. Parameters
-    // 2. ?
+    // 2. Ommited due to redundancy
     
     // 3. Setup normalizedAlgorithm with op as 'unwrap'
     let normalizedAlgorithm = supportedAlgorithms.normalize('unwrapKey', unwrapAlgorithm)
@@ -514,7 +514,6 @@ class SubtleCrypto {
             // 14.2. If format is "jwk"
             else if (format === "jwk"){
               bytes = JSON.parse(new TextDecoder().decode(key))
-              console.log("bytes",bytes)
             } 
 
             // 15. Import the resulting unwrapped content
@@ -550,58 +549,3 @@ class SubtleCrypto {
  * Export
  */
 module.exports = SubtleCrypto
-
-// const AES_GCM = require('./algorithms/AES-GCM')
-
-// aes = new AES_GCM({ name: "AES-GCM", length: 256 })
-// key = aes.importKey(
-//     "jwk",
-//     {
-//         kty: "oct",
-//         k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
-//         alg: "A256GCM",
-//         ext: true,
-//     },
-//     {
-//         name: "AES-GCM",
-//     },
-//     true,
-//     ["encrypt", "decrypt","wrapKey","unwrapKey"]
-// )
-// let SC = new SubtleCrypto()
-
-// let x = SC.wrapKey('jwk',key,key,{name:"AES-GCM",iv: new Uint8Array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])})
-// x.then(result => console.log("is this working?",JSON.stringify(Array.from(new Uint8Array(result))),new Uint8Array(result).length))
-
-// let wc = new Uint8Array([
-//   161, 111, 8, 29, 75, 53, 230, 127, 59, 123, 74, 164, 212, 248, 8, 
-//   118, 77, 163, 181, 229, 178, 102, 47, 241, 15, 21, 165, 199, 188, 
-//   70, 180, 186, 130, 108, 22, 194, 178, 189, 218, 129, 99, 220, 189, 
-//   173, 65, 196, 48, 254, 194, 241, 242, 76, 26, 125, 53, 110, 200, 
-//   129, 229, 237, 142, 222, 49, 159, 156, 88, 8, 7, 124, 186, 207, 42, 
-//   236, 235, 65, 210, 182, 85, 91, 37, 84, 102, 49, 40, 156, 132, 128, 
-//   181, 198, 118, 104, 191, 21, 124, 54, 45, 122, 238, 195, 207,
-//   112, 241, 214, 194, 112, 112, 89, 246, 223, 170, 149, 175, 128, 240,
-//   184, 64, 134, 230, 203, 23, 48, 55, 94, 57, 102, 249, 11, 254,
-//   163, 199, 68, 122, 112, 46, 14, 239, 198, 173, 58, 86, 251, 222, 217,
-//   108, 233, 161, 227, 112
-// ])
-
-
-// SC.unwrapKey(
-//   'jwk',
-//   wc,
-//   key,
-//   {
-//     name:"AES-GCM",
-//     iv: new Uint8Array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]),
-//     tagLength: 128
-//   },
-//   {   
-//       name: "AES-GCM",
-//       length: 256
-//   },
-//   true,
-//   ["encrypt","decrypt","unwrapKey"]
-// ).then(key => SC.exportKey("jwk",key) ).then(console.log).catch(console.error)
-
