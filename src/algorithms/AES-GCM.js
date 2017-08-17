@@ -328,7 +328,7 @@ class AES_GCM extends Algorithm {
 
         // 2.2.7 Validate "key_ops" field
         if (jwk.key_ops){
-          key_ops.forEach(op => {
+          jwk.key_ops.forEach(op => {
             if (op !== 'encrypt'
              && op !== 'decrypt'
              && op !== 'wrapKey'
@@ -399,7 +399,7 @@ class AES_GCM extends Algorithm {
       // 2.2 "jwk" format
       else if (format === 'jwk'){
         // 2.2.1 Validate JsonWebKey
-        let jwk = new JsonWebKey()
+        let jwk = new JsonWebKey(key)
 
         // 2.2.2 Set kty property
         jwk.kty = 'oct'

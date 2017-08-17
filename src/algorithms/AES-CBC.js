@@ -253,7 +253,7 @@ class AES_CBC extends Algorithm {
         
         // 2.2.7 Validate "key_ops" field
         if (jwk.key_ops){
-          key_ops.forEach(op => {
+          jwk.key_ops.forEach(op => {
             if (op !== 'encrypt' 
              && op !== 'decrypt' 
              && op !== 'wrapKey' 
