@@ -3,6 +3,7 @@
  */
 const crypto = require('crypto')
 const base64url = require('base64url') 
+const keyto = require('@trust/keyto')
 const {spawnSync} = require('child_process')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 
@@ -216,7 +217,7 @@ class RSA_OAEP extends Algorithm {
      * @returns {CryptoKey}
      */
     importKey (format, keyData, algorithm, extractable, keyUsages) {
-      let data, jwk, hash, normalizedHash
+      let data, key, jwk, hash, normalizedHash
       // 1. Assignment of keyData is done in function param
       // 2.1. "spki" format
       if (format === 'spki') {
@@ -231,7 +232,7 @@ class RSA_OAEP extends Algorithm {
       // 2.3. "jwk" format
       else if (format === 'jwk') {
         // 2.3.1. Create new JWK using data
-        let jwk = new JsonWebKey(keyData)
+        jwk = new JsonWebKey(keyData)
 
         // 2.3.2. Validate present 'd' field and allowed usages
         if (jwk.d) 
@@ -309,8 +310,6 @@ class RSA_OAEP extends Algorithm {
         if (hash !== undefined){
           // 2.3.9.1. Normalize the hash with alg set to 'hash', and op to 'digest'
           normalizedHash = supportedAlgorithms.normalize('digest', hash)
-          
-          console.log("normalizedHash",normalizedHash)
 
           // 2.3.9.2. Validate hash member of normalizedAlgorithm
           if (!normalizedHash || normalizedHash.name !== this.hash.name) {
@@ -318,9 +317,47 @@ class RSA_OAEP extends Algorithm {
           }
         }
 
-        // TODO Continue here
-      
+        // 2.3.10. Validate 'd' field...
+        if (jwk.d) {
+          // 2.3.10.1.1. TODO jwk validation here...
+          // 2.3.10.1.2-5 Generate new private CryptoKeyObject
+          key = new CryptoKey({
+              type: 'private',
+              extractable,
+              usages: ['sign'],
+              handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs1')
+          })
+        }
+        // 2.3.10.2. Otherwise...
+        else {
+          // 2.3.10.2.1 TODO jwk validation here...
+          // 2.3.10.2.2-5 Generate new public CryptoKeyObject
+          key = new CryptoKey({
+            type: 'public',
+            extractable: true,
+            usages: ['verify'],
+            handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs8')
+          })
+        }      
       }
+    // 2.4. Otherwise...
+    else {
+      throw new KeyFormatNotSupportedError(format)
+    }
+
+    // 3-7. Create RsaHashedKeyAlgorithm
+    let alg = new RSA_OAEP({
+      name: 'RSA-OAEP',
+      modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: normalizedHash
+    })
+
+    // 8. Set key.algorthm to alg
+    key.algorithm = alg
+
+    // 9. Return key
+    return key
   }
 
   /**
@@ -334,58 +371,71 @@ class RSA_OAEP extends Algorithm {
    * @returns {*}
    */
   exportKey (format, key) {
-      let result, data
+      // 1. Setup resulting var
+    let result
 
-      // 1. Validate handle slot
-      if (!key.handle) {
-        throw new OperationError('Missing key material')
-      }
-      
-      // 2.1 "raw" format
-      if (format === 'raw'){
-          // 2.1.1 Let data be the raw octets of the key
-          data = key.handle 
-          // 2.1.2 Let result be containing data
-          result = Buffer.from(data) 
-      }
-      
-      // 2.2 "jwk" format
-      else if (format === 'jwk'){
-        // 2.2.1 Validate JsonWebKey
-        let jwk = new JsonWebKey()
-        
-        // 2.2.2 Set kty property 
-        jwk.kty = 'oct'
-        
-        // 2.2.3 Set k property
-        jwk.k = base64url(key.handle)
-        data = key.handle 
-        
-        // 2.2.4 Validate length 
-        if (data.length === 16) {
-            jwk.alg = 'A128CBC'
-        } else if (data.length === 24) {
-            jwk.alg = 'A192CBC'
-        } else if (data.length === 32) {
-            jwk.alg = 'A256CBC'
-        }
-        // 2.2.5 Set keyops property 
-        jwk.key_ops = key.usages 
+    // 2. Validate handle slot
+    if (!key.handle) {
+      throw new OperationError('Missing key material')
+    }
 
-        // 2.2.6 Set ext property 
-        jwk.ext = key.extractable
-        
-        // 2.2.7 Set result to the result of converting jwk to an ECMAScript object
-        result = jwk
-      }
-      
-      // 2.3 Otherwise...
-      else {
-        throw new KeyFormatNotSupportedError(format)
+    // 3.1. "spki" format
+    if (format === 'spki') {
+      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+    }
+    // 3.2. "pkcs8" format
+    else if (format === 'pkcs8') {
+      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+    }
+    // 2.3. "jwk" format
+    else if (format === 'jwk') {
+      // 2.3.1. Create new jwk
+      let jwk = keyto.from(key.handle, 'pem').toJwk(key.type)
+
+      // 2.3.2. Setting 'kty' value
+      jwk.kty = "RSA"
+
+      // 2.3.3. Determine alg from hash
+      // TODO continue here
+      if (hash === 'SHA-1') {
+        jwk.alg = 'RS1'
+      } else if (hash === 'SHA-256') {
+        jwk.alg = 'RS256'
+      } else if (hash === 'SHA-384') {
+        jwk.alg = 'RS384'
+      } else if (hash === 'SHA-512') {
+        jwk.alg = 'RS512'
+      } else {
+        // TODO other applicable specifications
       }
 
-      // 3. Return result
-      return result
+
+      // 2.3.4. Set "key_ops" field
+      jwk.key_ops = key.usages
+
+      // 2.3.5. Set "ext" field
+      jwk.ext = key.extractable
+
+      // 2.3.6. Set result to jwk object
+      result = jwk
+    }
+    // 3.4. "raw" format
+    else if (format === 'raw') {
+      // 3.4.1. Validate that the internal use is public
+      if (key.type !== 'public'){
+        throw new InvalidAccessError('Can only access public key data.')
+      }
+      // 3.4.2. Omitted due to redundancy
+      // 3.4.3. Let resulting data be Buffer containing data
+      result = Buffer.from(key.handle)
+    }
+    // 3.5. Otherwise bad format
+    else {
+      throw new KeyFormatNotSupportedError(format)
+    }
+
+    // 4. Result result
+    return result
   }
 }
 
@@ -422,4 +472,5 @@ let imp = rsa.importKey(
     },
     true, //whether the key is extractable (i.e. can be used in exportKey)
     ["encrypt"]
-)
+  )
+console.log("imp",imp)
