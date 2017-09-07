@@ -103,8 +103,17 @@ class RSA_OAEP extends Algorithm {
       
       // 3-5. Attempt to encrypt using crypto lib
       try {
+        // FIXME So this not actually performing any OAEP padding as one would expect throughj using 
+        // the RSA_PKCS1_OAEP_PADDING param as described in Node.js API, meaning we are stuck with just
+        // simple RSA encryption and decryption. This been tested several times
+        // using Chrome's subtle interface and the two do not match.
         data = Buffer.from(data)
-        result = crypto.publicEncrypt({key: key.handle, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING},data)
+        result = crypto.publicEncrypt(
+          {
+            key: key.handle, 
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+          },
+          data)
       } catch (error) {
         throw new OperationError(error.message)
       }
@@ -141,12 +150,13 @@ class RSA_OAEP extends Algorithm {
       
       // 3-5. Attempt to decrypt using crypto lib
       try {
+        // FIXME See Encrypt 3. above
         data = Buffer.from(data)
         result = crypto.privateDecrypt({
           key: key.handle, 
           padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
         },
-          data)
+        data)
       } catch (error) {
         throw new OperationError(error.message)
       }
@@ -456,8 +466,8 @@ class RSA_OAEP extends Algorithm {
  */
 module.exports = RSA_OAEP
 
-
 /*
+
 let rsa = new RSA_OAEP({name:"RSA-OAEP",hash:{name: "SHA-256"}})
 let kp = rsa.generateKey(
   {
@@ -494,7 +504,8 @@ let imp_pub = rsa.importKey(
   )
 
 
-// console.log("imp",imp)
+// console.log("imp_priv",imp_priv)
+// console.log("imp_pub",imp_pub)
 
 // let exp = rsa.exportKey(
 //   "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
@@ -513,11 +524,11 @@ let enc = rsa.encrypt(
   imp_pub, //from generateKey or importKey above
   new TextEncoder().encode("helloworld")
 )
-console.log(JSON.stringify(Array.from(new Uint8Array(enc))))
+// console.log(JSON.stringify(Array.from(new Uint8Array(enc))))
 
 // console.log(imp.handle)
 
-// let webenc = new Uint8Array([76,104,42,180,203,222,7,52,186,119,142,78,16,83,159,204,66,26,79,138,1,178,37,190,6,212,9,43,216,235,85,30,47,24,187,88,110,26,15,93,83,135,50,71,142,252,121,193,59,146,48,41,236,88,30,55,113,206,116,10,229,87,131,123,233,118,234,52,164,225,253,154,91,184,210,203,35,50,246,55,88,184,83,20,31,238,174,70,178,5,104,143,249,212,57,178,68,79,92,164,107,203,82,1,3,149,215,241,227,34,82,116,0,77,177,182,79,236,215,230,205,246,27,166,90,159,132,219,82,212,108,31,255,203,9,142,227,30,241,252,233,136,168,166,210,7,122,40,78,21,86,203,15,52,125,156,82,93,204,140,124,63,57,249,225,100,64,199,177,3,171,240,71,82,87,208,18,127,81,22,73,27,168,177,119,93,73,76,102,60,242,247,76,122,104,79,102,154,133,193,143,119,61,125,84,245,138,161,115,162,42,175,227,199,74,185,231,92,45,246,170,211,172,161,190,193,239,49,131,133,243,72,8,85,55,6,171,184,145,8,42,138,250,133,219,243,201,78,72,215,176,149,241,42,80,115])
+let webenc = new Uint8Array([76,104,42,180,203,222,7,52,186,119,142,78,16,83,159,204,66,26,79,138,1,178,37,190,6,212,9,43,216,235,85,30,47,24,187,88,110,26,15,93,83,135,50,71,142,252,121,193,59,146,48,41,236,88,30,55,113,206,116,10,229,87,131,123,233,118,234,52,164,225,253,154,91,184,210,203,35,50,246,55,88,184,83,20,31,238,174,70,178,5,104,143,249,212,57,178,68,79,92,164,107,203,82,1,3,149,215,241,227,34,82,116,0,77,177,182,79,236,215,230,205,246,27,166,90,159,132,219,82,212,108,31,255,203,9,142,227,30,241,252,233,136,168,166,210,7,122,40,78,21,86,203,15,52,125,156,82,93,204,140,124,63,57,249,225,100,64,199,177,3,171,240,71,82,87,208,18,127,81,22,73,27,168,177,119,93,73,76,102,60,242,247,76,122,104,79,102,154,133,193,143,119,61,125,84,245,138,161,115,162,42,175,227,199,74,185,231,92,45,246,170,211,172,161,190,193,239,49,131,133,243,72,8,85,55,6,171,184,145,8,42,138,250,133,219,243,201,78,72,215,176,149,241,42,80,115])
 // // console.log("webenc",webenc)
 let dec = rsa.decrypt(
    {
@@ -527,6 +538,6 @@ let dec = rsa.decrypt(
     imp_priv, //from generateKey or importKey above
     enc //ArrayBuffer of the data
 )
-// console.log("dec",new TextDecoder().decode(dec))
-
+console.log("dec",new TextDecoder().decode(dec))
 */
+
