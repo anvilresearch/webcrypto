@@ -1,6 +1,7 @@
 # W3C Web Cryptography API _(@trust/webcrypto)_
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Build Status](https://travis-ci.org/anvilresearch/webcrypto.svg?branch=master)](https://travis-ci.org/anvilresearch/webcrypto)
 
 > W3C Web Cryptography API for Node.js
 
