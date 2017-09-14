@@ -11,7 +11,7 @@ const supportedAlgorithms = new SupportedAlgorithms()
 /**
  * encrypt
  */
-//supportedAlgorithms.define('RSA-OAEP', 'encrypt', )
+supportedAlgorithms.define('RSA-OAEP', 'encrypt', '../algorithms/RSA-OAEP')
 //supportedAlgorithms.define('AES-CTR', 'encrypt', )
 supportedAlgorithms.define('AES-CBC', 'encrypt', '../algorithms/AES-CBC')
 supportedAlgorithms.define('AES-GCM', 'encrypt', '../algorithms/AES-GCM')
@@ -20,7 +20,7 @@ supportedAlgorithms.define('AES-GCM', 'encrypt', '../algorithms/AES-GCM')
 /**
  * decrypt
  */
-//supportedAlgorithms.define('RSA-OAEP', 'decrypt', )
+supportedAlgorithms.define('RSA-OAEP', 'decrypt', '../algorithms/RSA-OAEP')
 //supportedAlgorithms.define('AES-CTR', 'decrypt', )
 supportedAlgorithms.define('AES-CBC', 'decrypt', '../algorithms/AES-CBC')
 supportedAlgorithms.define('AES-GCM', 'decrypt', '../algorithms/AES-GCM')
@@ -75,7 +75,7 @@ supportedAlgorithms.define('SHA-512', 'digest', '../algorithms/SHA')
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'generateKey', )
-//supportedAlgorithms.define('RSA-OAEP', 'generateKey', )
+supportedAlgorithms.define('RSA-OAEP', 'generateKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('ECDSA', 'generateKey', '../algorithms/ECDSA')
 //supportedAlgorithms.define('ECDH', 'generateKey', )
 //supportedAlgorithms.define('AES-CTR', 'generateKey', )
@@ -93,7 +93,7 @@ supportedAlgorithms.define('HMAC', 'generateKey', '../algorithms/HMAC')
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'importKey', )
-//supportedAlgorithms.define('RSA-OAEP', 'importKey', )
+supportedAlgorithms.define('RSA-OAEP', 'importKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('ECDSA', 'importKey', '../algorithms/ECDSA')
 //supportedAlgorithms.define('ECDH', 'importKey', )
 //supportedAlgorithms.define('AES-CTR', 'importKey', )
@@ -113,7 +113,7 @@ supportedAlgorithms.define('HMAC', 'importKey', '../algorithms/HMAC')
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', '../algorithms/RSASSA-PKCS1-v1_5')
 //supportedAlgorithms.define('RSA-PSS', 'exportKey', )
-//supportedAlgorithms.define('RSA-OAEP', 'exportKey', )
+supportedAlgorithms.define('RSA-OAEP', 'exportKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('ECDSA', 'exportKey', '../algorithms/ECDSA')
 //supportedAlgorithms.define('ECDH', 'exportKey', )
 //supportedAlgorithms.define('AES-CTR', 'exportKey', )
@@ -128,9 +128,9 @@ supportedAlgorithms.define('HMAC', 'exportKey', '../algorithms/HMAC')
 /**
  * wrapKey
  */
-//supportedAlgorithms.define('RSA-OAEP', 'wrapKey', )
+supportedAlgorithms.define('RSA-OAEP', 'wrapKey', '../algorithms/RSA-OAEP')
 //supportedAlgorithms.define('AES-CTR', 'wrapKey', )
-//supportedAlgorithms.define('AES-CBC', 'wrapKey', )
+supportedAlgorithms.define('AES-CBC', 'wrapKey', '../algorithms/AES-CBC')
 supportedAlgorithms.define('AES-GCM', 'wrapKey', '../algorithms/AES-GCM')
 //supportedAlgorithms.define('AES-CFB', 'wrapKey', )
 //supportedAlgorithms.define('AES-KW', 'wrapKey', )
@@ -138,9 +138,9 @@ supportedAlgorithms.define('AES-GCM', 'wrapKey', '../algorithms/AES-GCM')
 /**
  * unwrapKey
  */
-//supportedAlgorithms.define('RSA-OAEP', 'unwrapKey', )
+supportedAlgorithms.define('RSA-OAEP', 'unwrapKey', '../algorithms/RSA-OAEP')
 //supportedAlgorithms.define('AES-CTR', 'unwrapKey', )
-//supportedAlgorithms.define('AES-CBC', 'unwrapKey', )
+supportedAlgorithms.define('AES-CBC', 'unwrapKey', '../algorithms/AES-CBC')
 supportedAlgorithms.define('AES-GCM', 'unwrapKey', '../algorithms/AES-GCM')
 //supportedAlgorithms.define('AES-CFB', 'unwrapKey', )
 //supportedAlgorithms.define('AES-KW', 'unwrapKey', )
