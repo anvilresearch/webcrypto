@@ -13,7 +13,7 @@ const AesKeyAlgorithm = require('../dictionaries/AesKeyAlgorithm')
 const Algorithm = require ('../algorithms/Algorithm')
 const CryptoKey = require('../keys/CryptoKey')
 const JsonWebKey = require('../keys/JsonWebKey')
-
+const supportedAlgorithms = require('../algorithms')
 
 /**
  * Errors
@@ -22,7 +22,8 @@ const {
   DataError,
   OperationError,
   InvalidAccessError,
-  KeyFormatNotSupportedError
+  KeyFormatNotSupportedError,
+  CurrentlyNotSupportedError
 } = require('../errors')
 
 /**
@@ -64,7 +65,30 @@ class AES_KW extends Algorithm {
      * @returns {Array}
      */
     wrapKey (format, key, wrappingKey, wrappingAlgorithm) {
+      // Currently only raw is supported
+      if (format.toLowerCase() !== 'raw'){
+        throw new CurrentlyNotSupportedError(format,'raw')
+      }      
       
+      // 1. Ensure the data is a multiple of 8 (not just 64)
+      let data = Buffer.from(key)
+      if (!data.length || data.length % 8 !== 0){
+        throw new OperationError('Invalid key length. Must be multiple of 8.')
+      }
+
+      // 2. Do the wrap
+      let cipherName
+      if (wrappingKey.algorithm.name === 'AES-KW' && [128,192,256].includes(wrappingKey.algorithm.length)){
+        cipherName = 'id-aes' + wrappingKey.algorithm.length + '-wrap'
+      } else {
+        throw new DataError('Invalid AES-KW and length pair.')
+      }
+      let iv = Buffer.from('A6A6A6A6A6A6A6A6', 'hex')
+      let cipher = crypto.createCipheriv(cipherName,wrappingKey.handle,iv)
+      let ciphertext = cipher.update(key)
+      
+      // 3. Return result
+      return Uint8Array.from(Buffer.concat([ciphertext,cipher.final()])).buffer
     }
 
     /**
@@ -83,7 +107,42 @@ class AES_KW extends Algorithm {
      * @returns {Array}
      */
     unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
-      
+      // Currently only raw is supported
+      if (format.toLowerCase() !== 'raw'){
+        throw new CurrentlyNotSupportedError(format,'raw')
+      }   
+
+      // 1-2. Do the unwrap operation
+      let plaintext
+      try {
+        let cipherName
+        if (unwrappingKey.algorithm.name === 'AES-KW' && [128,192,256].includes(unwrappingKey.algorithm.length)){
+          cipherName = 'id-aes' + unwrappingKey.algorithm.length + '-wrap'
+        } else {
+          throw new DataError('Invalid AES-KW and length pair.')
+        }
+        let iv = Buffer.from('A6A6A6A6A6A6A6A6', 'hex')
+        let decipher = crypto.createDecipheriv(cipherName,unwrappingKey.handle,iv)
+        let deciphertext = decipher.update(Buffer.from(wrappedKey))
+        plaintext = Array.from(Buffer.concat([deciphertext,decipher.final()]))
+      } catch (error) {
+        throw new OperationError(error.message)
+      }
+
+      // Now generate a new cryptokey using SupportedAlgorithms
+      let normalizedAlgorithm = supportedAlgorithms.normalize('importKey', unwrappedKeyAlgorithm)
+      if (normalizedAlgorithm instanceof Error) {
+        throw new OperationError("Unsupported unwrappedKeyAlgorithm.")
+      }
+
+      // 3. Return the resulting CryptoKey object
+      return normalizedAlgorithm.importKey(
+        "raw",
+        plaintext,
+        unwrappedKeyAlgorithm,
+        extractable,
+        keyUsages
+      )
     }
 
     /**
@@ -135,7 +194,7 @@ class AES_KW extends Algorithm {
 
     /**
      * importKey
-     *
+     *}
      * @description
      *
      * @param {string} format
@@ -328,6 +387,8 @@ class AES_KW extends Algorithm {
  */
 module.exports = AES_KW
 
+
+/*
 let aes = new AES_KW({name: "AES-KW"})
 let key = aes.generateKey({
         name: "AES-KW",
@@ -336,7 +397,7 @@ let key = aes.generateKey({
     true, //whether the key is extractable (i.e. can be used in exportKey)
     ["wrapKey", "unwrapKey"] )
 
-console.log("key",key)
+// console.log("key",key)
 
 let imp = aes.importKey(
   "jwk", //can be "jwk" or "raw"
@@ -352,11 +413,44 @@ let imp = aes.importKey(
     false, //whether the key is extractable (i.e. can be used in exportKey)
     ["wrapKey", "unwrapKey"])
 
-  console.log("imp",imp)
+  // console.log("imp",imp)
 
-  let exp = aes.exportKey(
+let exp = aes.exportKey(
     "jwk", //can be "jwk" or "raw"
     key //extractable must be true
   )
 
-  console.log("exp",exp)
+  // console.log("exp",exp)
+
+let rawkey = aes.exportKey(
+    "raw", //can be "jwk" or "raw"
+    imp //extractable must be true
+  )
+
+let wk = aes.wrapKey(
+  "raw", //the export format, must be "raw" (only available sometimes)
+  rawkey, //the key you want to wrap, must export in 8 byte increments
+  imp, //the AES-KW key with "wrapKey" usage flag
+  {   //these are the wrapping key's algorithm options
+      name: "AES-KW"
+  }
+)
+
+
+let uwk = aes.unwrapKey(
+  "raw", //the import format, must be "raw" (only available sometimes)
+    wk, //the key you want to unwrap
+    imp, //the AES-KW key with "unwrapKey" usage flag
+    {   //these are the wrapping key's algorithm options
+        name: "AES-KW",
+    },
+    {   //this what you want the wrapped key to become (same as when wrapping)
+        name: "AES-GCM",
+        length: 256
+    },
+    false, //whether the key is extractable (i.e. can be used in exportKey)
+    ["encrypt", "decrypt"] 
+)
+
+console.log(uwk)
+*/
