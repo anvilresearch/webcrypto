@@ -58,7 +58,7 @@ class AES_KW extends Algorithm {
      * @description
      *
      * @param {string} format
-     * @param {CryptoKey} key
+     * @param {Any} key
      * @param {CryptoKey} wrappingKey
      * @param {KeyAlgorithm} wrappingAlgorithm
      *
@@ -69,9 +69,18 @@ class AES_KW extends Algorithm {
       if (format.toLowerCase() !== 'raw'){
         throw new CurrentlyNotSupportedError(format,'raw')
       }      
+
+      // Determine what format the key is a jwk or simple a handle
+      let data
+      if (key instanceof CryptoKey){
+        data = key.algorithm.exportKey("raw",key)
+      } else if (Buffer.isBuffer(key)){
+        data = key
+      } else {
+        throw new OperationError('Key must be a CryptoKey or BufferSource')
+      }
       
       // 1. Ensure the data is a multiple of 8 (not just 64)
-      let data = Buffer.from(key)
       if (!data.length || data.length % 8 !== 0){
         throw new OperationError('Invalid key length. Must be multiple of 8.')
       }
@@ -85,7 +94,7 @@ class AES_KW extends Algorithm {
       }
       let iv = Buffer.from('A6A6A6A6A6A6A6A6', 'hex')
       let cipher = crypto.createCipheriv(cipherName,wrappingKey.handle,iv)
-      let ciphertext = cipher.update(key)
+      let ciphertext = cipher.update(data)
       
       // 3. Return result
       return Uint8Array.from(Buffer.concat([ciphertext,cipher.final()])).buffer
@@ -104,7 +113,7 @@ class AES_KW extends Algorithm {
      * @param {Boolean} extractable
      * @param {Array} keyUsages
      *
-     * @returns {Array}
+     * @returns {CryptoKey}
      */
     unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
       // Currently only raw is supported
@@ -387,8 +396,8 @@ class AES_KW extends Algorithm {
  */
 module.exports = AES_KW
 
-
 /*
+
 let aes = new AES_KW({name: "AES-KW"})
 let key = aes.generateKey({
         name: "AES-KW",
@@ -429,12 +438,14 @@ let rawkey = aes.exportKey(
 
 let wk = aes.wrapKey(
   "raw", //the export format, must be "raw" (only available sometimes)
-  rawkey, //the key you want to wrap, must export in 8 byte increments
+  imp, //the key you want to wrap, must export in 8 byte increments
   imp, //the AES-KW key with "wrapKey" usage flag
   {   //these are the wrapping key's algorithm options
       name: "AES-KW"
   }
 )
+
+// console.log(wk)
 
 
 let uwk = aes.unwrapKey(
@@ -452,5 +463,5 @@ let uwk = aes.unwrapKey(
     ["encrypt", "decrypt"] 
 )
 
-console.log(uwk)
+// console.log(uwk)
 */
