@@ -1,14 +1,15 @@
 {
   "name": "@trust/webcrypto",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "WebCrypto API for Node.js",
   "main": "src/index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "mocha -w",
-    "jsdoc": "jsdoc -c jsdoc.json -r"
+    "test": "nyc _mocha test",
+    "jsdoc": "jsdoc -c jsdoc.json -r",
+    "coverage": "nyc --reporter=lcov _mocha test"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,9 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "codecov": "^2.3.0",
     "jsdoc": "^3.4.3",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "nyc": "^11.2.1"
   }
 }
