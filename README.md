@@ -1,6 +1,7 @@
 # W3C Web Cryptography API _(@trust/webcrypto)_
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Build Status](https://travis-ci.org/anvilresearch/webcrypto.svg?branch=master)](https://travis-ci.org/anvilresearch/webcrypto)
 
 > W3C Web Cryptography API for Node.js
 
@@ -41,6 +42,13 @@ encourage or provide a [native, if not core][wtf] Web Cryptography module.
 
 ## Install
 
+`@trust/webcrypto` requires recent versions of [node][node] and [npm][npm] to run. For key generation operations, it also requires [OpenSSL][openssl] to be installed on the system.
+
+[node]: https://nodejs.org
+[npm]: https://www.npmjs.com/
+[openssl]: https://www.openssl.org/
+
+
 ```bash
 $ npm install @trust/webcrypto --save
 ```
@@ -73,12 +81,12 @@ $ npm test
 |------------------|---|---|---|---|---|---|---|---|---|---|---|---|
 |RSASSA-PKCS1-v1_5 |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |RSA-PSS           |   |   | _ | _ |   | _ |   |   | _ | _ |   |   |
-|RSA-OAEP          | _ | _ |   |   |   | _ |   |   | _ | _ | _ | _ |
+|RSA-OAEP          | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |ECDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |ECDH              |   |   |   |   |   | _ | _ | _ | _ | _ |   |   |
 |AES-CTR           | _ | _ |   |   |   | _ |   |   | _ | _ | _ | _ |
-|AES-CBC           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | _ | _ |
-|AES-GCM           | _ | _ |   |   |   | _ |   |   | _ | _ | _ | _ |
+|AES-CBC           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
+|AES-GCM           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-KW            |   |   |   |   |   | _ |   |   | _ | _ | _ | _ |
 |HMAC              |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |SHA-1             |   |   |   |   | ✔ |   |   |   |   |   |   |   |
@@ -103,26 +111,26 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 
 ### Issues
 
-* please file [issues](https://github.com/anvilresearch/webcrypto/issues) :)
-* for bug reports, include relevant details such as platform, version, relevant data, and stack traces
-* be sure to check for existing issues before opening new ones
-* read the documentation before asking questions
-* it's strongly recommended to open an issue before hacking and submitting a PR
-* we reserve the right to close an issue for excessive bikeshedding
+* Please file [issues](https://github.com/anvilresearch/webcrypto/issues) :)
+* When writing a bug report, include relevant details such as platform, version, relevant data, and stack traces
+* Ensure to check for existing issues before opening new ones
+* Read the documentation before asking questions
+* It is strongly recommended to open an issue before hacking and submitting a PR
+* We reserve the right to close an issue for excessive bikeshedding
 
 ### Pull requests
 
 #### Policy
 
-* we're not presently accepting *unsolicited* pull requests
-* create an issue to discuss proposed features before submitting a pull request
-* create an issue to propose changes of code style or introduce new tooling
-* ensure your work is harmonious with the overall direction of the project
-* ensure your work does not duplicate existing effort
-* keep the scope compact; avoid PRs with more than one feature or fix
-* code review with maintainers is required before any merging of pull requests
-* new code must respect the style guide and overall architecture of the project
-* be prepared to defend your work
+* We're not presently accepting *unsolicited* pull requests
+* Create an issue to discuss proposed features before submitting a pull request
+* Create an issue to propose changes of code style or introduce new tooling
+* Ensure your work is harmonious with the overall direction of the project
+* Ensure your work does not duplicate existing effort
+* Keep the scope compact; avoid PRs with more than one feature or fix
+* Code review with maintainers is required before any merging of pull requests
+* New code must respect the style guide and overall architecture of the project
+* Be prepared to defend your work
 
 #### Style guide
 
@@ -157,6 +165,8 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 * Dmitri Zagidulin [@dmitrizagidulin](https://github.com/dmitrizagidulin)
 * Greg Linklater [@EternalDeiwos](https://github.com/EternalDeiwos)
 * JC Bailey [@thelunararmy](https://github.com/thelunararmy)
+* Loan Budea [@johnny90](https://github.com/johnny90)
+* Abdulrahman Alotaibi [@adminq80](https://github.com/adminq80)
 
 ## MIT License
 

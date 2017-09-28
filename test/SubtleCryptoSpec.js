@@ -18,6 +18,7 @@ const CryptoKeyPair = require('../src/keys/CryptoKeyPair')
 const JsonWebKey = require('../src/keys/JsonWebKey')
 const RSASSA_PKCS1_v1_5 = require('../src/algorithms/RSASSA-PKCS1-v1_5')
 const AES_CBC = require('../src/algorithms/AES-CBC')
+const AES_GCM = require('../src/algorithms/AES-GCM')
 const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
@@ -31,6 +32,12 @@ const {
   RsaPublicJwk,
   RsaPublicCryptoKey
 } = require('./RsaKeyPairForTesting')
+
+
+/**
+ * Test code for AES-GCM
+ */
+const good_iv =  Buffer.from([ 220, 29, 37, 164, 41, 84, 153, 197, 157, 122, 156, 254, 196, 161, 114, 74 ])
 
 /**
  * Tests
@@ -894,13 +901,412 @@ describe('SubtleCrypto', () => {
    * wrapKey
    */
   describe('wrapKey', () => {
-    it('should return a Promise')
+      describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey","unwrapKey"]
+        )
+        promise = crypto.subtle.wrapKey('jwk',key,key,{name: "AES-NONESENSE"})
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with invalid name property', () => {
+      let promise, error
+
+      beforeEach( done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey","unwrapKey"]
+        )
+        let alg = {name: "AES-CBC",iv:good_iv} // Not GCM
+        promise = crypto.subtle.wrapKey('jwk',key,key,alg)
+        promise.catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should reject the promise', () => {
+        promise.should.be.rejected
+        error.should.be.instanceof(Error)
+        error.message.should.include('NormalizedAlgorthm name must be same as wrappingKey algorithm name')
+      })
+    })
+
+    describe('with invalid key ops', () => {
+      let promise, error
+
+      beforeEach(done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt"]
+        )
+        let alg = {name: "AES-GCM",iv:good_iv}
+        promise = crypto.subtle.wrapKey('jwk',key,key,alg)
+                promise.catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should reject the promise', () => {
+        promise.should.be.rejected
+        error.should.be.instanceof(Error)
+        error.message.should.include('Wrapping key usages must include "wrapKey"')
+      })
+    })
+
+  describe('with invalid extractable property', () => {
+      let promise, error
+
+      beforeEach(done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            false, // Incorrect
+            ["encrypt", "decrypt","wrapKey"]
+        )
+        let alg = {name: "AES-GCM",iv:good_iv}
+        promise = crypto.subtle.wrapKey('jwk',key,key,alg)
+        promise.catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should reject the promise', () => {
+        promise.should.be.rejected
+        error.should.be.instanceof(Error)
+        error.message.should.include('Key is not extractable')
+      })
+    })
+
+
+  describe('with valid arguments', () => {
+      let promise, result, error
+
+      beforeEach(done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey"]
+        )
+        let alg = {name: "AES-GCM",iv:good_iv}
+        promise = crypto.subtle.wrapKey('jwk',key,key,alg)
+        promise.then(res => {
+            result = res
+            done()
+          })  
+        .catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.be.instanceof(ArrayBuffer)
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })      
+    })
   })
 
   /**
    * unwrapKey
    */
   describe('unwrapKey', () => {
-    it('should return a Promise')
+    let wrappedKey
+    before (() => {
+      wrappedKey = new Uint8Array([
+        34,105,32,16,166,133,127,43,31,27,51,61,224,43,87,63,222,
+        207,113,84,80,101,73,170,5,67,147,1,16,76,204,98,165,66,
+        25,48,219,41,143,247,79,136,187,202,198,2,176,61,50,127,
+        32,227,5,15,115,49,174,204,21,201,34,37,45,36,68,51,55,
+        138,56,65,242,121,247,165,89,74,183,157,112,42,245,233,
+        236,138,177,94,14,151,55,134,166,103,181,77,59,234,225,
+        115,127,249,108,64,97,144,99,41,205,18,8,123,16,203,141,
+        104,145,133,96,15,25,97,109,66,16,32,120,207,212,230,175,
+        31,202,237,230,158,207,35,145,82,87,110,67,159,36,146,148,
+        147,222,172,81,162,70,16,152,136,228,100,27,111,138,171])
+    })
+
+    describe('with invalid algorithm', () => {
+      let promise, error
+
+      beforeEach(() => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey","unwrapKey"]
+        )
+        promise = crypto.subtle.unwrapKey(
+            'jwk',
+            wrappedKey,
+            key,
+            {
+              name:"AES-NONSENSE",
+              iv: good_iv,
+              tagLength: 128
+            },
+            {   
+                name: "AES-NONSENSE",
+                length: 256
+            },
+            true,
+            ["encrypt","decrypt","wrapKey","unwrapKey"]
+          )
+        promise.catch(err => error = err)
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should reject the promise', () => {
+        error.should.be.instanceof(Error)
+        error.message.should.include('is not a supported algorithm')
+      })
+    })
+
+    describe('with invalid name property', () => {
+      let promise, result, error
+
+      before( done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM", 
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey","unwrapKey"]
+        )
+        promise = crypto.subtle.unwrapKey(
+            'jwk',
+            wrappedKey,
+            key,
+            {
+              name:"AES-CBC", // Incorrect
+              iv: good_iv,
+              tagLength: 128
+            },
+            {   
+                name: "AES-CBC", // Incorrect 
+                length: 256
+            },
+            true,
+            ["encrypt","decrypt","wrapKey","unwrapKey"]
+          )
+        promise
+        .then ( res  => {
+          result = res
+          done()
+        })
+        .catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should reject the promise', () => {
+        promise.should.be.rejected
+        error.should.be.instanceof(Error)
+        error.message.should.include('NormalizedAlgorthm name must be same as unwrappingKey algorithm name')
+      })
+    })
+
+    describe('with invalid key ops', () => {
+      let promise, error
+
+      before(done => {
+       let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt"]
+        )
+        promise = crypto.subtle.unwrapKey(
+            'jwk',
+            wrappedKey,
+            key,
+            {
+              name:"AES-GCM",
+              iv: good_iv,
+              tagLength: 128
+            },
+            {   
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["encrypt","decrypt"]
+          )
+        promise.catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should reject the promise', () => {
+        promise.should.be.rejected
+        error.should.be.instanceof(Error)
+        error.message.should.include('Unwrapping key usages must include "unwrapKey"')
+      })
+    })
+
+  describe('with valid arguments', () => {
+      let promise, result, error
+
+      before(done => {
+        let aes = new AES_GCM({ name: "AES-GCM", length: 256 })
+        let key = aes.importKey(
+            "jwk",
+            {
+                kty: "oct",
+                k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+                alg: "A256GCM",
+                ext: true,
+            }, 
+            {
+                name: "AES-GCM",
+            },
+            true,
+            ["encrypt", "decrypt","wrapKey","unwrapKey"]
+        )
+        promise = crypto.subtle.unwrapKey(
+            'jwk',
+            wrappedKey,
+            key,
+            {
+              name:"AES-GCM",
+              iv: good_iv,
+              tagLength: 128
+            },
+            {   
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["encrypt","decrypt","wrapKey","unwrapKey"]
+          )
+        promise
+        .then ( res  => {
+          result = res
+          done()
+        })
+        .catch(err => {
+          error = err
+          done()
+        })
+      })
+
+      it('should return a promise', () => {
+        promise.should.be.instanceof(Promise)
+      })
+
+      it('should resolve the promise', () => {
+        result.should.be.instanceof(CryptoKey)
+      })
+
+      it('should not reject the promise', () => {
+        expect(error).to.be.undefined
+      })   
+    })
   })
 })

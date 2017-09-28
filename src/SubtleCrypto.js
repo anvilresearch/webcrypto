@@ -7,6 +7,7 @@ const JsonWebKey = require('./keys/JsonWebKey')
 const recognizedKeyUsages = require('./keys/recognizedKeyUsages')
 const supportedAlgorithms = require('./algorithms')
 const {InvalidAccessError, NotSupportedError} = require('./errors')
+const {TextEncoder,TextDecoder} = require('text-encoding')
 
 /**
  * SubtleCrypto
@@ -363,7 +364,75 @@ class SubtleCrypto {
    * @returns {Promise}
    */
   wrapKey (format, key, wrappingKey, wrapAlgorithm) {
-    return new Promise()
+    // 1. Parameters
+    // 2. Setup normalizedAlgorithm with op as 'unwrap'
+    let normalizedAlgorithm = supportedAlgorithms.normalize('wrapKey', wrapAlgorithm)
+    if (normalizedAlgorithm instanceof Error) {
+      // 3. If failed, then try again with op as 'encrypt'
+      normalizedAlgorithm = supportedAlgorithms.normalize('encrypt', wrapAlgorithm)
+    }
+    // 4. Otherwise reject outright
+    if (normalizedAlgorithm instanceof Error)  {
+      return Promise.reject(normalizedAlgorithm)
+    }
+    // 5-6. Setup and asynchronously return a new promise
+    return new Promise((resolve, reject) => {
+      // 7. Try catch the following step...
+      // if anything goes wrong then reject the promise outright
+      try {
+          // 8. Validate normalizedAlgorithm name property
+          if (normalizedAlgorithm.name !== wrappingKey.algorithm.name) {
+            throw new InvalidAccessError('NormalizedAlgorthm name must be same as wrappingKey algorithm name')
+          } 
+
+          // 9. Validate usages property contains wrap
+          if (!wrappingKey.usages.includes('wrapKey')) {
+            throw new InvalidAccessError('Wrapping key usages must include "wrapKey"')
+          }
+
+          // 10. Validate algorithm contains exportKey
+          let exportKeyAlgorithms = supportedAlgorithms['exportKey']
+          if (!exportKeyAlgorithms[key.algorithm.name]) {
+            throw new NotSupportedError(key.algorithm.name)
+          }
+
+          // 11. Validate extractable property
+          if (key.extractable === false) {
+            throw new InvalidAccessError('Key is not extractable')
+          }
+
+          // 12. Generate extracted key
+          return this.exportKey(format,key)
+                .then(exportedKey => { 
+                  let bytes
+                  // 13.1. If format is "raw", "pkcs8", or "spki":
+                   if (["raw", "pkcs8","spki"].includes(format)) {
+                    bytes = exportedKey
+                  }
+                  // 13.2. If format is "jwk"
+                  else if (format === "jwk"){
+                    let json = JSON.stringify(exportedKey)
+                    bytes = new TextEncoder().encode(json)
+                  } 
+                  // 14.1. If the normalizedAlgorithm supports wrapKey then use it
+                  if (normalizedAlgorithm['wrapKey']){
+                    return normalizedAlgorithm.wrapKey(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                  }
+                  // 14.2. Otherwise try with encrypt
+                  else if (normalizedAlgorithm['encrypt']){
+                    return normalizedAlgorithm.encrypt(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                  } 
+                  // 14.3. Otherwise throw error
+                  else {
+                    return reject (new NotSupportedError(normalizedAlgorithm.name))
+                  }
+                })
+                // 15. Return the resulting promise
+                .then(resolve)
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 
   /**
@@ -381,8 +450,98 @@ class SubtleCrypto {
    *
    * @returns {Promise}
    */
-  unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, exractable, keyUsages) {
-    return new Promise()
+  unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
+    // 1. Parameters
+    // 2. Ommited due to redundancy
+    
+    // 3. Setup normalizedAlgorithm with op as 'unwrap'
+    let normalizedAlgorithm = supportedAlgorithms.normalize('unwrapKey', unwrapAlgorithm)
+    if (normalizedAlgorithm instanceof Error) {
+    // 4. If failed, then try again with op as 'encrypt'
+      normalizedAlgorithm = supportedAlgorithms.normalize('decrypt', unwrapAlgorithm)
+    }
+
+    // 5. Otherwise reject outright
+    if (normalizedAlgorithm instanceof Error)  {
+      return Promise.reject(normalizedAlgorithm)
+    }
+
+    // 6. Setup normalizedKeyAlgorithm
+    let normalizedKeyAlgorithm = supportedAlgorithms.normalize('importKey', unwrapAlgorithm)
+    if (normalizedKeyAlgorithm instanceof Error) {
+    // 7. If failed, then try again with op as 'encrypt'
+      return Promise.reject(normalizedKeyAlgorithm)
+    }
+
+    // 8-9. Setup and asynchronously return a new promise
+    return new Promise((resolve, reject) => {
+      // 10. Try catch the following step...
+      // if anything goes wrong then reject the promise outright
+      try {
+          // 11. Validate normalizedAlgorithm name property
+          if (normalizedAlgorithm.name !== unwrappingKey.algorithm.name) {
+            throw new InvalidAccessError('NormalizedAlgorthm name must be same as unwrappingKey algorithm name')
+          } 
+
+          // 12. Validate usages property contains unwrap
+          if (!unwrappingKey.usages.includes('unwrapKey')) {
+            throw new InvalidAccessError('Unwrapping key usages must include "unwrapKey"')
+          }
+          
+          let keyPromise
+          // 13.1. If the normalizedAlgorithm supports unwrapKey then use it
+          if (normalizedAlgorithm['unwrapKey']){
+            keyPromise = this.unwrapKey(unwrapAlgorithm,unwrappingKey,wrappedKey)
+          }
+
+          // 13.2. Otherwise try with decrypt
+          else if (normalizedAlgorithm['decrypt']){
+            keyPromise = this.decrypt(unwrapAlgorithm,unwrappingKey,wrappedKey)
+          } 
+
+          // 13.3. Otherwise throw error
+          else {
+            return reject (new NotSupportedError(normalizedAlgorithm.name))
+          }
+
+          return keyPromise.then( key => {
+            let bytes
+            // 14.1. If format is "raw", "pkcs8", or "spki":
+              if (["raw", "pkcs8","spki"].includes(format)) {
+              bytes = key
+            }
+
+            // 14.2. If format is "jwk"
+            else if (format === "jwk"){
+              bytes = JSON.parse(new TextDecoder().decode(key))
+            } 
+
+            // 15. Import the resulting unwrapped content
+            //  importKey (format, keyData, algorithm, extractable, keyUsages)
+            return normalizedKeyAlgorithm.importKey(format,
+                                            bytes,
+                                            unwrappedKeyAlgorithm,
+                                            extractable,
+                                            keyUsages)
+          }).then(result => {
+            // 16. Validate type parameters and usage length
+            if ((result.type === "secret" || result.type === "private") && result.usages.length === 0){
+              throw new SyntaxError("Usages cannot be empty")
+            }
+
+            // 17. Set extractable
+            result.extractable = extractable
+
+            // 18. Set usages
+            result.usages = keyUsages
+
+            // 19. Resolve promise
+            return resolve(result)
+          }).catch(console.log)
+      } catch (error) {
+        return reject(error)
+      }
+    })
   }
 }
 
