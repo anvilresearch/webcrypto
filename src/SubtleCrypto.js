@@ -517,11 +517,11 @@ class SubtleCrypto {
 
           // 15. Import the resulting unwrapped content
           // 16-18. Ommitted because it is handled by importKey interface
-          result = normalizedKeyAlgorithm.importKey(format,
-                                          bytes,
-                                          unwrappedKeyAlgorithm,
-                                          extractable,
-                                          keyUsages)
+          let result = normalizedKeyAlgorithm.importKey(format,
+                                                        bytes,
+                                                        unwrappedKeyAlgorithm,
+                                                        extractable,
+                                                        keyUsages)
           // 19. Resolve the result
           return resolve(result)
       } catch (error) {
