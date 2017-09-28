@@ -416,7 +416,7 @@ class SubtleCrypto {
                   } 
                   // 14.1. If the normalizedAlgorithm supports wrapKey then use it
                   if (normalizedAlgorithm['wrapKey']){
-                    return normalizedAlgorithm.wrapKey(wrapAlgorithm,wrappingKey,new Uint8Array(bytes))
+                    return normalizedAlgorithm.wrapKey(format,bytes,wrappingKey,wrapAlgorithm)
                   }
                   // 14.2. Otherwise try with encrypt
                   else if (normalizedAlgorithm['encrypt']){
@@ -488,56 +488,42 @@ class SubtleCrypto {
             throw new InvalidAccessError('Unwrapping key usages must include "unwrapKey"')
           }
           
-          let keyPromise
+          let key
           // 13.1. If the normalizedAlgorithm supports unwrapKey then use it
           if (normalizedAlgorithm['unwrapKey']){
-            keyPromise = this.unwrapKey(unwrapAlgorithm,unwrappingKey,wrappedKey)
+            key = normalizedAlgorithm.unwrapKey(format,wrappedKey,unwrappingKey,unwrapAlgorithm,unwrappedKeyAlgorithm,extractable,keyUsages)
           }
 
           // 13.2. Otherwise try with decrypt
           else if (normalizedAlgorithm['decrypt']){
-            keyPromise = this.decrypt(unwrapAlgorithm,unwrappingKey,wrappedKey)
+            key = normalizedAlgorithm.decrypt(unwrapAlgorithm,unwrappingKey,wrappedKey)
           } 
 
           // 13.3. Otherwise throw error
           else {
             return reject (new NotSupportedError(normalizedAlgorithm.name))
           }
+        
+          let bytes
+          // 14.1. If format is "raw", "pkcs8", or "spki":
+            if (["raw", "pkcs8","spki"].includes(format)) {
+            bytes = key
+          }
 
-          return keyPromise.then( key => {
-            let bytes
-            // 14.1. If format is "raw", "pkcs8", or "spki":
-              if (["raw", "pkcs8","spki"].includes(format)) {
-              bytes = key
-            }
+          // 14.2. If format is "jwk"
+          else if (format === "jwk"){
+            bytes = JSON.parse(new TextDecoder().decode(key))
+          } 
 
-            // 14.2. If format is "jwk"
-            else if (format === "jwk"){
-              bytes = JSON.parse(new TextDecoder().decode(key))
-            } 
-
-            // 15. Import the resulting unwrapped content
-            //  importKey (format, keyData, algorithm, extractable, keyUsages)
-            return normalizedKeyAlgorithm.importKey(format,
-                                            bytes,
-                                            unwrappedKeyAlgorithm,
-                                            extractable,
-                                            keyUsages)
-          }).then(result => {
-            // 16. Validate type parameters and usage length
-            if ((result.type === "secret" || result.type === "private") && result.usages.length === 0){
-              throw new SyntaxError("Usages cannot be empty")
-            }
-
-            // 17. Set extractable
-            result.extractable = extractable
-
-            // 18. Set usages
-            result.usages = keyUsages
-
-            // 19. Resolve promise
-            return resolve(result)
-          }).catch(console.log)
+          // 15. Import the resulting unwrapped content
+          // 16-18. Ommitted because it is handled by importKey interface
+          result = normalizedKeyAlgorithm.importKey(format,
+                                          bytes,
+                                          unwrappedKeyAlgorithm,
+                                          extractable,
+                                          keyUsages)
+          // 19. Resolve the result
+          return resolve(result)
       } catch (error) {
         return reject(error)
       }
