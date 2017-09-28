@@ -86,15 +86,20 @@ class AES_KW extends Algorithm {
       }
 
       // 2. Do the wrap
-      let cipherName
-      if (wrappingKey.algorithm.name === 'AES-KW' && [128,192,256].includes(wrappingKey.algorithm.length)){
-        cipherName = 'id-aes' + wrappingKey.algorithm.length + '-wrap'
-      } else {
-        throw new DataError('Invalid AES-KW and length pair.')
+      let ciphertext, cipher
+      try {
+        let cipherName
+        if (wrappingKey.algorithm.name === 'AES-KW' && [128,192,256].includes(wrappingKey.algorithm.length)){
+          cipherName = 'id-aes' + wrappingKey.algorithm.length + '-wrap'
+        } else {
+          throw new DataError('Invalid AES-KW and length pair.')
+        }
+        let iv = Buffer.from('A6A6A6A6A6A6A6A6', 'hex')
+        cipher = crypto.createCipheriv(cipherName,wrappingKey.handle,iv)
+        ciphertext = cipher.update(data)
+      } catch (error) {
+        throw new OperationError(error.message)
       }
-      let iv = Buffer.from('A6A6A6A6A6A6A6A6', 'hex')
-      let cipher = crypto.createCipheriv(cipherName,wrappingKey.handle,iv)
-      let ciphertext = cipher.update(data)
       
       // 3. Return result
       return Uint8Array.from(Buffer.concat([ciphertext,cipher.final()])).buffer
