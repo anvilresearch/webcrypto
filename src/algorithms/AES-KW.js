@@ -72,10 +72,10 @@ class AES_KW extends Algorithm {
 
       // Determine what format the key is a jwk or simple a handle
       let data
-      if (key instanceof CryptoKey){
-        data = key.algorithm.exportKey("raw",key)
-      } else if (Buffer.isBuffer(key)){
-        data = key
+      if (key instanceof CryptoKey){ 
+        data = key.algorithm.exportKey("raw",key) 
+      } else if (Buffer.isBuffer(key)){ 
+        data = key      
       } else {
         throw new OperationError('Key must be a CryptoKey or BufferSource')
       }
@@ -118,7 +118,7 @@ class AES_KW extends Algorithm {
      * @param {Boolean} extractable
      * @param {Array} keyUsages
      *
-     * @returns {CryptoKey}
+     * @returns {String}
      */
     unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
       // Currently only raw is supported
@@ -143,20 +143,8 @@ class AES_KW extends Algorithm {
         throw new OperationError(error.message)
       }
 
-      // Now generate a new cryptokey using SupportedAlgorithms
-      let normalizedAlgorithm = supportedAlgorithms.normalize('importKey', unwrappedKeyAlgorithm)
-      if (normalizedAlgorithm instanceof Error) {
-        throw new OperationError("Unsupported unwrappedKeyAlgorithm.")
-      }
-
       // 3. Return the resulting CryptoKey object
-      return normalizedAlgorithm.importKey(
-        "raw",
-        plaintext,
-        unwrappedKeyAlgorithm,
-        extractable,
-        keyUsages
-      )
+      return plaintext
     }
 
     /**

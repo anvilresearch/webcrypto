@@ -126,7 +126,7 @@ describe('AES_KW', () => {
             227, 86, 199])
     })
 
-    it('should return a CryptoKey', () => {
+    it('should return an Array', () => {
         aes.unwrapKey( 
             "raw",
             data,
@@ -138,37 +138,7 @@ describe('AES_KW', () => {
             },
             true,
             ["wrapKey","unwrapKey"]
-         ).should.be.instanceof(CryptoKey)
-    })
-
-    it('should return a valid unwrapped key', () => {
-        aes.unwrapKey( 
-            "raw",
-            data,
-            key,
-            { name: "AES-KW" },
-            {
-                name: "AES-GCM",
-                length: 256
-            },
-            true,
-            ["wrapKey","unwrapKey"]
-        ).algorithm.should.be.instanceof(AES_GCM)
-    })
-
-    it('should fail with an unsupported unwrappedKeyAlgorithm', () => {
-        expect(() => aes.unwrapKey( 
-            "raw",
-            data,
-            key,
-            { name: "AES-KW" },
-            {
-                name: "WRONG",
-                length: 256
-            },
-            true,
-            ["wrapKey","unwrapKey"]
-        )).to.throw("Unsupported unwrappedKeyAlgorithm.")
+         ).should.be.instanceof(Array)
     })
   }) // unwrapKey
 
