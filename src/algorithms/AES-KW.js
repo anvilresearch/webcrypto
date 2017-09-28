@@ -118,7 +118,7 @@ class AES_KW extends Algorithm {
      * @param {Boolean} extractable
      * @param {Array} keyUsages
      *
-     * @returns {String}
+     * @returns {Array}
      */
     unwrapKey (format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) {
       // Currently only raw is supported
