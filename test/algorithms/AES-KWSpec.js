@@ -16,6 +16,7 @@ const CryptoKeyPair = require('../../src/keys/CryptoKeyPair')
 const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
 const AesKeyAlgorithm = require('../../src/dictionaries/AesKeyAlgorithm')
 const AES_KW = require('../../src/algorithms/AES-KW')
+const AES_GCM = require('../../src/algorithms/AES-GCM')
 const DataError = require('../../src/errors/DataError')
 const OperationError = require('../../src/errors/OperationError')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
@@ -55,7 +56,7 @@ describe('AES_KW', () => {
   /**
    * wrapKey
    */
-  describe.only('wrapKey', () => {
+  describe('wrapKey', () => {
     let aes, key, data, signature
 
     before(() => {
@@ -74,12 +75,11 @@ describe('AES_KW', () => {
             true,
             ["wrapKey", "unwrapKey"]
         )
-        signature = new Uint8Array(
-            [63, 180, 233, 152, 186, 3, 20, 59, 64, 210, 44, 117, 189, 
+        signature = new Uint8Array([
+            63, 180, 233, 152, 186, 3, 20, 59, 64, 210, 44, 117, 189, 
             178, 116, 253, 244, 208, 240, 194, 57, 201, 96, 118, 236, 
             78, 183, 171, 194, 117, 62, 142, 167, 21, 169, 255, 111, 
-            227, 86, 199]
-        )
+            227, 86, 199])
     })
 
     it('should return an ArrayBuffer', () => {
@@ -90,13 +90,19 @@ describe('AES_KW', () => {
         Buffer.from(aes.wrapKey("raw",key,key,{ name: "AES-KW" }))
         .should.eql(Buffer.from(signature.buffer))
     })
+
+    it('should fail with invalid key length', () => {
+        expect(() => {
+            aes.wrapKey("raw",Buffer.from("invalid"),key,{name:"AES-KW"})
+        }).to.throw('Invalid key length. Must be multiple of 8.')
+    })
   }) // wrapKey
 
 /**
- * decrypt
+ * unwrapKey
  */
-  describe('decrypt', () => {
-    let aes, key, data, signature
+  describe('unwrapKey', () => {
+    let aes, key, data
     before(() => {
         aes = new AES_KW({ name: "AES-KW", length: 256 })
         key = aes.importKey(
@@ -111,63 +117,60 @@ describe('AES_KW', () => {
                 name: "AES-KW",
             },
             true,
-            ["encrypt", "decrypt"]
+            ["wrapKey", "unwrapKey"]
         )
         data = new Uint8Array([
-          28, 37, 34, 19, 165, 194, 33, 41, 41, 64, 114, 99,
-          135, 63, 127, 127, 177, 159, 109, 92, 80, 40, 168,
-          117, 38, 124, 35, 180, 244, 74, 59, 140, 210, 236,
-          134, 182, 126, 180])
-        signature = new TextEncoder().encode('Encoded with WebCrypto')
+            63, 180, 233, 152, 186, 3, 20, 59, 64, 210, 44, 117, 189, 
+            178, 116, 253, 244, 208, 240, 194, 57, 201, 96, 118, 236, 
+            78, 183, 171, 194, 117, 62, 142, 167, 21, 169, 255, 111, 
+            227, 86, 199])
     })
 
-    it("should throw with invalid tagLength", () => {
-        expect(() => {
-            aes.decrypt({name: "AES-KW", iv: good_iv, tagLength: 127}, key, new Uint8Array())
-        }).to.throw('TagLength is an invalid size.')
+    it('should return a CryptoKey', () => {
+        aes.unwrapKey( 
+            "raw",
+            data,
+            key,
+            { name: "AES-KW" },
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["wrapKey","unwrapKey"]
+         ).should.be.instanceof(CryptoKey)
     })
 
-    it("should throw with unsupported tagLength", () => {
-        expect(() => {
-            aes.decrypt({name: "AES-KW", iv: good_iv, tagLength: 64}, key, new Uint8Array())
-        }).to.throw('Node currently only supports 128 tagLength.')
+    it('should return a valid unwrapped key', () => {
+        aes.unwrapKey( 
+            "raw",
+            data,
+            key,
+            { name: "AES-KW" },
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            true,
+            ["wrapKey","unwrapKey"]
+        ).algorithm.should.be.instanceof(AES_GCM)
     })
 
-    it("should throw with invalid data length", () => {
-        expect(() => {
-            aes.decrypt({name: "AES-KW", iv: good_iv}, key, new Uint8Array())
-        }).to.throw('Data length cannot be less than tagLength.')
+    it('should fail with an unsupported unwrappedKeyAlgorithm', () => {
+        expect(() => aes.unwrapKey( 
+            "raw",
+            data,
+            key,
+            { name: "AES-KW" },
+            {
+                name: "WRONG",
+                length: 256
+            },
+            true,
+            ["wrapKey","unwrapKey"]
+        )).to.throw("Unsupported unwrappedKeyAlgorithm.")
     })
-
-    it("should throw with invalid data length", () => {
-        expect(() => {
-            let data = new Uint8Array(1)
-            data[0] = 1
-            aes.decrypt({name: "AES-KW", iv: good_iv, tagLength: 128}, key, data)
-        }).to.throw('Data length cannot be less than tagLength.')
-    })
-
-    it("should throw with invalid iv length", () => {
-        expect(() => {
-            aes.encrypt({name: "AES-KW", iv: bad_iv}, key, new Uint8Array())
-        }).to.throw('IV Length must be less than 18446744073709551615 in length.')
-    })
-
-    it("should throw with invalid additionalData", () => {
-        expect(() => {
-            aes.encrypt({name: "AES-KW", iv: good_iv, additionalData: {}}, key, new Uint8Array())
-        }).to.throw('AdditionalData must be less than 18446744073709551615 in length.')
-    })
-
-    it('should return an ArrayBuffer', () => {
-        aes.decrypt({name: "AES-KW", iv: good_iv, tagLength: 128}, key, data).should.be.instanceof(ArrayBuffer)
-    })
-
-    it('should return a valid decryption', () => {
-        Buffer.from(aes.decrypt({name: "AES-KW", iv: good_iv, tagLength: 128}, key, data))
-        .should.eql(Buffer.from(signature.buffer))
-    })
-  }) // decrypt
+  }) // unwrapKey
 
 /**
  * generateKey
@@ -182,18 +185,18 @@ describe('AES_KW', () => {
         }
         aes = new AES_KW(alg)
         return Promise.resolve()
-        .then(() => cryptoKey = aes.generateKey(alg, true, ["encrypt", "decrypt"]))
+        .then(() => cryptoKey = aes.generateKey(alg, true, ["wrapKey", "unwrapKey"]))
     })
 
     it('should throw with invalid usages', () => {
         expect(() => {
-            aes.generateKey(alg, true, ['encrypt', 'decrypt', 'wrong'])
-        }).to.throw('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
+            aes.generateKey(alg, true, ['wrapKey', 'unwrapKey', 'wrong'])
+        }).to.throw('Key usages can only include "wrapKey" or "unwrapKey"')
     })
 
     it('should throw with invalid parameter length', () => {
         expect(() => {
-            aes.generateKey({name:"AES-KW", length:100}, true, ['encrypt', 'decrypt'])
+            aes.generateKey({name:"AES-KW", length:100}, true, ['wrapKey', 'unwrapKey'])
         }).to.throw('Member length must be 128, 192, or 256.')
     })
 
@@ -219,7 +222,7 @@ describe('AES_KW', () => {
     })
 
     it('should set key usages', () => {
-        cryptoKey.usages.should.eql(['encrypt','decrypt'])
+        cryptoKey.usages.should.eql(['wrapKey','unwrapKey'])
     })
 
     it('should have correct length key handle', () => {
@@ -228,7 +231,7 @@ describe('AES_KW', () => {
 
     it('should generate a random handle each time', () => {
         cryptoKey.handle.should.not.equal(
-            aes.generateKey(alg, true, ['encrypt', 'decrypt']).handle
+            aes.generateKey(alg, true, ['wrapKey', 'unwrapKey']).handle
         )
     })
   })//generateKey
@@ -245,8 +248,8 @@ describe('AES_KW', () => {
 
     it('should throw with invalid usages', () => {
         expect(() => {
-            aes.importKey('raw', new Uint8Array([1,2,3,4]), {name:"AES-KW"} , true, ['encrypt', 'decrypt', 'wrong'])
-        }).to.throw('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
+            aes.importKey('raw', new Uint8Array([1,2,3,4]), {name:"AES-KW"} , true, ['wrapKey', 'unwrapKey', 'wrong'])
+        }).to.throw('Key usages can only include "wrapKey" or "unwrapKey"')
     })
 
     it('should expect only "raw" or "jwk" formats', () => {
@@ -270,12 +273,12 @@ describe('AES_KW', () => {
                 238, 56, 34, 45, 137, 113, 191, 114, 201,
                 213, 3, 61, 241])
             return Promise.resolve()
-            .then(() => cryptoKey = aes.importKey("raw", raw, {name:"AES-KW"}, true, ["encrypt", "decrypt"]))
+            .then(() => cryptoKey = aes.importKey("raw", raw, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"]))
         })
 
         it('should expect a suitable raw length', () => {
             expect(() => {
-                aes.importKey('raw', new Uint8Array([1,2,3,4]), {name:"AES-KW"} , true, ['encrypt','decrypt'])
+                aes.importKey('raw', new Uint8Array([1,2,3,4]), {name:"AES-KW"} , true, ['wrapKey','unwrapKey'])
             }).to.throw('Length of data bits must be 128, 192 or 256.')
         })
 
@@ -297,7 +300,7 @@ describe('AES_KW', () => {
         })
 
         it('should set key usages', () => {
-            cryptoKey.usages.should.eql(['encrypt','decrypt'])
+            cryptoKey.usages.should.eql(['wrapKey','unwrapKey'])
         })
 
         it('should have correct length key handle', () => {
@@ -321,12 +324,12 @@ describe('AES_KW', () => {
                 ext: true,
             }
             return Promise.resolve()
-            .then(() => cryptoKey = aes.importKey("jwk", key, {name:"AES-KW"}, true, ["encrypt", "decrypt"]))
+            .then(() => cryptoKey = aes.importKey("jwk", key, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"]))
         })
 
         it('should expect a suitable jwk format', () => {
             expect(() => {
-                aes.importKey('jwk', "Incorrect", {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                aes.importKey('jwk', "Incorrect", {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Invalid jwk format')
         })
 
@@ -337,7 +340,7 @@ describe('AES_KW', () => {
                     k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                     alg: "A256KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('kty property must be "oct"')
         })
 
@@ -347,7 +350,7 @@ describe('AES_KW', () => {
                     kty: "oct",
                     alg: "A256KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('k property must not be empty')
         })
 
@@ -358,7 +361,7 @@ describe('AES_KW', () => {
                     k: "c7WsUB6msAgIdDxTnT13Yw",
                     alg: "A256KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Algorithm "A128KW" must be 128 bits in length')
         })
 
@@ -369,7 +372,7 @@ describe('AES_KW', () => {
                     k: "c7WsUB6msAgIdDxTnT13YwY7SQjYVmrq",
                     alg: "A256KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Algorithm "A192KW" must be 192 bits in length')
         })
 
@@ -380,7 +383,7 @@ describe('AES_KW', () => {
                     k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                     alg: "A192KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Algorithm "A256KW" must be 256 bits in length')
         })
 
@@ -391,7 +394,7 @@ describe('AES_KW', () => {
                     k: "Y0zt37",
                     alg: "A256KW",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Algorithm and data length mismatch')
         })
 
@@ -403,14 +406,14 @@ describe('AES_KW', () => {
                     alg: "A256KW",
                     use: "WRONG",
                     ext: true,
-                }, {name:"AES-KW"} , false, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , false, ["wrapKey","unwrapKey"])
             }).to.throw('Key use must be "enc"')
         })
 
         it('should expect valid key operations', () => {
             expect(() => {
-                aes.importKey('jwk', key, {name:"AES-KW"} , false, ['encrypt','decrypt','WRONG'])
-            }).to.throw('Key usages can only include "encrypt", "decrypt", "wrapKey" or "unwrapKey"')
+                aes.importKey('jwk', key, {name:"AES-KW"} , false, ["wrapKey","unwrapKey",'WRONG'])
+            }).to.throw('Key usages can only include "wrapKey" or "unwrapKey"')
         })
 
         it('should expect non extractable to not be extractable', () => {
@@ -420,7 +423,7 @@ describe('AES_KW', () => {
                     k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                     alg: "A256KW",
                     ext: false,
-                }, {name:"AES-KW"} , true, ['encrypt','decrypt'])
+                }, {name:"AES-KW"} , true, ["wrapKey","unwrapKey"])
             }).to.throw('Cannot be extractable when "ext" is set to false')
         })
 
@@ -442,7 +445,7 @@ describe('AES_KW', () => {
         })
 
         it('should set key usages', () => {
-            cryptoKey.usages.should.eql(['encrypt','decrypt'])
+            cryptoKey.usages.should.eql(["wrapKey","unwrapKey"])
         })
 
         it('should have correct length key handle', () => {
@@ -487,7 +490,7 @@ describe('AES_KW', () => {
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256KW",
                 ext: true
-            }, {name:"AES-KW"}, true, ["encrypt", "decrypt"])
+            }, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"])
             raw = aes.exportKey("raw",key)
         })
 
@@ -510,7 +513,7 @@ describe('AES_KW', () => {
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256KW",
                 ext: true
-            }, {name:"AES-KW"}, true, ["encrypt", "decrypt"])
+            }, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"])
             jwk = aes.exportKey("jwk",key)
         })
 
@@ -528,7 +531,7 @@ describe('AES_KW', () => {
                 k: "c7WsUB6msAgIdDxTnT13Yw",
                 alg: "A128KW",
                 ext: true
-            }, {name:"AES-KW"}, true,["encrypt", "decrypt"])).alg.should.eql("A128KW")
+            }, {name:"AES-KW"}, true,["wrapKey","unwrapKey"])).alg.should.eql("A128KW")
         })
 
         it('should expect A192KW when data length is 24', () => {
@@ -537,7 +540,7 @@ describe('AES_KW', () => {
                 k: "c7WsUB6msAgIdDxTnT13YwY7SQjYVmrq",
                 alg: "A192KW",
                 ext: true
-            }, {name:"AES-KW"}, true, ["encrypt", "decrypt"])).alg.should.eql("A192KW")
+            }, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"])).alg.should.eql("A192KW")
         })
 
         it('should expect A256KW when data length is 32', () => {
@@ -546,7 +549,7 @@ describe('AES_KW', () => {
                 k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
                 alg: "A256KW",
                 ext: true
-            }, {name:"AES-KW"}, true, ["encrypt", "decrypt"])).alg.should.eql("A256KW")
+            }, {name:"AES-KW"}, true, ["wrapKey","unwrapKey"])).alg.should.eql("A256KW")
         })
     })//jwk
   })//exportKey
