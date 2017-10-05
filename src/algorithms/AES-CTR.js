@@ -84,7 +84,7 @@ class AES_CTR extends Algorithm {
       let cipher = crypto.createCipheriv(cipherName,key.handle,Buffer.from(algorithm.counter))
       
       // 4. Return result
-      return Buffer.concat([cipher.update(data),cipher.final()])
+      return Uint8Array.from(Buffer.concat([cipher.update(data),cipher.final()])).buffer
     }
 
     /**
@@ -121,7 +121,7 @@ class AES_CTR extends Algorithm {
       let plaintext = Array.from(Buffer.concat([decipher.update(Buffer.from(data)),decipher.final()]))
 
       // 4. Return resulting ArrayBuffer
-      return Buffer.from(plaintext)
+      return Uint8Array.from(plaintext).buffer
     }
 
     /**
@@ -385,6 +385,9 @@ let imp = aes.importKey(
     true, //whether the key is extractable (i.e. can be used in exportKey)
     ["encrypt", "decrypt"] //can "encrypt", "decrypt", "wrapKey", or "unwrapKey"
 )
+
+let data = 'hello world'
+
 let enc = aes.encrypt(
       {
         name: "AES-CTR",
@@ -394,9 +397,9 @@ let enc = aes.encrypt(
         length: 128, //can be 1-128
     },
     imp, //from generateKey or importKey above
-    "hello world" //ArrayBuffer of data you want to encrypt  
+    data //ArrayBuffer of data you want to encrypt  
   )
-console.log("enc",JSON.stringify(enc))
+console.log("encoded:",JSON.stringify(enc))
 let dec = aes.decrypt(
   {
         name: "AES-CTR",
@@ -404,13 +407,14 @@ let dec = aes.decrypt(
         length: 128, //The same length you used to encrypt
     },
     imp, //from generateKey or importKey above
-    new Uint8Array([195, 154, 41, 154, 0, 73, 47, 73, 63, 16, 5]) //ArrayBuffer of the data
+    enc //ArrayBuffer of the data
   )
-console.log("dec",new TextDecoder().decode(dec))
+console.log("decoded:",new TextDecoder().decode(dec))
 
 let exportedraw = aes.exportKey("raw",imp)
-console.log("exportedraw",exportedraw)
+// console.log("exportedraw",exportedraw)
 
 let exportedjwk = aes.exportKey("jwk",imp)
-console.log("exportedjwk",exportedjwk)
+// console.log("exportedjwk",exportedjwk)
+
 */
