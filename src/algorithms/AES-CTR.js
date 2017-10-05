@@ -64,15 +64,15 @@ class AES_CTR extends Algorithm {
      * @returns {Array}
      */
     encrypt (algorithm, key, data) {
-      // // 1. Ensure correct counter length
-      // if (algorithm.counter === undefined || algorithm.counter.byteLength !== 16){
-      //   throw new OperationError('Counter must be exactly 16 bytes')
-      // }
+      // 1. Ensure correct counter length
+      if (algorithm.counter === undefined || algorithm.counter.byteLength !== 16){
+        throw new OperationError('Counter must be exactly 16 bytes')
+      }
       
-      // // 2. Ensure correct length size
-      // if (algorithm.length === undefined || algorithm.length === 0 || algorithm.length > 128){
-      //   throw new OperationError('Length must be non zero and less than or equal to 128')
-      // }
+      // 2. Ensure correct length size
+      if (algorithm.length === undefined || algorithm.length === 0 || algorithm.length > 128){
+        throw new OperationError('Length must be non zero and less than or equal to 128')
+      }
 
       // 3. Do the encryption
       let cipherName
@@ -81,12 +81,10 @@ class AES_CTR extends Algorithm {
       } else {
         throw new DataError('Invalid AES-CTR and length pair.')
       }
-      // TODO Change cipher to use proper counter implementation 
-      let cipher = crypto.createCipher(cipherName,key.handle)
-      let ciphertext = cipher.update(Buffer.from(data))
+      let cipher = crypto.createCipheriv(cipherName,key.handle,Buffer.from(algorithm.counter))
       
       // 4. Return result
-      return Uint8Array.from(Buffer.concat([ciphertext,cipher.final()])).buffer
+      return Buffer.concat([cipher.update(data),cipher.final()])
     }
 
     /**
@@ -102,15 +100,15 @@ class AES_CTR extends Algorithm {
      * @returns {Array}
      */
     decrypt (algorithm, key, data) {
-      // // 1. Ensure correct counter length
-      // if (algorithm.counter === undefined || algorithm.counter.byteLength !== 16) {
-      //   throw new OperationError('Counter must be exactly 16 bytes')
-      // }
+      // 1. Ensure correct counter length
+      if (algorithm.counter === undefined || algorithm.counter.byteLength !== 16) {
+        throw new OperationError('Counter must be exactly 16 bytes')
+      }
       
-      // // 2. Ensure correct length size
-      // if (algorithm.length === undefined || algorithm.length === 0 || algorithm.length > 128){
-      //   throw new OperationError('Length must be non zero and less than or equal to 128')
-      // }
+      // 2. Ensure correct length size
+      if (algorithm.length === undefined || algorithm.length === 0 || algorithm.length > 128){
+        throw new OperationError('Length must be non zero and less than or equal to 128')
+      }
       
       // 3. Perform the decryption 
       let cipherName
@@ -119,13 +117,11 @@ class AES_CTR extends Algorithm {
       } else {
         throw new DataError('Invalid AES-CTR and length pair.')
       }
-      // TODO Change decipher to use proper counter implementation 
-      let decipher = crypto.createDecipher(cipherName,key.handle)
-      let ciphertext = decipher.update(Buffer.from(data))
-      let plaintext = Array.from(Buffer.concat([ciphertext,decipher.final()]))
+      let decipher = crypto.createDecipheriv(cipherName,key.handle,algorithm.counter)
+      let plaintext = Array.from(Buffer.concat([decipher.update(Buffer.from(data)),decipher.final()]))
 
       // 4. Return resulting ArrayBuffer
-      return Uint8Array.from(plaintext).buffer
+      return Buffer.from(plaintext)
     }
 
     /**
@@ -159,10 +155,10 @@ class AES_CTR extends Algorithm {
         throw new OperationError(error.message)
       }
       
-      // 6. Set new AesKeyAlgorithm
+      // Set new AesKeyAlgorithm
       let algorithm = new AES_CTR(params)
 
-      // 5. Define new CryptoKey names key
+      // 5-11. Define new CryptoKey names key
       let key = new CryptoKey({
         type: 'secret',
         algorithm,
@@ -259,7 +255,7 @@ class AES_CTR extends Algorithm {
         
         // 2.2.7 Validate "key_ops" field
         if (jwk.key_ops){
-          key_ops.forEach(op => {
+          jwk.key_ops.forEach(op => {
             if (op !== 'encrypt' 
              && op !== 'decrypt' 
              && op !== 'wrapKey' 
@@ -371,10 +367,50 @@ class AES_CTR extends Algorithm {
  * Export
  */
 module.exports = AES_CTR
-// TODO Figure out how to en/decrypt using counter
+
+/*
 let aes = new AES_CTR({name:"AES-CTR"})
-let k = aes.generateKey({name:"AES-CTR",length:128},true,["encrypt","decrypt"])
-let enc = aes.encrypt({},k,"My Data string")
-console.log("enc",new TextDecoder().decode(enc))
-let dec = aes.decrypt({},k,enc)
+
+let imp = aes.importKey(
+  "jwk", //can be "jwk" or "raw"
+    {   //this is an example jwk key, "raw" would be an ArrayBuffer
+        kty: "oct",
+        k: "Y0zt37HgOx-BY7SQjYVmrqhPkO44Ii2Jcb9yydUDPfE",
+        alg: "A256CTR",
+        ext: true,
+    },
+    {   //this is the algorithm options
+        name: "AES-CTR",
+    },
+    true, //whether the key is extractable (i.e. can be used in exportKey)
+    ["encrypt", "decrypt"] //can "encrypt", "decrypt", "wrapKey", or "unwrapKey"
+)
+let enc = aes.encrypt(
+      {
+        name: "AES-CTR",
+        //Don't re-use counters!
+        //Always use a new counter every time your encrypt!
+        counter: new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10]),
+        length: 128, //can be 1-128
+    },
+    imp, //from generateKey or importKey above
+    "hello world" //ArrayBuffer of data you want to encrypt  
+  )
+console.log("enc",JSON.stringify(enc))
+let dec = aes.decrypt(
+  {
+        name: "AES-CTR",
+        counter: new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10]), //The same counter you used to encrypt
+        length: 128, //The same length you used to encrypt
+    },
+    imp, //from generateKey or importKey above
+    new Uint8Array([195, 154, 41, 154, 0, 73, 47, 73, 63, 16, 5]) //ArrayBuffer of the data
+  )
 console.log("dec",new TextDecoder().decode(dec))
+
+let exportedraw = aes.exportKey("raw",imp)
+console.log("exportedraw",exportedraw)
+
+let exportedjwk = aes.exportKey("jwk",imp)
+console.log("exportedjwk",exportedjwk)
+*/
