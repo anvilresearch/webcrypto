@@ -167,7 +167,7 @@ describe('RSASSA_PKCS1_v1_5', () => {
     let alg, rsa, cryptoKeyPair
 
     before(() => {
-      alg = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }
+      alg = { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, hash: { name: 'SHA-256' } }
       rsa = new RSASSA_PKCS1_v1_5(alg)
       return Promise.resolve()
         .then(() => cryptoKeyPair = rsa.generateKey(alg, true, ['sign', 'verify']))
