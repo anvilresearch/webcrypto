@@ -7,6 +7,7 @@ const {spawnSync} = require('child_process')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 const keyto = require('@trust/keyto')
 const elEdDSA = require('elliptic').eddsa;
+const elliptic = require('elliptic')
 
 /**
  * Local dependencies
@@ -69,9 +70,9 @@ class EDDSA extends Algorithm {
    */
   sign (key, data) {
     let result
-    // Ensure the key is a secret type only
-    if (key.type !== 'secret'){
-      throw new InvalidAccessError('Signing requires a secret key')
+    // Ensure the key is a private type only
+    if (key.type !== 'private'){
+      throw new InvalidAccessError('Signing requires a private key')
     }
 
     // Ensure data is hex string, array or Buffer
@@ -88,7 +89,7 @@ class EDDSA extends Algorithm {
       // Create curve via elliptic
       let ec = new elEdDSA('ed25519')
       
-      // Generate keypair from secret key
+      // Generate keypair from private key
       let ecKey 
       if (typeof key.handle === 'string'){
         ecKey = ec.keyFromSecret(key.handle, 'hex')
@@ -146,7 +147,7 @@ class EDDSA extends Algorithm {
       
       // Generate keypair from key
       let ecKey 
-      if (key.type === 'secret'){
+      if (key.type === 'private' && key.extractable){
         if (typeof key.handle === 'string'){
           ecKey = ec.keyFromSecret(key.handle, 'hex')
         } else { 
@@ -157,7 +158,7 @@ class EDDSA extends Algorithm {
         if (typeof key.handle === 'string'){
           ecKey = ec.keyFromPublic(key.handle, 'hex')
         } else { 
-          ecKey = ec.keyFromPublic(key.handle)
+          ecKey = ec.keyFromPublic(key.handle.toString('hex'),'hex')
         }
       } else {
         throw new OperationError("Invalid key type")
@@ -185,70 +186,45 @@ class EDDSA extends Algorithm {
    * Generate an EDDSA key pair
    *
    * @param {EcKeyGenParams} params
-   * @returns {CryptoKeyPair}
+   * @returns {CryptoKey}
    */
   generateKey (params, extractable, usages) {
-    // 1. Validate usages
+    // Validate usages
     usages.forEach(usage => {
         if (usage !== 'sign' && usage !== 'verify') {
           throw new SyntaxError('Key usages can only include "sign", or "verify"')
         }
     })
+    // Generate random key for scret portion
+    let secretBytes = crypto.randomBytes(32)
 
-    // 2. Generate a keypair
-    let keypair = {}
-    let { namedCurve } = params
+    // Derive public bytes
+    let ec = new elEdDSA('ed25519')
+    let ecKey = ec.keyFromSecret(secretBytes)
+    let pubKey = Buffer.from(ecKey.pubBytes())
 
-    if (!namedCurve) {
-      throw new DataError('namedCurve is a required parameter for EDDSA')
-    }
-
-    if (!EcKeyAlgorithm.mapping.map(alg => alg.namedCurve).includes(namedCurve)) {
-      throw new DataError('namedCurve is not valid')
-    }
-
-    let osslCurveName = EcKeyAlgorithm.mapping.find(alg => alg.namedCurve === namedCurve)
-
-    try {
-        // TODO may need to remove -noout if ec params is needed
-        let privateKey = spawnSync('openssl', ['ecparam','-name',osslCurveName.name,'-genkey','-noout']).stdout
-        let publicKey = spawnSync('openssl', ['ec', '-pubout'], { input: privateKey }).stdout
-        try {
-          keypair.privateKey = privateKey.toString('ascii').trim()
-          keypair.publicKey = publicKey.toString('ascii').trim()
-        } catch(error){
-          throw new OperationError(error.message)
-        }
-    } catch (error) {
-    // 3. If any operation fails then throw error
-      throw new OperationError(error.message)
-    }
-
-    // 4. Set algorithm be a new EDDSA
+    // Set algorithm be a new EDDSA
     let algorithm = new EDDSA(params)
 
-    // 5-6. Set name to EDDSA
-    // Defined in class header so it will be passed down via params
-
-    // 7-11. Create publicKey object
-    let publicKey = new CryptoKey({
-      type: 'public',
-      algorithm,
-      extractable: true,
-      usages: ['verify'],
-      handle: keypair.publicKey
-    })
-
-    // 12-16. Create privateKey object
+    // Create private key object
     let privateKey = new CryptoKey({
       type: 'private',
       algorithm,
       extractable,
       usages: ['sign'],
-      handle: keypair.privateKey
+      handle: secretBytes
+    })
+    
+    // Create public key object
+    let publicKey = new CryptoKey({
+      type: 'public',
+      algorithm,
+      extractable: true,
+      usages: ['verify'],
+      handle: pubKey
     })
 
-    // 17-20. Create and return a new CryptoKeyPair
+    // Return the generated Key
     return new CryptoKeyPair({publicKey,privateKey})
   }//generateKey
 
@@ -261,7 +237,7 @@ class EDDSA extends Algorithm {
    * @param {string|JsonWebKey} keyData
    * @param {KeyAlgorithm} algorithm
    * @param {Boolean} extractable
-   * @param {Array} keyUsages
+   * @param {Array} keyUsage
    *
    * @returns {CryptoKey}
    */
@@ -297,7 +273,7 @@ class EDDSA extends Algorithm {
       }
 
       // 2.3.3 Validate 'kty' field
-      if (jwk.kty !== 'EC'){
+      if (jwk.kty !== 'OKP'){
         throw new DataError('Key type must be "EC".')
       }
 
@@ -314,20 +290,12 @@ class EDDSA extends Algorithm {
             throw new DataError('Key operation can only include "sign", or "verify".')
           }
         })
-      }
+      }     
 
       // 2.3.6. Validate 'ext' field
       if (jwk.ext !== undefined && jwk.ext === false && extractable === true){
         throw new DataError('Cannot be extractable when "ext" is set to false')
       }
-
-      // 2.3.7. Set namedCurve
-      let namedCurve = jwk.crv
-
-      // 2.3.8. Ommitted due to redundancy
-
-      // 2.3.9.1. If namedCurve is equal to 'secp256k1' then...
-      if (EcKeyAlgorithm.mapping.map(alg => alg.namedCurve).includes(namedCurve)){
         // 2.3.9.1.1-3 Ommited due to redundancy
         // 2.3.9.1.4.1. Validate 'd' property
         if (jwk.d) {
@@ -351,13 +319,6 @@ class EDDSA extends Algorithm {
             handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs8')
           })
         }
-      }
-      // 2.3.9.2. Otherwise...
-      else {
-        // 2.3.9.2.1. TODO Implement further key import steps from other specs
-        // 2.3.9.2.1. Throw error because there are currently no further specs
-        throw new DataError ('Not a valid jwk specification')
-      }
       // 2.3.10. Ommitted due to redudancy
       // 2.3.11-14 Set new alg object
       key.algorithm = new EDDSA(algorithm)
@@ -444,17 +405,47 @@ module.exports = EDDSA
 
 let ed = new EDDSA({name: 'ED25519'})
 let secretKey = {
-  type : 'secret',
-  handle : `4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb`
+  type : 'private',
+  handle : Buffer.from(`4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb`,'hex')
 }
 let pubKey = {
   type : 'public',
-  handle : `3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c`
+  handle : Buffer.from(`3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c`,'hex')
 }
+
+
 let msg = (Buffer.from('72','hex'))
 
 let sig = `92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00`
 let enc = ed.sign(secretKey,'72')
 let dec = ed.verify(pubKey,enc,msg)
-console.log("enc",enc)
-console.log("dec",dec)
+// console.log("enc",enc)
+// console.log("dec",dec)
+
+let gennedKey = ed.generateKey({name: "EDDSA"},true,['sign','verify'])
+// console.log("gennedKey",gennedKey.publicKey.handle,gennedKey.privateKey.handle)
+
+let ec = new elEdDSA('ed25519')
+let kty = "OKP"
+let crv = "Ed25519"
+let d = "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"
+let x = "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+
+let hexD = base64url.toBuffer(d)
+let hexX = base64url.toBuffer(x)
+
+// console.log('hexD',hexD)
+// console.log('hexX',hexX)
+
+let sk = ec.keyFromSecret(secretKey.handle)
+// console.log(sk)
+// console.log(Buffer.from(sk.pubBytes()))
+
+let enc1 = ed.sign(gennedKey.privateKey,msg)
+let dec1 = ed.verify(gennedKey.publicKey,enc1,msg)
+console.log("enc1",enc1)
+console.log("dec1",dec1)
+ 
+
+// let testKey = ec.keyFromSecret(`9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60`,'hex')
+// console.log( testKey )
