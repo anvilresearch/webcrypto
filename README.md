@@ -83,6 +83,7 @@ $ npm test
 |RSA-PSS           |   |   | _ | _ |   | _ |   |   | _ | _ |   |   |
 |RSA-OAEP          | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |ECDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
+|EDDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |ECDH              |   |   |   |   |   | _ | _ | _ | _ | _ |   |   |
 |AES-CTR           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-CBC           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
@@ -165,7 +166,7 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 * Dmitri Zagidulin [@dmitrizagidulin](https://github.com/dmitrizagidulin)
 * Greg Linklater [@EternalDeiwos](https://github.com/EternalDeiwos)
 * JC Bailey [@thelunararmy](https://github.com/thelunararmy)
-* Loan Budea [@johnny90](https://github.com/johnny90)
+* Ioan Budea [@johnny90](https://github.com/johnny90)
 * Abdulrahman Alotaibi [@adminq80](https://github.com/adminq80)
 
 ## MIT License
