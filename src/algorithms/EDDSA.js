@@ -243,27 +243,27 @@ class EDDSA extends Algorithm {
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
     let key, hash, normalizedHash, jwk, privateKeyInfo
-    // 1-2. Check formatting
-    // 2.1. "spki" format
+    // Check formatting
+    // "spki" format
     if (format === 'spki') {
       throw new CurrentlyNotSupportedError(format,'jwk')
     }
 
-    // 2.2. "pkcs8" format
+    // "pkcs8" format
     else if (format === 'pkcs8') {
       throw new CurrentlyNotSupportedError(format,'jwk')
     }
 
-    // 2.3. "jwk" format
+    // "jwk" format
     else if (format === 'jwk') {
-      // 2.3.1 Ensure data is JsonWebKey dictionary
+      // Ensure data is JsonWebKey dictionary
       if (typeof keyData === 'object' && !Array.isArray(keyData)){
         jwk = new JsonWebKey(keyData)
       } else {
         throw new DataError('Invalid jwk format')
       }
 
-      // 2.3.2. Ensure 'd' field and keyUsages match up
+      // Ensure 'd' field and keyUsages match up
       if (jwk.d !== undefined && keyUsages.some(usage => usage !== 'sign')) {
         throw new SyntaxError('Key usages must include "sign"')
       }
@@ -272,66 +272,76 @@ class EDDSA extends Algorithm {
         throw new SyntaxError('Key usages must include "verify"')
       }
 
-      // 2.3.3 Validate 'kty' field
+      // Validate 'kty' field
       if (jwk.kty !== 'OKP'){
-        throw new DataError('Key type must be "EC".')
+        throw new DataError('Key type must be "OKP".')
       }
 
-      // 2.3.4. Validate 'use' field
-      if (keyUsages !== undefined && jwk.use !== undefined && jwk.use !== 'sig'){
-        throw new DataError('Key use must be "sig".')
+      // Validate 'crv' field
+      if (jwk.crv !== 'Ed25519'){
+        throw new DataError('Crv type must be "Ed25519".')
       }
 
-      // 2.3.5. Validate 'key_ops' field
-      if (jwk.key_ops !== undefined) {
+      // Validate 'key_ops' field
+      if (jwk.key_ops !== undefined){
         jwk.key_ops.forEach(op => {
           if (op !== 'sign'
             && op !== 'verify' ) {
             throw new DataError('Key operation can only include "sign", or "verify".')
           }
         })
-      }     
+      } 
 
-      // 2.3.6. Validate 'ext' field
-      if (jwk.ext !== undefined && jwk.ext === false && extractable === true){
-        throw new DataError('Cannot be extractable when "ext" is set to false')
-      }
-        // 2.3.9.1.1-3 Ommited due to redundancy
-        // 2.3.9.1.4.1. Validate 'd' property
-        if (jwk.d) {
-          // 2.3.9.1.4.1.1. TODO jwk validation here...
-          // 2.3.9.1.4.1.2-3 Generate new private CryptoKeyObject
+      // Validate 'd' property
+      if (jwk.d && jwk.x){
+        try {
+          // Generate new private CryptoKeyObject
           key = new CryptoKey({
               type: 'private',
               extractable,
               usages: ['sign'],
-              handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs1')
+              handle: base64url.toBuffer(jwk.d)
           })
+        } catch (error) {
+          throw new DataError('Invalid "d" field value.')
         }
-        // 2.3.9.1.4.2. Otherwise...
-        else {
-          // 2.3.9.1.4.2.1. TODO jwk validation here...
-          // 2.3.9.1.4.2.2-3 Generate new public CryptoKeyObject
+      }
+      // Validate 'x' property 
+      else if(jwk.x){
+        // Generate new public CryptoKeyObject
+        try {
           key = new CryptoKey({
             type: 'public',
             extractable: true,
             usages: ['verify'],
-            handle: keyto.from(jwk, 'jwk').toString('pem', 'public_pkcs8')
+            handle: base64url.toBuffer(jwk.x)
           })
+        } catch (error) {
+          throw new DataError('Invalid "x" field value.')
         }
-      // 2.3.10. Ommitted due to redudancy
-      // 2.3.11-14 Set new alg object
+      }
+      else {
+        throw new DataError('Unknown jwk format, missing "x" and "d" fields.')
+      }
+
+      // Ensure the key length 
+      if (key.handle.length !== 32){
+        throw new DataError('Key handle must be 32 bytes in length.')
+      }
+
+      // Set new alg object
       key.algorithm = new EDDSA(algorithm)
     }
-    // 2.4. "raw" format
+    // "raw" format
     else if (format === 'raw') {
       throw new CurrentlyNotSupportedError(format,'jwk')
     }
-    // 2.5. Otherwise bad format
+    // Otherwise bad format
     else {
       throw new KeyFormatNotSupportedError(format)
     }
-    // 3. Return key
+
+    // Return key
     return key
   }//importKey
 
@@ -347,52 +357,77 @@ class EDDSA extends Algorithm {
    * @returns {*}
    */
   exportKey (format, key) {
-    // 1. Setup resulting var
+    // Setup resulting var
     let result
 
-    // 2. Validate handle slot
+    // Validate handle slot
     if (!key.handle) {
       throw new OperationError('Missing key material')
     }
 
-    // 3.1. "spki" format
-    if (format === 'spki') {
-      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+    // Ensure data is accessible
+    if (key.extractable !== true){
+      throw new InvalidAccessError('Key handle is not extractable.')
     }
-    // 3.2. "pkcs8" format
-    else if (format === 'pkcs8') {
-      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
-    }
-    // 2.3. "jwk" format
-    else if (format === 'jwk') {
-      // 2.3.1-3 Create new jwk
-      let jwk = keyto.from(key.handle, 'pem').toJwk(key.type)
 
-      // 2.3.4. Set "key_ops" field
+    // "spki" format
+    if (format === 'spki'){
+      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+    }
+    // "pkcs8" format
+    else if (format === 'pkcs8'){
+      throw new CurrentlyNotSupportedError(format,"jwk' or 'raw")
+    }
+    // "jwk" format
+    else if (format === 'jwk'){
+      // Create new jwk
+      let jwk = new JsonWebKey({
+        "kty": "OKP",
+        "crv": "Ed25519"
+      })
+
+      // If the key is Private then derive 'd' and 'x'
+      let ec = new elEdDSA('ed25519')
+      if (key.type === 'private'){
+        let ecKey = ec.keyFromSecret(key.handle)
+        jwk.d = base64url(key.handle)
+        jwk.x = base64url(ecKey.pubBytes())
+      } 
+      // If the key is Public then derive 'x'
+      else if (key.type === 'public'){
+        let ecKey = ec.keyFromPublic(key.handle)
+        jwk.x = base64url(ecKey.pubBytes())
+      } 
+      // Otherwise throw error
+      else {
+        throw new DataError ("Unknown key type.")
+      }
+
+      // Set "key_ops" field
       jwk.key_ops = key.usages
 
-      // 2.3.5. Set "ext" field
+      // Set "ext" field
       jwk.ext = key.extractable
 
-      // 2.3.6. Set result to jwk object
+      // Set result to jwk object
       result = jwk
     }
-    // 3.4. "raw" format
-    else if (format === 'raw') {
-      // 3.4.1. Validate that the internal use is public
-      if (key.type !== 'public'){
-        throw new InvalidAccessError('Can only access public key data.')
-      }
-      // 3.4.2. Omitted due to redundancy
-      // 3.4.3. Let resulting data be Buffer containing data
+    // "raw" format
+    else if (format === 'raw'){
+      // Let resulting data be Buffer containing data
       result = Buffer.from(key.handle)
     }
-    // 3.5. Otherwise bad format
+    // "hex" format
+    else if (format === 'hex'){
+      // Let resulting data be Buffer containing data
+      result = base64url(key.handle)
+    }
+    // Otherwise throw bad format
     else {
       throw new KeyFormatNotSupportedError(format)
     }
 
-    // 4. Result result
+    // Result result
     return result
   }
 
@@ -403,6 +438,7 @@ class EDDSA extends Algorithm {
  */
 module.exports = EDDSA
 
+/*
 let ed = new EDDSA({name: 'ED25519'})
 let secretKey = {
   type : 'private',
@@ -443,9 +479,60 @@ let sk = ec.keyFromSecret(secretKey.handle)
 
 let enc1 = ed.sign(gennedKey.privateKey,msg)
 let dec1 = ed.verify(gennedKey.publicKey,enc1,msg)
-console.log("enc1",enc1)
-console.log("dec1",dec1)
+// console.log("enc1",enc1)
+// console.log("dec1",dec1)
  
-
 // let testKey = ec.keyFromSecret(`9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60`,'hex')
 // console.log( testKey )
+
+let impPrivateKey = ed.importKey(
+  "jwk",
+  {
+    "kty":"OKP",
+    "crv":"Ed25519",
+    "d":"nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
+    "x":"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+  },
+  { 
+    name: "EDDSA"
+  },
+  true,
+  ['sign']
+)
+let impPublicKey = ed.importKey(
+  "jwk",
+  {
+    "kty":"OKP",
+    "crv":"Ed25519",
+    "x":"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+  },
+  { 
+    name: "EDDSA"
+  },
+  true,
+  ['verify']
+)
+
+let enc2 = ed.sign(impPrivateKey,msg)
+let dec2 = ed.verify(impPublicKey,enc2,msg)
+// console.log("enc2",enc2)
+// console.log("dec2",dec2)
+
+let expPrvKey = ed.exportKey('jwk',impPrivateKey)
+let expPubKey = ed.exportKey('jwk',impPublicKey)
+
+console.log('expPrvKey',expPrvKey)
+console.log('expPubKey',expPubKey)
+
+let expPrvKeyR = ed.exportKey('raw',impPrivateKey)
+let expPubKeyR = ed.exportKey('raw',impPublicKey)
+
+console.log('expPrvKeyR',expPrvKeyR)
+console.log('expPubKeyR',expPubKeyR)
+
+let expPrvKeyH = ed.exportKey('hex',impPrivateKey)
+let expPubKeyH = ed.exportKey('hex',impPublicKey)
+
+console.log('expPrvKeyH',expPrvKeyH)
+console.log('expPubKeyH',expPubKeyH)
+*/
