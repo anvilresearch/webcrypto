@@ -150,7 +150,7 @@ class AES_GCM extends Algorithm {
       }
 
       // 2. Verify data length
-      if (algorithm.tagLength === undefined || (data.length * 8) < algorithm.tagLength){
+      if ((data.length * 8) < tagLength){
         throw new OperationError('Data length cannot be less than tagLength.')
       }
 
