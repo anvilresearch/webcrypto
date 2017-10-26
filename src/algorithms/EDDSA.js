@@ -77,12 +77,12 @@ class EDDSA extends Algorithm {
 
     // Ensure data is hex string, array or Buffer
     if (!Array.isArray(data) && !Buffer.isBuffer(data) && typeof data !== 'string'){
-      throw new DataError('Data must be an Array, Buffer or hex string')
+        throw new DataError('Data must be an Array, Buffer or hex string')
     }
 
     // Ensure key.handle is hex string, array or Buffer
     if (!Array.isArray(key.handle) && !Buffer.isBuffer(key.handle) && typeof key.handle !== 'string' ){
-      throw DataError('Key handle must be an Array, Buffer or hex string')
+      throw new DataError('Key handle must be an Array, Buffer or hex string')
     }
 
     try {
@@ -121,9 +121,9 @@ class EDDSA extends Algorithm {
    */
   verify (key, signature, data) {
     let result
-    // Ensure the key is a public or secret type
-    if (key.type !== 'secret' && key.type !== 'public') {
-      throw new InvalidAccessError('Verifying requires a public or secret key')
+    // Ensure the key is a public 
+    if (key.type !== 'public') {
+      throw new InvalidAccessError('Verifying requires a public key')
     }
 
     // Ensure data is hex string, array or Buffer
@@ -147,13 +147,6 @@ class EDDSA extends Algorithm {
       
       // Generate keypair from key
       let ecKey 
-      if (key.type === 'private' && key.extractable){
-        if (typeof key.handle === 'string'){
-          ecKey = ec.keyFromSecret(key.handle, 'hex')
-        } else { 
-          ecKey = ec.keyFromSecret(key.handle)
-        }
-      } else 
       if (key.type === 'public'){
         if (typeof key.handle === 'string'){
           ecKey = ec.keyFromPublic(key.handle, 'hex')
@@ -336,6 +329,71 @@ class EDDSA extends Algorithm {
     else if (format === 'raw') {
       throw new CurrentlyNotSupportedError(format,'jwk')
     }
+    // "hex" format
+    else if (format === 'hex'){
+      // Ensure data is object 
+      if (typeof keyData !== 'object'){
+        throw new DataError('Invalid jwk format')
+      } 
+
+      // Determine if the type is valid
+      if (!['private','public'].includes(keyData.type)){
+        throw new DataError(`Key type can only be "private" or "public".`)
+      }
+
+      // Determine if the size of the hex is valid
+      if ( typeof keyData.hex !== 'string' || keyData.hex.length !== 64 ){
+        throw new DataError(`Hex value must be a 64 byte string.`)
+      }
+
+      // Generate private key from hex
+      if (keyData.type === 'private'){
+        // Ensure keyUsages match up
+        if (keyUsages.some(usage => usage !== 'sign')) {
+          throw new SyntaxError('Key usages must include "sign"')
+        }
+        // Generate new private CryptoKeyObject
+        try {
+          key = new CryptoKey({
+              type: 'private',
+              extractable,
+              usages: ['sign'],
+              handle: Buffer.from(keyData.hex,'hex')
+          })
+        } catch (error) {
+          throw new DataError('Invalid private key hex.')
+        }
+      }
+      // Generate public key from hex
+      else if(keyData.type === 'public'){
+        // Ensure keyUsages match up
+        if (!keyUsages.some(usage => usage === 'verify')) {
+          throw new SyntaxError('Key usages must include "verify"')
+        }
+        // Generate new public CryptoKeyObject
+        try {
+          key = new CryptoKey({
+            type: 'public',
+            extractable: true,
+            usages: ['verify'],
+            handle: Buffer.from(keyData.hex,'hex')
+          })
+        } catch (error) {
+          throw new DataError('Invalid public key hex.')
+        }
+      }
+      else {
+        throw new DataError('Unknown key type.')
+      }
+
+      // Ensure the key length 
+      if (key.handle.length !== 32){
+        throw new DataError('Key handle must be 32 bytes in length.')
+      }
+
+      // Set new alg object
+      key.algorithm = new EDDSA(algorithm)
+    }
     // Otherwise bad format
     else {
       throw new KeyFormatNotSupportedError(format)
@@ -419,7 +477,7 @@ class EDDSA extends Algorithm {
     }
     // "hex" format
     else if (format === 'hex'){
-      // Let resulting data be Buffer containing data
+      // Let resulting data be hex string containing data
       result = base64url(key.handle)
     }
     // Otherwise throw bad format
@@ -439,22 +497,23 @@ class EDDSA extends Algorithm {
 module.exports = EDDSA
 
 /*
+
 let ed = new EDDSA({name: 'ED25519'})
 let secretKey = {
   type : 'private',
-  handle : Buffer.from(`4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb`,'hex')
+  hex : `4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb`
 }
 let pubKey = {
   type : 'public',
-  handle : Buffer.from(`3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c`,'hex')
+  hex : `3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c`
 }
 
 
 let msg = (Buffer.from('72','hex'))
 
 let sig = `92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00`
-let enc = ed.sign(secretKey,'72')
-let dec = ed.verify(pubKey,enc,msg)
+// let enc = ed.sign(secretKey,'72')
+// let dec = ed.verify(pubKey,enc,msg)
 // console.log("enc",enc)
 // console.log("dec",dec)
 
@@ -513,26 +572,51 @@ let impPublicKey = ed.importKey(
   ['verify']
 )
 
-let enc2 = ed.sign(impPrivateKey,msg)
-let dec2 = ed.verify(impPublicKey,enc2,msg)
-// console.log("enc2",enc2)
-// console.log("dec2",dec2)
+let impPrivFromHex = ed.importKey(
+  "hex",
+  secretKey,
+  { 
+    name: "EDDSA"
+  },
+  true,
+  ['sign']
+)
+let impPubFromHex = ed.importKey(
+  "hex",
+  pubKey,
+  { 
+    name: "EDDSA"
+  },
+  true,
+  ['verify']
+)
 
-let expPrvKey = ed.exportKey('jwk',impPrivateKey)
-let expPubKey = ed.exportKey('jwk',impPublicKey)
+// console.log('impPrivateKey',ed.exportKey("raw",impPrivateKey))
+// console.log('impPublicKey',ed.exportKey("raw",impPublicKey))
+// console.log('impPrivFromHex',ed.exportKey("raw",impPrivFromHex))
+// console.log('impPubFromHex',ed.exportKey("raw",impPubFromHex))
 
-console.log('expPrvKey',expPrvKey)
-console.log('expPubKey',expPubKey)
+let enc2 = ed.sign(impPrivFromHex,msg)
+let dec2 = ed.verify(impPubFromHex,enc2,msg)
+console.log("enc2",enc2)
+console.log("dec2",dec2)
 
-let expPrvKeyR = ed.exportKey('raw',impPrivateKey)
-let expPubKeyR = ed.exportKey('raw',impPublicKey)
+// let expPrvKey = ed.exportKey('jwk',impPrivateKey)
+// let expPubKey = ed.exportKey('jwk',impPublicKey)
 
-console.log('expPrvKeyR',expPrvKeyR)
-console.log('expPubKeyR',expPubKeyR)
+// console.log('expPrvKey',expPrvKey)
+// console.log('expPubKey',expPubKey)
 
-let expPrvKeyH = ed.exportKey('hex',impPrivateKey)
-let expPubKeyH = ed.exportKey('hex',impPublicKey)
+// let expPrvKeyR = ed.exportKey('raw',impPrivateKey)
+// let expPubKeyR = ed.exportKey('raw',impPublicKey)
 
-console.log('expPrvKeyH',expPrvKeyH)
-console.log('expPubKeyH',expPubKeyH)
+// console.log('expPrvKeyR',expPrvKeyR)
+// console.log('expPubKeyR',expPubKeyR)
+
+// let expPrvKeyH = ed.exportKey('hex',impPrivateKey)
+// let expPubKeyH = ed.exportKey('hex',impPublicKey)
+
+// console.log('expPrvKeyH',expPrvKeyH)
+// console.log('expPubKeyH',expPubKeyH)
+
 */
