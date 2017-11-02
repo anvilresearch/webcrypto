@@ -33,6 +33,13 @@ const {
 
 
 /**
+ * Key Mappings
+ */
+const EddsaCurves = [
+  {namedCurve: 'Ed25519', name: 'ed25519', alg: 'Ed25519'}
+]
+
+/**
  * EDDSA
  */
 class EDDSA extends Algorithm {
@@ -52,7 +59,8 @@ class EDDSA extends Algorithm {
    */
   static get members () {
     return {
-      name: String
+      name: String,
+      namedCurve: String
     }
   }
 
@@ -86,8 +94,10 @@ class EDDSA extends Algorithm {
     }
 
     try {
+      // Normalize curve
+      let curveName = EddsaCurves.find(alg => alg.namedCurve === key.algorithm.namedCurve)
       // Create curve via elliptic
-      let ec = new elEdDSA('ed25519')
+      let ec = new elEdDSA(curveName.name)
       
       // Generate keypair from private key
       let ecKey 
@@ -142,8 +152,10 @@ class EDDSA extends Algorithm {
     }
 
     try {
+      // Normalize curve
+      let curveName = EddsaCurves.find(alg => alg.namedCurve === key.algorithm.namedCurve)
       // Create curve via elliptic
-      let ec = new elEdDSA('ed25519')
+      let ec = new elEdDSA(curveName.name)
       
       // Generate keypair from key
       let ecKey 
@@ -188,11 +200,25 @@ class EDDSA extends Algorithm {
           throw new SyntaxError('Key usages can only include "sign", or "verify"')
         }
     })
+
+    // Normalize Curve Name
+    let { namedCurve } = params
+    
+    if (!namedCurve) {
+      throw new DataError('namedCurve is a required parameter for EDDSA')
+    }
+
+    if (!EddsaCurves.map(alg => alg.namedCurve).includes(namedCurve)) {
+      throw new DataError('namedCurve is not valid')
+    }
+
     // Generate random key for scret portion
     let secretBytes = crypto.randomBytes(32)
 
-    // Derive public bytes
-    let ec = new elEdDSA('ed25519')
+    // Normalize curve
+    let curveName = EddsaCurves.find(alg => alg.namedCurve === namedCurve)
+    // Create curve via elliptic
+    let ec = new elEdDSA(curveName.name)
     let ecKey = ec.keyFromSecret(secretBytes)
     let pubKey = Buffer.from(ecKey.pubBytes())
 
@@ -271,8 +297,9 @@ class EDDSA extends Algorithm {
       }
 
       // Validate 'crv' field
-      if (jwk.crv !== 'Ed25519'){
-        throw new DataError('Crv type must be "Ed25519".')
+      let namedCurve = jwk.crv
+      if (!EddsaCurves.map(alg => alg.namedCurve).includes(namedCurve)){
+        throw new DataError('Invalid curve type for EDDSA.')
       }
 
       // Validate 'key_ops' field
@@ -333,7 +360,7 @@ class EDDSA extends Algorithm {
     else if (format === 'hex'){
       // Ensure data is object 
       if (typeof keyData !== 'object'){
-        throw new DataError('Invalid jwk format')
+        throw new DataError('Invalid hex format')
       } 
 
       // Determine if the type is valid
@@ -441,8 +468,9 @@ class EDDSA extends Algorithm {
       // Create new jwk
       let jwk = new JsonWebKey({
         "kty": "OKP",
-        "crv": "Ed25519"
       })
+      // Assign 'crv' to jwk
+      jwk.crv = EddsaCurves.find(alg => alg.namedCurve === key.algorithm.namedCurve).namedCurve
 
       // If the key is Private then derive 'd' and 'x'
       let ec = new elEdDSA('ed25519')
