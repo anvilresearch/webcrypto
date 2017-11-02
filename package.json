@@ -27,6 +27,7 @@
   "dependencies": {
     "@trust/keyto": "^0.3.1",
     "base64url": "^2.0.0",
+    "elliptic": "^6.4.0",
     "node-rsa": "^0.4.0",
     "text-encoding": "^0.6.1"
   },

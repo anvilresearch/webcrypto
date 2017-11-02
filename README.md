@@ -82,9 +82,10 @@ $ npm test
 |RSASSA-PKCS1-v1_5 |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |RSA-PSS           |   |   | _ | _ |   | _ |   |   | _ | _ |   |   |
 |RSA-OAEP          | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
-|ECDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
+|ECDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
+|EDDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
 |ECDH              |   |   |   |   |   | _ | _ | _ | _ | _ |   |   |
-|AES-CTR           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
+|AES-CTR           | ⚐ | ⚐ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-CBC           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-GCM           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-KW            |   |   |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
@@ -99,7 +100,18 @@ $ npm test
 Key:
 
 ` ✔ ` Implemented
-` _ ` Need to implement
+` _ ` Currently not implemented
+` ⚐ ` Partially implemented, only certain paramaters supported.
+
+## Partial Support
+Only the following paramaters are supported for the corresponding algorithm.
+
+| Algorithm name | Supported paramater |
+| -------------- | ------------------- |
+| ECDSA          | `K-256 (secp256k1)`, `P-256`, `P-384`, `P-512` |
+| EDDSA          | `ed25519`           | 
+| AES-CTR        | `sha-1`             |
+
 
 ## API
 
@@ -165,7 +177,7 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 * Dmitri Zagidulin [@dmitrizagidulin](https://github.com/dmitrizagidulin)
 * Greg Linklater [@EternalDeiwos](https://github.com/EternalDeiwos)
 * JC Bailey [@thelunararmy](https://github.com/thelunararmy)
-* Loan Budea [@johnny90](https://github.com/johnny90)
+* Ioan Budea [@johnny90](https://github.com/johnny90)
 * Abdulrahman Alotaibi [@adminq80](https://github.com/adminq80)
 
 ## MIT License
