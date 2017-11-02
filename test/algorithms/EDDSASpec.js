@@ -67,7 +67,7 @@ let edd25519_public = {
       let alg, eddsa, data, signature, eddsaPublicKey, eddsaPrivateKey
 
       before(() => {
-          alg = { name: 'EDDSA' }
+          alg = { name: 'EDDSA', namedCurve: 'Ed25519' }
           eddsa = new EDDSA(alg) 
           eddsaPublicKey = eddsa.importKey(
               "hex",
@@ -116,7 +116,7 @@ let edd25519_public = {
       let alg, eddsa, data, signature, eddsaPublicKey, eddsaPrivateKey
 
       before(() => {
-          alg = { name: 'EDDSA' }
+          alg = { name: 'EDDSA', namedCurve: 'Ed25519' }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
               "hex",
@@ -160,7 +160,7 @@ let edd25519_public = {
       let alg, eddsa, cryptoKeyPair
 
       before(() => {
-        alg = { name: 'EDDSA' }
+        alg = { name: 'EDDSA', namedCurve: 'Ed25519' }
         eddsa = new EDDSA(alg)
         return Promise.resolve()
           .then(() => cryptoKeyPair = eddsa.generateKey(alg, true, ['sign', 'verify']))
@@ -240,7 +240,7 @@ let edd25519_public = {
               x:    "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
             }
             alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
             ec = new EDDSA(alg)
           })
@@ -262,7 +262,7 @@ let edd25519_public = {
               x:    "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
             }
             alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
             ec = new EDDSA(alg)
           })
@@ -279,7 +279,7 @@ let edd25519_public = {
 
           before(() => {
             alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
             ec = new EDDSA(alg)
             key = {
@@ -308,7 +308,7 @@ let edd25519_public = {
               x:    "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
             }
             alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
             eddsa = new EDDSA(alg)
 
@@ -326,7 +326,7 @@ let edd25519_public = {
 
           before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPrivateKey = eddsa.importKey(
@@ -366,7 +366,7 @@ let edd25519_public = {
 
           before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
@@ -410,7 +410,7 @@ let edd25519_public = {
             before(() => {
               key = edd25519_private
               alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
               ec = new EDDSA(alg)
             })
@@ -428,7 +428,7 @@ let edd25519_public = {
             before(() => {
               key = edd25519_public
               alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
               ec = new EDDSA(alg)
             })
@@ -445,7 +445,7 @@ let edd25519_public = {
 
             before(() => {
               alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
               ec = new EDDSA(alg)
               key = { 
@@ -467,7 +467,7 @@ let edd25519_public = {
             before(() => {            
               key = edd25519_private
               alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
               eddsa = new EDDSA(alg)
             })
@@ -484,7 +484,7 @@ let edd25519_public = {
 
             before(() => {
               alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
               eddsa = new EDDSA(alg)
               eddsaPrivateKey = eddsa.importKey(
@@ -519,7 +519,7 @@ let edd25519_public = {
 
             before(() => {
             alg = {
-                  name: 'EDDSA',
+                  name: 'EDDSA', namedCurve: 'Ed25519',
               }
             eddsa = new EDDSA(alg)
             eddsaPublicKey = eddsa.importKey(
@@ -552,7 +552,7 @@ let edd25519_public = {
 
       describe('with other format', () => {
         it('should throw NotSupportedError', () => {
-          let alg = new EDDSA({ name: 'EDDSA' })
+          let alg = new EDDSA({ name: 'EDDSA', namedCurve: 'Ed25519' })
 
           let caller = () => {
             alg.importKey('WRONG', {}, alg, false, ['verify'])
@@ -571,7 +571,7 @@ let edd25519_public = {
       describe('with missing key material', () => {
         it('should throw OperationError', () => {
           expect(() => {
-            let ec = new EDDSA({ name: 'EDDSA' })
+            let ec = new EDDSA({ name: 'EDDSA', namedCurve: 'Ed25519' })
             ec.exportKey('format', {})
           }).to.throw('Missing key material')
         })
@@ -585,7 +585,7 @@ let edd25519_public = {
 
           before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
@@ -608,7 +608,7 @@ let edd25519_public = {
 
           before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
@@ -630,7 +630,7 @@ let edd25519_public = {
 
           before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
@@ -651,7 +651,7 @@ let edd25519_public = {
         let alg,eddsa,key, eddsaPublicKey
         before(() => {
           alg = {
-                name: 'EDDSA',
+                name: 'EDDSA', namedCurve: 'Ed25519',
             }
           eddsa = new EDDSA(alg)
           eddsaPublicKey = eddsa.importKey(
