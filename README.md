@@ -82,10 +82,10 @@ $ npm test
 |RSASSA-PKCS1-v1_5 |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |RSA-PSS           |   |   | _ | _ |   | _ |   |   | _ | _ |   |   |
 |RSA-OAEP          | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
-|ECDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
-|EDDSA             |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
+|ECDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
+|EDDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
 |ECDH              |   |   |   |   |   | _ | _ | _ | _ | _ |   |   |
-|AES-CTR           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
+|AES-CTR           | ⚐ | ⚐ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-CBC           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-GCM           | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |AES-KW            |   |   |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
@@ -100,7 +100,16 @@ $ npm test
 Key:
 
 ` ✔ ` Implemented
-` _ ` Need to implement
+` _ ` Currently not implemented
+` ⚐ ` Partially implemented, only certain paramaters supported.
+
+## Partial Support
+Only the following paramaters are supported for the corresponding algorithm.
+| Algorithm name | Supported paramater |
+|------------------|------------------|
+|ECDSA             | secp256k1        |
+|EDDSA             | ed25519          |
+|AES-CTR           | sha-1            |
 
 ## API
 
