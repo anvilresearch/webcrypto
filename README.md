@@ -107,9 +107,9 @@ Key:
 Only the following paramaters are supported for the corresponding algorithm.
 | Algorithm name  | Supported paramater |
 | ------------- | ------------- |
-| ECDSA  | `secp256k1`  |
-| EDDSA  | `ed25519` 
-| AES-CTR  | `sha-1` |
+| ECDSA | `secp256k1` |
+| EDDSA | `ed25519` | 
+| AES-CTR | `sha-1` |
 
 
 ## API
