@@ -44,9 +44,33 @@ const RsaPrivateJwk = keyto.from(RsaPrivateKey,'pem').toJwk('private')
 /**
  * RsaPrivateCryptoKey
  */
-const RsaPrivateCryptoKey = new CryptoKey({
+const RsaPrivateCryptoKeySHA1 = new CryptoKey({
   type: 'private',
-  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-1'} },
+  extractable: false,
+  usages: ['sign'],
+  handle: RsaPrivateKey
+})
+
+const RsaPrivateCryptoKeySHA256 = new CryptoKey({
+  type: 'private',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-256'} },
+  extractable: false,
+  usages: ['sign'],
+  handle: RsaPrivateKey
+})
+
+const RsaPrivateCryptoKeySHA384 = new CryptoKey({
+  type: 'private',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-384'} },
+  extractable: false,
+  usages: ['sign'],
+  handle: RsaPrivateKey
+})
+
+const RsaPrivateCryptoKeySHA512 = new CryptoKey({
+  type: 'private',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-512'} },
   extractable: false,
   usages: ['sign'],
   handle: RsaPrivateKey
@@ -74,9 +98,33 @@ const RsaPublicJwk = keyto.from(RsaPublicKey,'pem').toJwk('public')
 /**
  * RsaPrivateCryptoKey
  */
-const RsaPublicCryptoKey = new CryptoKey({
+const RsaPublicCryptoKeySHA1 = new CryptoKey({
   type: 'public',
-  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-1'} },
+  extractable: true,
+  usages: ['verify'],
+  handle: RsaPublicKey
+})
+
+const RsaPublicCryptoKeySHA256 = new CryptoKey({
+  type: 'public',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-256'} },
+  extractable: true,
+  usages: ['verify'],
+  handle: RsaPublicKey
+})
+
+const RsaPublicCryptoKeySHA384 = new CryptoKey({
+  type: 'public',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-384'} },
+  extractable: true,
+  usages: ['verify'],
+  handle: RsaPublicKey
+})
+
+const RsaPublicCryptoKeySHA512 = new CryptoKey({
+  type: 'public',
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-512'} },
   extractable: true,
   usages: ['verify'],
   handle: RsaPublicKey
@@ -88,8 +136,14 @@ const RsaPublicCryptoKey = new CryptoKey({
 module.exports = {
   RsaPrivateKey,
   RsaPrivateJwk,
-  RsaPrivateCryptoKey,
+  RsaPrivateCryptoKeySHA1,
+  RsaPrivateCryptoKeySHA256,
+  RsaPrivateCryptoKeySHA384,
+  RsaPrivateCryptoKeySHA512,
   RsaPublicKey,
   RsaPublicJwk,
-  RsaPublicCryptoKey
+  RsaPublicCryptoKeySHA1,
+  RsaPublicCryptoKeySHA256,
+  RsaPublicCryptoKeySHA384,
+  RsaPublicCryptoKeySHA512
 }
