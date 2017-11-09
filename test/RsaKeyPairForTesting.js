@@ -46,7 +46,7 @@ const RsaPrivateJwk = keyto.from(RsaPrivateKey,'pem').toJwk('private')
  */
 const RsaPrivateCryptoKey = new CryptoKey({
   type: 'private',
-  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-256'} },
   extractable: false,
   usages: ['sign'],
   handle: RsaPrivateKey
@@ -76,7 +76,7 @@ const RsaPublicJwk = keyto.from(RsaPublicKey,'pem').toJwk('public')
  */
 const RsaPublicCryptoKey = new CryptoKey({
   type: 'public',
-  algorithm: { name: 'RSASSA-PKCS1-v1_5' },
+  algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: {name: 'SHA-256'} },
   extractable: true,
   usages: ['verify'],
   handle: RsaPublicKey
