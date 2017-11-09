@@ -27,10 +27,10 @@ const {TextEncoder,TextDecoder} = require('text-encoding')
 const {
   RsaPrivateKey,
   RsaPrivateJwk,
-  RsaPrivateCryptoKey,
+  RsaPrivateCryptoKeySHA256,
   RsaPublicKey,
   RsaPublicJwk,
-  RsaPublicCryptoKey
+  RsaPublicCryptoKeySHA256
 } = require('./RsaKeyPairForTesting')
 
 
@@ -412,7 +412,7 @@ describe('SubtleCrypto', () => {
         ])
 
         promise = crypto.subtle
-          .sign(algorithm, RsaPrivateCryptoKey, data)
+          .sign(algorithm, RsaPrivateCryptoKeySHA256, data)
           .then(res => {
             result = res
             done()
@@ -547,7 +547,7 @@ describe('SubtleCrypto', () => {
         ])
 
         promise = crypto.subtle
-          .verify(algorithm, RsaPublicCryptoKey, signature, data)
+          .verify(algorithm, RsaPublicCryptoKeySHA256, signature, data)
           .then(res => {
             result = res
             done()
