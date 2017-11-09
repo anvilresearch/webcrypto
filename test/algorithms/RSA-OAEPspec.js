@@ -190,7 +190,7 @@ describe('RSA_OAEP', () => {
         .then(() => cryptoKeyPair = rsa.generateKey(
           {
             name: "RSA-OAEP",
-            modulusLength: 2048, 
+            modulusLength: 1024, 
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash: {name: "SHA-256"}, 
           },
