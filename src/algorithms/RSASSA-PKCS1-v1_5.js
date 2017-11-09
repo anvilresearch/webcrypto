@@ -26,7 +26,8 @@ const {
   DataError,
   OperationError,
   InvalidAccessError,
-  KeyFormatNotSupportedError
+  KeyFormatNotSupportedError,
+  CurrentlyNotSupportedError
 } = require('../errors')
 
 /**
@@ -69,14 +70,30 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    * @returns {ArrayBuffer}
    */
   sign (key, data) {
+    // 1. Ensure key type is 'private' only
     if (key.type !== 'private') {
       throw new InvalidAccessError('Signing requires a private key')
     }
 
+    // Parametrize hash
+    let hashName 
+    if (key.algorithm.hash.name === 'SHA-1'){
+      hashName = 'RSA-SHA1'
+    } else if (key.algorithm.hash.name === 'SHA-256'){
+      hashName = 'RSA-SHA256'
+    } else if (key.algorithm.hash.name === 'SHA-384'){
+      hashName = 'RSA-SHA384'
+    } else if (key.algorithm.hash.name === 'SHA-512'){
+      hashName = 'RSA-SHA512'
+    } else {
+      throw new OperationError('Algorithm hash is an unknown format.')
+    }
+
+    // 2-5. Perform key signing and return result
     try {
       let pem = key.handle
       data = new TextDecoder().decode(data)
-      let signer = crypto.createSign('RSA-SHA256') // FIXME Paramaterize
+      let signer = crypto.createSign(hashName)
       signer.update(data)
       return signer.sign(pem).buffer
     } catch (error) {
@@ -96,17 +113,33 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    * @returns {Boolean}
    */
   verify (key, signature, data) {
+    // 1. Ensure key type is 'public' only
     if (key.type !== 'public') {
       throw new InvalidAccessError('Verifying requires a public key')
     }
 
+    // Parametrize hash
+    let hashName 
+    if (key.algorithm.hash.name === 'SHA-1'){
+      hashName = 'RSA-SHA1'
+    } else if (key.algorithm.hash.name === 'SHA-256'){
+      hashName = 'RSA-SHA256'
+    } else if (key.algorithm.hash.name === 'SHA-384'){
+      hashName = 'RSA-SHA384'
+    } else if (key.algorithm.hash.name === 'SHA-512'){
+      hashName = 'RSA-SHA512'
+    } else {
+      throw new OperationError('Algorithm hash is an unknown format.')
+    }
+
+    // 2-4. Perform verification and return result
     try {
       let pem = key.handle
 
       data = Buffer.from(data)
       signature = Buffer.from(signature)
 
-      let verifier = crypto.createVerify('RSA-SHA256')
+      let verifier = crypto.createVerify(hashName)
       verifier.update(data)
 
       return verifier.verify(pem, signature)
@@ -126,7 +159,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    */
   generateKey (params, extractable, usages) {
 
-    // validate usages
+    // 1. Verify usages
     usages.forEach(usage => {
       if (usage !== 'sign' && usage !== 'verify') {
         throw new SyntaxError('Key usages can only include "sign" and "verify"')
@@ -135,7 +168,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
 
     let keypair = {}
 
-    // Generate RSA keypair
+    // 2. Generate RSA keypair
     try {
       let {modulusLength,publicExponent} = params
       // TODO
@@ -148,20 +181,15 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       } catch (error){
         throw new OperationError(error.message)
       }
-      // - what is this bit option, where do we get the value from in this api?
-      //let key = new RSA({b:512})
-      //let {modulusLength,publicExponent} = params
-      //keypair = key.generateKeyPair()//(modulusLength, publicExponent)
-
-    // cast error
+    // 3. Throw operation error if anything fails
     } catch (error) {
       throw new OperationError(error.message)
     }
 
-    // cast params to algorithm
+    // 4-9. Create and assign algorithm object
     let algorithm = new RSASSA_PKCS1_v1_5(params)
 
-    // instantiate publicKey
+    // 10-13. Instantiate publicKey
     let publicKey = new CryptoKey({
       type: 'public',
       algorithm,
@@ -170,7 +198,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       handle: keypair.publicKey
     })
 
-    // instantiate privateKey
+    // 14-18. Instantiate privateKey
     let privateKey = new CryptoKey({
       type: 'private',
       algorithm,
@@ -179,7 +207,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       handle: keypair.privateKey
     })
 
-    // return a new keypair
+    // 19-22. Create and return a new keypair
     return new CryptoKeyPair({publicKey,privateKey})
   }
 
@@ -198,39 +226,56 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    */
   importKey (format, keyData, algorithm, extractable, keyUsages) {
     let key, hash, normalizedHash, jwk
-
+    // 1. Performed in function parameters
+    // 2.1. "spki" format
     if (format === 'spki') {
-      // ...
-    } else if (format === 'pkcs8') {
-
-    } else if (format === 'jwk') {
+      throw new CurrentlyNotSupportedError(format,'jwk')
+    } 
+    // 2.2. "pkcs8" format
+    else if (format === 'pkcs8') {
+      throw new CurrentlyNotSupportedError(format,'jwk')
+    } 
+    // 2.3. "jwk" format
+    else if (format === 'jwk') {
+      // 2.3.1. Cast keyData to JWK object
       jwk = new JsonWebKey(keyData)
 
+      // 2.3.2. Verify 'd' field
       if (jwk.d && keyUsages.some(usage => usage !== 'sign')) {
         throw new SyntaxError('Key usages must include "sign"')
       }
-
       if (jwk.d === undefined && !keyUsages.some(usage => usage === 'verify')) {
         throw new SyntaxError('Key usages must include "verify"')
       }
 
+      // 2.3.3. Verify 'kty' field
       if (jwk.kty !== 'RSA') {
         throw new DataError('Key type must be RSA')
       }
 
+      // 2.3.4. Verify 'use' field
       if (jwk.use !== undefined && jwk.use !== 'sig') {
         throw new DataError('Key use must be "sig"')
       }
 
-      // FIXME needs "ext" validation, see specification 6 under "jwk"
+      // 2.3.5. Validate present 'use' field and allowed string match
+      if (jwk.use !== undefined && jwk.use !== 'sig') {
+        throw new DataError('Key use must be "sig"')
+      }
 
-      // TODO
-      //if (jwk.key_ops ...) {
-      //  throw new DataError()
-      //}
+      // 2.3.6. Validate present 'key_ops' field 
+      if (jwk.key_ops !== undefined) {
+        jwk.key_ops.forEach(op => {
+            if (op !== 'sign'
+            && op !== 'verify') {
+            throw new DataError('Key operation can only include "sign", and "verify".')
+          }
+        })
+      }
 
+      // 2.3.7-8. Determine hash name
       if (jwk.alg === undefined) {
-        // leave hash undefined
+        // keep undefined
       } else if (jwk.alg === 'RS1') {
         hash = 'SHA-1'
       } else if (jwk.alg === 'RS256') {
@@ -240,26 +285,23 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       } else if (jwk.alg === 'RS512') {
         hash = 'SHA-512'
       } else {
-        // TODO
-        // perform any key import steps defined by other applicable
-        // specifications, passing format, jwk, and obtaining hash
         throw new DataError(
           'Key alg must be "RS1", "RS256", "RS384", or "RS512"'
         )
       }
 
+      // 2.3.9. Ommited due to redundancy, uncomment if needed
       if (hash !== undefined) {
         normalizedHash = supportedAlgorithms.normalize('digest', hash)
 
         //if (normalizedHash !== normalizedAlgorithm.hash) {
         //  throw new DataError()
         //}
-
       }
+      
 
+      // 2.3.10. Verify 'd' field
       if (jwk.d) {
-        // TODO
-        // - validate JWK requirements
         key = new CryptoKey({
           type: 'private',
           extractable: extractable,
@@ -267,8 +309,6 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
           handle: keyto.from(jwk, 'jwk').toString('pem', 'private_pkcs1')
         })
       } else {
-        // TODO
-        // - validate JWK requirements
         key = new CryptoKey({
           type: 'public',
           extractable: true,
@@ -279,7 +319,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-
+    // 3-7. Setupp RSSASSA object
     let alg = new RSASSA_PKCS1_v1_5({
       name: 'RSASSA-PKCS1-v1_5',
       modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
@@ -287,10 +327,13 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       hash: normalizedHash
     })
 
+    // 8. Set algorithm of key to alg
     key.algorithm = alg
 
+    // 9. Return key
     return key
   }
+
 
   /**
    * exportKey
