@@ -85,7 +85,12 @@ describe('AES_GCM', () => {
     it("should throw invalid data length", () => {
         expect(() => {
             let bad_data = {}
-            bad_data.length = 549755813633 // > 2^39 - 256
+            aes.encrypt({name: "AES-GCM", iv: bad_iv}, key, bad_data)
+        }).to.throw('Data must have a length less than 549755813632.')
+
+        expect(() => {
+            let bad_data = {}
+            bad_data.byteLength = 549755813633 // > 2^39 - 256
             aes.encrypt({name: "AES-GCM", iv: bad_iv}, key, bad_data)
         }).to.throw('Data must have a length less than 549755813632.')
     })
@@ -100,6 +105,11 @@ describe('AES_GCM', () => {
         expect(() => {
             aes.encrypt({name: "AES-GCM", iv: good_iv, additionalData: {}}, key, new Uint8Array())
         }).to.throw('AdditionalData must be less than 18446744073709551615 in length.')
+    })
+
+    it('should accept an ArrayBuffer', () => {
+        let data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]).buffer
+        aes.encrypt({name: "AES-GCM", iv: good_iv}, key, data).should.be.instanceof(ArrayBuffer)
     })
 
     it('should return an ArrayBuffer', () => {
