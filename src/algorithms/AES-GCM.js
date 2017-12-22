@@ -66,7 +66,7 @@ class AES_GCM extends Algorithm {
      */
     encrypt (algorithm, key, data) {
       // 1. Ensure correct data length
-      if (data.length === undefined || data.length > 549755813632) { // 2^39-256
+      if (data.byteLength === undefined || data.byteLength > 549755813632) { // 2^39-256
         throw new OperationError('Data must have a length less than 549755813632.')
       }
 
