@@ -6,6 +6,7 @@ const crypto = require('crypto')
 const {spawnSync} = require('child_process')
 const keyto = require('@trust/keyto')
 const {TextEncoder, TextDecoder} = require('text-encoding')
+const base64url = require('base64url').default
 
 /**
  * Local dependencies
@@ -319,11 +320,11 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-    // 3-7. Setupp RSSASSA object
+    // 3-7. Setup RSSASSA object
     let alg = new RSASSA_PKCS1_v1_5({
       name: 'RSASSA-PKCS1-v1_5',
-      modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
+      modulusLength: base64url.toBuffer(jwk.n).length * 8,
+      publicExponent: new Uint8Array(base64url.toBuffer(jwk.e)),
       hash: normalizedHash
     })
 
