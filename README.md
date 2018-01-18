@@ -179,6 +179,7 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 * JC Bailey [@thelunararmy](https://github.com/thelunararmy)
 * Ioan Budea [@johnny90](https://github.com/johnny90)
 * Abdulrahman Alotaibi [@adminq80](https://github.com/adminq80)
+* Linus Unnebäck [@LinusU](https://github.com/LinusU)
 
 ## MIT License
 
