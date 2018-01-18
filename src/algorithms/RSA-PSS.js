@@ -1,9 +1,11 @@
 /**
  * Package dependencies
  */
+
 const crypto = require('crypto')
-const {spawnSync} = require('child_process')
+const base64url = require('base64url').default
 const keyto = require('@trust/keyto')
+const {spawnSync} = require('child_process')
 const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
@@ -307,13 +309,9 @@ class RSA_PSS extends Algorithm {
         )
       }
 
-      // 2.3.9. Ommited due to redundancy, uncomment if needed
+      // 2.3.9. Ommited due to redundancy
       if (hash !== undefined) {
         normalizedHash = supportedAlgorithms.normalize('digest', hash)
-
-        //if (normalizedHash !== normalizedAlgorithm.hash) {
-        //  throw new DataError()
-        //}
       }
       
       // 2.3.10. Verify 'd' field
@@ -335,11 +333,11 @@ class RSA_PSS extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-    // 3-7. Setupp RSSASSA object
+    // 3-7. Setup RSA PSS object
     let alg = new RSA_PSS({
       name: 'RSA-PSS',
-      modulusLength: (new Buffer(jwk.n, 'base64').length / 2) * 8,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // TODO use jwk.e
+      modulusLength: base64url.toBuffer(jwk.n).length * 8,
+      publicExponent: new Uint8Array(base64url.toBuffer(jwk.e)),
       hash: normalizedHash
     })
 
@@ -364,8 +362,6 @@ class RSA_PSS extends Algorithm {
   exportKey (format, key) {
     let result
 
-    // TODO
-    // - should we type check key here?
     if (!key.handle) {
       throw new OperationError('Missing key material')
     }
@@ -400,7 +396,6 @@ class RSA_PSS extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-
     return result
   }
 }
