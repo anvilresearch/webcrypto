@@ -1250,7 +1250,62 @@ describe('SubtleCrypto', () => {
       })
     })
 
-  describe('with valid arguments', () => {
+    describe('with different key arguments', async () => {
+      let unwrappedSymmetric;
+      before(async () => {
+      
+        let cryptoAlgorithm = {
+          name: "RSA-OAEP",
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+          hash: { name: "SHA-1" }
+        };
+
+        let cryptoSymmetricAlgorithm = {
+          name: "AES-GCM",
+          length: 256, //can be  128, 192, or 256
+        };
+        
+        let wrappingAlgorithm = {
+          name: "RSA-OAEP",
+          hash: {name: "SHA-1"},
+        };
+
+        let asymmetricKey = await crypto.subtle.generateKey(
+          cryptoAlgorithm,
+          true,
+          ["encrypt", "decrypt", "wrapKey"]
+        );
+
+        let symmetric = await crypto.subtle.generateKey(
+          cryptoSymmetricAlgorithm,
+          true,
+          ["encrypt", "decrypt"]
+        );
+
+        let wrappedSymmetric = await crypto.subtle.wrapKey(
+          "raw",
+          symmetric,
+          asymmetricKey.publicKey,
+          wrappingAlgorithm
+        );
+
+        unwrappedSymmetric = await crypto.subtle.unwrapKey(
+            "raw",
+            wrappedSymmetric,
+            asymmetricKey.privateKey,
+            wrappingAlgorithm,
+            cryptoSymmetricAlgorithm,
+            false,
+            ["encrypt", "decrypt"]
+        );
+      });
+      it('should resolve the promise', () => {
+        unwrappedSymmetric.should.be.instanceof(CryptoKey)
+      })
+    })
+
+    describe('with valid arguments', () => {
       let promise, result, error
 
       before(done => {
