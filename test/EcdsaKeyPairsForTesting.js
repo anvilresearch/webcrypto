@@ -9,7 +9,7 @@ const ECDSA = require('../src/algorithms/ECDSA')
 const ECDSA_K256 = new ECDSA({ name: 'ECDSA', namedCurve: 'K-256', hash: { name: 'SHA-256' } })
 const ECDSA_P256 = new ECDSA({ name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } })
 const ECDSA_P384 = new ECDSA({ name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-256' } })
-const ECDSA_P512 = new ECDSA({ name: 'ECDSA', namedCurve: 'P-512', hash: { name: 'SHA-256' } })
+const ECDSA_P521 = new ECDSA({ name: 'ECDSA', namedCurve: 'P-521', hash: { name: 'SHA-256' } })
 
 /**
  * ECDSA_K256_PublicKey
@@ -196,19 +196,19 @@ oipMr1GWkLErCtx2hGpoLeqUg/KBw3s1V7LQPx7YqPHWKqB7z4pMIJ3tUyzejqZI
 -----END EC PRIVATE KEY-----`
 
 /**
- * ECDSA_P512_PublicKey
+ * ECDSA_P521_PublicKey
  */
-const ECDSA_P512_PublicKey = ECDSA_P512.importKey(
+const ECDSA_P521_PublicKey = ECDSA_P521.importKey(
       'jwk',
       {
         "kty": "EC",
-        "crv": "P-512",
+        "crv": "P-521",
         "x": "AUfN5-iTkxajWZGoNe-jzNCpSydvol5MrKf-QPS0k_3ZxgW62YdOrespAXYrK--G_ff2IoGrXWOw2kuM0JWiioOn",
         "y": "AQc6m4W2GVAfWKxf3qhCtKj6nGCQxCNTHF54AX-Yh4g271LYf8VgW8bshT877SJOJjkYabKJc8NOG_lp1cwffOfq"
       },
       {
           name: 'ECDSA',
-          namedCurve: 'P-512',
+          namedCurve: 'P-521',
           hash: {
             name: 'SHA-512'
           }
@@ -217,9 +217,9 @@ const ECDSA_P512_PublicKey = ECDSA_P512.importKey(
       ['verify'])
 
 /**
- * ECDSA_P512_PublicPem
+ * ECDSA_P521_PublicPem
  */
-ECDSA_P512_PublicPem = `-----BEGIN PUBLIC KEY-----
+ECDSA_P521_PublicPem = `-----BEGIN PUBLIC KEY-----
 MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQBR83n6JOTFqNZkag176PM0KlLJ2+i
 Xkysp/5A9LST/dnGBbrZh06t6ykBdisr74b99/YigatdY7DaS4zQlaKKg6cBBzqb
 hbYZUB9YrF/eqEK0qPqcYJDEI1McXngBf5iHiDbvUth/xWBbxuyFPzvtIk4mORhp
@@ -227,20 +227,20 @@ solzw04b+WnVzB985+o=
 -----END PUBLIC KEY-----`
 
 /**
- * ECDSA_P512_PrivateKey
+ * ECDSA_P521_PrivateKey
  */
-const ECDSA_P512_PrivateKey = ECDSA_P512.importKey(
+const ECDSA_P521_PrivateKey = ECDSA_P521.importKey(
       'jwk',
       {
         "kty": "EC",
-        "crv": "P-512",
+        "crv": "P-521",
         "d": "Aae3gDHukB0OAL-LRH3lWBUFJ951hxRRAH8qjnI0lB8zxZjUKR9pDMBaWbulz8WrgU1U5xVvEALQ9aL9S-le2h6W",
         "x": "AUfN5-iTkxajWZGoNe-jzNCpSydvol5MrKf-QPS0k_3ZxgW62YdOrespAXYrK--G_ff2IoGrXWOw2kuM0JWiioOn",
         "y": "AQc6m4W2GVAfWKxf3qhCtKj6nGCQxCNTHF54AX-Yh4g271LYf8VgW8bshT877SJOJjkYabKJc8NOG_lp1cwffOfq"
       },
       {
           name: 'ECDSA',
-          namedCurve: 'P-512',
+          namedCurve: 'P-521',
           hash: {
             name: 'SHA-512'
           }
@@ -249,9 +249,9 @@ const ECDSA_P512_PrivateKey = ECDSA_P512.importKey(
       ['sign'])
 
 /**
- * ECDSA_P512_PrivatePem
+ * ECDSA_P521_PrivatePem
  */
-ECDSA_P512_PrivatePem = `-----BEGIN EC PRIVATE KEY-----
+ECDSA_P521_PrivatePem = `-----BEGIN EC PRIVATE KEY-----
 MIHcAgEBBEIBp7eAMe6QHQ4Av4tEfeVYFQUn3nWHFFEAfyqOcjSUHzPFmNQpH2kM
 wFpZu6XPxauBTVTnFW8QAtD1ov1L6V7aHpagBwYFK4EEACOhgYkDgYYABAFHzefo
 k5MWo1mRqDXvo8zQqUsnb6JeTKyn/kD0tJP92cYFutmHTq3rKQF2Kyvvhv339iKB
@@ -275,8 +275,8 @@ module.exports = {
   ECDSA_P384_PublicKey,
   ECDSA_P384_PrivatePem,
   ECDSA_P384_PublicPem,
-  ECDSA_P512_PrivateKey,
-  ECDSA_P512_PublicKey,
-  ECDSA_P512_PrivatePem,
-  ECDSA_P512_PublicPem,
+  ECDSA_P521_PrivateKey,
+  ECDSA_P521_PublicKey,
+  ECDSA_P521_PrivatePem,
+  ECDSA_P521_PublicPem,
 }
