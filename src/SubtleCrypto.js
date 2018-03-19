@@ -467,7 +467,7 @@ class SubtleCrypto {
     }
 
     // 6. Setup normalizedKeyAlgorithm
-    let normalizedKeyAlgorithm = supportedAlgorithms.normalize('importKey', unwrapAlgorithm)
+    let normalizedKeyAlgorithm = supportedAlgorithms.normalize('importKey', unwrappedKeyAlgorithm)
     if (normalizedKeyAlgorithm instanceof Error) {
     // 7. If failed, then try again with op as 'encrypt'
       return Promise.reject(normalizedKeyAlgorithm)

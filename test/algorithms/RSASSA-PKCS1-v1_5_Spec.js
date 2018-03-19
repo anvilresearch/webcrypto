@@ -661,6 +661,14 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
           key.algorithm.should.be.instanceof(RSASSA_PKCS1_v1_5)
         })
 
+        it('should define modulusLength', () => {
+          key.algorithm.modulusLength.should.eql(2048)
+        })
+
+        it('should define publicExponent', () => {
+          key.algorithm.publicExponent.should.eql(new Uint8Array([0x01, 0x00, 0x01]))
+        })
+
         it('should define extractable', () => {
           key.extractable.should.equal(false)
         })
@@ -688,6 +696,14 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
         it('should define algorithm', () => {
           key.algorithm.should.be.instanceof(RSASSA_PKCS1_v1_5)
+        })
+
+        it('should define modulusLength', () => {
+          key.algorithm.modulusLength.should.eql(2048)
+        })
+
+        it('should define publicExponent', () => {
+          key.algorithm.publicExponent.should.eql(new Uint8Array([0x01, 0x00, 0x01]))
         })
 
         it('should define extractable', () => {
