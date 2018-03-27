@@ -180,7 +180,8 @@ See [W3C Web Cryptography API][webcrypto] specification and diafygi's [webcrypto
 * Ioan Budea [@johnny90](https://github.com/johnny90)
 * Abdulrahman Alotaibi [@adminq80](https://github.com/adminq80)
 * Linus Unnebäck [@LinusU](https://github.com/LinusU)
-
+* Len Boyette [@kevlened](https://github.com/kevlened)
+* Tom Bonner [@Glitch0011](https://github.com/Glitch0011)
 ## MIT License
 
 Copyright (c) 2016 Anvil Research, Inc.
