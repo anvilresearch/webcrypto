@@ -30,7 +30,7 @@ supportedAlgorithms.define('AES-GCM', 'decrypt', '../algorithms/AES-GCM')
  * sign
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'sign', '../algorithms/RSASSA-PKCS1-v1_5')
-//supportedAlgorithms.define('RSA-PSS', 'sign', )
+supportedAlgorithms.define('RSA-PSS', 'sign', '../algorithms/RSA-PSS')
 supportedAlgorithms.define('ECDSA', 'sign', '../algorithms/ECDSA')
 supportedAlgorithms.define('EDDSA', 'sign', '../algorithms/EDDSA')
 //supportedAlgorithms.define('AES-CMAC', 'sign', )
@@ -40,7 +40,7 @@ supportedAlgorithms.define('HMAC', 'sign', '../algorithms/HMAC')
  * verify
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'verify', '../algorithms/RSASSA-PKCS1-v1_5')
-//supportedAlgorithms.define('RSA-PSS', 'verify', )
+supportedAlgorithms.define('RSA-PSS', 'verify', '../algorithms/RSA-PSS')
 supportedAlgorithms.define('ECDSA', 'verify', '../algorithms/ECDSA')
 supportedAlgorithms.define('EDDSA', 'verify', '../algorithms/EDDSA')
 //supportedAlgorithms.define('AES-CMAC', 'verify', )
@@ -76,7 +76,7 @@ supportedAlgorithms.define('SHA-512', 'digest', '../algorithms/SHA')
  * generateKey
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'generateKey', '../algorithms/RSASSA-PKCS1-v1_5')
-//supportedAlgorithms.define('RSA-PSS', 'generateKey', )
+supportedAlgorithms.define('RSA-PSS', 'generateKey', '../algorithms/RSA-PSS')
 supportedAlgorithms.define('RSA-OAEP', 'generateKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('ECDSA', 'generateKey', '../algorithms/ECDSA')
 supportedAlgorithms.define('EDDSA', 'generateKey', '../algorithms/EDDSA')
@@ -95,7 +95,7 @@ supportedAlgorithms.define('HMAC', 'generateKey', '../algorithms/HMAC')
  * importKey
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'importKey', '../algorithms/RSASSA-PKCS1-v1_5')
-//supportedAlgorithms.define('RSA-PSS', 'importKey', )
+supportedAlgorithms.define('RSA-PSS', 'importKey', '../algorithms/RSA-PSS')
 supportedAlgorithms.define('RSA-OAEP', 'importKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('ECDSA', 'importKey', '../algorithms/ECDSA')
 supportedAlgorithms.define('EDDSA', 'importKey', '../algorithms/EDDSA')
@@ -116,7 +116,7 @@ supportedAlgorithms.define('HMAC', 'importKey', '../algorithms/HMAC')
  * exportKey
  */
 supportedAlgorithms.define('RSASSA-PKCS1-v1_5', 'exportKey', '../algorithms/RSASSA-PKCS1-v1_5')
-//supportedAlgorithms.define('RSA-PSS', 'exportKey', )
+supportedAlgorithms.define('RSA-PSS', 'exportKey', '../algorithms/RSA-PSS')
 supportedAlgorithms.define('RSA-OAEP', 'exportKey', '../algorithms/RSA-OAEP')
 supportedAlgorithms.define('EDDSA', 'exportKey', '../algorithms/EDDSA')
 supportedAlgorithms.define('ECDSA', 'exportKey', '../algorithms/ECDSA')
