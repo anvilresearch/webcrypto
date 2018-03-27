@@ -80,7 +80,7 @@ $ npm test
 | Algorithm name | encrypt | decrypt | sign | verify | digest | generateKey | deriveKey | deriveBits | importKey | exportKey | wrapKey | unwrapKey |
 |------------------|---|---|---|---|---|---|---|---|---|---|---|---|
 |RSASSA-PKCS1-v1_5 |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
-|RSA-PSS           |   |   | _ | _ |   | _ |   |   | _ | _ |   |   |
+|RSA-PSS           |   |   | ✔ | ✔ |   | ✔ |   |   | ✔ | ✔ |   |   |
 |RSA-OAEP          | ✔ | ✔ |   |   |   | ✔ |   |   | ✔ | ✔ | ✔ | ✔ |
 |ECDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
 |EDDSA             |   |   | ⚐ | ⚐ |   | ⚐ |   |   | ✔ | ✔ |   |   |
