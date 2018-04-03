@@ -78,13 +78,13 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
 
     // Parametrize hash
     let hashName 
-    if (key.algorithm.hash.name === 'SHA-1'){
+    if (this.hash.name === 'SHA-1'){
       hashName = 'RSA-SHA1'
-    } else if (key.algorithm.hash.name === 'SHA-256'){
+    } else if (this.hash.name === 'SHA-256'){
       hashName = 'RSA-SHA256'
-    } else if (key.algorithm.hash.name === 'SHA-384'){
+    } else if (this.hash.name === 'SHA-384'){
       hashName = 'RSA-SHA384'
-    } else if (key.algorithm.hash.name === 'SHA-512'){
+    } else if (this.hash.name === 'SHA-512'){
       hashName = 'RSA-SHA512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')
@@ -121,13 +121,13 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
 
     // Parametrize hash
     let hashName 
-    if (key.algorithm.hash.name === 'SHA-1'){
+    if (this.hash.name === 'SHA-1'){
       hashName = 'RSA-SHA1'
-    } else if (key.algorithm.hash.name === 'SHA-256'){
+    } else if (this.hash.name === 'SHA-256'){
       hashName = 'RSA-SHA256'
-    } else if (key.algorithm.hash.name === 'SHA-384'){
+    } else if (this.hash.name === 'SHA-384'){
       hashName = 'RSA-SHA384'
-    } else if (key.algorithm.hash.name === 'SHA-512'){
+    } else if (this.hash.name === 'SHA-512'){
       hashName = 'RSA-SHA512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')
