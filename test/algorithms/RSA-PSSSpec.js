@@ -26,7 +26,7 @@ const {
   RsaPublicCryptoKeySHA256,
   RsaPublicCryptoKeySHA384,
   RsaPublicCryptoKeySHA512
-} = require('../RsaKeyPairForTesting')
+} = require('../RsaKeyPairForPSSTesting')
 
 const crypto = require('../../src')
 const CryptoKey = require('../../src/keys/CryptoKey')
@@ -34,7 +34,7 @@ const CryptoKeyPair = require('../../src/keys/CryptoKeyPair')
 const KeyAlgorithm = require('../../src/dictionaries/KeyAlgorithm')
 const RsaKeyAlgorithm = require('../../src/dictionaries/RsaKeyAlgorithm')
 const RsaHashedKeyAlgorithm = require('../../src/dictionaries/RsaHashedKeyAlgorithm')
-const RSASSA_PKCS1_v1_5 = require('../../src/algorithms/RSASSA-PKCS1-v1_5')
+const RSA_PSS = require('../../src/algorithms/RSA-PSS')
 const DataError = require('../../src/errors/DataError')
 const OperationError = require('../../src/errors/OperationError')
 const NotSupportedError = require('../../src/errors/NotSupportedError')
@@ -47,7 +47,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    */
   describe.skip('dictionaries getter', () => {
     it('should return an array', () => {
-      RSASSA_PKCS1_v1_5.dictionaries.should.eql([
+      RSA_PSS.dictionaries.should.eql([
         KeyAlgorithm,
         RsaKeyAlgorithm,
         RsaHashedKeyAlgorithm
@@ -60,8 +60,8 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    */
   describe.skip('members getter', () => {
     it('should return an object', () => {
-      RSASSA_PKCS1_v1_5.members.publicExponent.should.equal('BufferSource')
-      RSASSA_PKCS1_v1_5.members.hash.should.equal('HashAlgorithmIdentifier')
+      RSA_PSS.members.publicExponent.should.equal('BufferSource')
+      RSA_PSS.members.hash.should.equal('HashAlgorithmIdentifier')
     })
   })
 
@@ -69,7 +69,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    * sign
    */
   describe('sign', () => {
-      let data, 
+    let data, 
         rsa1,
         rsa256,
         rsa384,
@@ -80,83 +80,75 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         signatureSHA512
 
     before(() => {
-      rsa1 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-1' }})
-      rsa256 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-256' }})
-      rsa384 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-384' }})
-      rsa512 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-512' }})
+      rsa1 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-1' }, saltLength:128 })
+      rsa256 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 })
+      rsa384 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-384' }, saltLength:128 })
+      rsa512 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-512' }, saltLength:128 })
 
       data = new TextEncoder().encode('signed with Chrome webcrypto')
 
       signatureSHA1 = new Uint8Array([
-        127,216,28,63,83,35,34,208,245,91,207,119,10,184,129,202,
-        139,66,206,41,38,172,58,191,191,192,170,0,50,252,203,79,122,
-        189,47,152,221,146,48,67,138,202,133,8,129,52,124,23,54,221,
-        74,255,46,115,31,175,254,168,16,54,106,148,120,155,95,209,
-        239,49,224,192,150,248,194,219,147,147,125,115,196,40,254,
-        13,36,115,150,178,102,249,182,214,61,30,134,186,50,187,244,
-        120,160,29,208,130,92,192,213,98,166,182,109,179,67,120,99,
-        142,173,192,83,1,151,56,236,123,92,232,170,145,139,7,170,135,
-        54,18,177,153,63,6,130,239,175,165,64,78,154,125,150,185,47,
-        92,113,83,169,254,192,127,102,214,36,173,94,39,123,58,137,2,
-        108,12,202,141,26,72,95,4,235,54,187,254,90,7,4,202,109,197,
-        16,16,98,205,96,250,74,234,136,108,154,231,19,213,145,97,166,
-        68,145,210,203,141,107,42,86,116,111,28,68,211,252,202,204,
-        219,96,183,3,98,113,51,196,140,164,123,226,223,194,186,161,
-        194,39,115,227,85,167,219,182,201,34,84,63,69,139,198,150,
-        141,163,227,34,215,156,56,98,21
-      ])
+        106,72,85,203,236,250,251,24,235,182,101,41,84,69,124,31,49,152,145,7,136,
+        189,121,111,124,89,102,33,83,247,172,99,104,241,202,99,139,60,16,215,205,
+        211,158,56,183,2,36,126,25,230,117,110,176,14,13,215,204,218,140,160,166,
+        148,149,191,60,244,179,23,124,34,194,4,32,62,118,27,241,42,19,9,226,176,
+        230,104,15,144,17,229,182,43,10,89,154,221,181,222,120,114,168,23,86,4,
+        114,45,73,72,96,160,237,51,136,131,4,145,54,144,192,191,123,225,23,213,235,
+        121,198,61,54,162,28,126,104,20,123,70,39,173,201,41,232,231,211,113,74,
+        116,179,108,241,168,131,89,99,187,201,6,80,18,204,230,150,102,55,126,29,
+        224,252,26,66,49,244,164,163,187,182,118,251,228,107,81,199,151,206,223,
+        236,82,146,41,145,175,160,64,21,158,119,205,228,169,2,201,14,46,75,237,157,
+        22,83,128,43,83,140,14,133,125,234,253,243,83,232,145,192,22,121,173,194,
+        179,64,134,217,52,79,164,29,117,229,231,201,1,161,233,148,143,45,170,115,
+        151,188,110,40,201,7,19,167,206,66,179,157,166
+      ]) 
+
       signatureSHA256 = new Uint8Array([
-        84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
-        243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
-        249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
-        0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
-        188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
-        88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
-        224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
-        45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
-        44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
-        184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
-        20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
-        235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
-        239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
-        166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
-        144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
-        247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
-        83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
-        144, 83
+        125,62,110,162,81,189,84,124,6,128,24,121,105,62,151,102,224,113,59,
+        113,147,64,65,194,190,53,225,5,97,158,120,193,192,12,216,137,232,192,
+        22,184,142,237,44,1,111,108,183,0,1,216,215,114,11,145,224,178,122,
+        227,99,151,107,40,17,22,207,108,234,141,44,155,82,214,129,234,248,
+        75,77,242,201,11,240,157,167,151,61,213,120,255,15,28,232,161,209,
+        229,81,79,83,108,48,141,157,12,55,53,43,223,119,196,127,227,230,255,
+        240,51,207,55,197,73,195,86,249,130,179,173,102,187,210,70,199,202,
+        20,53,83,200,175,197,137,224,70,18,35,231,59,219,119,185,180,64,186,
+        140,54,188,200,105,15,142,181,148,187,30,115,90,17,169,58,128,180,77,
+        93,37,215,216,135,139,134,190,176,185,233,112,35,82,64,158,250,165,11,
+        40,140,26,21,148,57,129,207,169,52,70,158,87,55,38,47,189,17,81,187,
+        195,127,142,161,205,127,44,168,53,75,85,14,49,160,227,156,130,210,159,
+        8,159,238,192,105,165,195,150,217,118,64,167,113,215,136,7,110,231,224,
+        111,127,34,48,243,216,233,37,95,240,20
       ])
+
       signatureSHA384 = new Uint8Array([
-        21,153,55,225,112,89,64,99,7,223,198,5,88,40,109,185,100,147,36,
-        146,188,103,131,247,20,84,227,185,14,55,5,48,253,39,179,227,168,
-        118,94,230,243,115,28,153,185,140,129,238,38,185,168,43,113,4,48,
-        112,236,65,242,19,60,56,250,127,20,116,45,137,123,24,81,88,219,
-        181,124,87,139,60,107,74,2,192,19,155,225,115,169,246,76,168,24,
-        45,111,53,231,173,213,3,187,168,216,37,47,116,133,180,76,184,88,
-        251,156,96,197,159,127,215,166,244,39,195,169,103,15,139,182,206,
-        192,181,32,35,18,197,99,90,48,45,33,237,89,186,201,46,147,122,30,
-        78,246,173,98,47,34,92,7,197,159,205,121,150,238,169,89,212,66,
-        134,141,194,237,214,81,171,30,159,15,35,117,39,34,47,78,122,161,
-        160,21,212,112,153,129,74,79,206,117,95,161,15,66,106,48,247,199,
-        96,230,136,139,87,144,239,64,234,218,143,78,145,85,3,157,135,245,
-        38,155,7,174,78,157,2,20,36,160,151,205,4,172,238,20,130,129,229,
-        130,26,7,177,210,20,72,39,74,66,240,168,224,121,142,128,14,204,
-        114,190
+        7,209,224,125,70,61,157,196,171,235,111,163,88,171,190,70,134,216,253,62,
+        163,124,28,174,136,175,191,198,238,213,65,4,172,152,202,42,101,190,87,159,
+        165,5,107,252,28,45,147,190,98,91,128,115,232,206,33,238,23,245,122,86,167,
+        16,239,21,188,28,58,208,248,92,147,164,245,254,76,83,8,41,72,96,222,230,
+        140,28,248,120,111,228,69,229,5,21,210,35,108,40,145,159,142,133,75,226,
+        134,54,182,156,35,112,108,44,20,14,8,94,160,250,79,116,57,226,32,109,211,
+        80,68,160,55,39,152,189,118,195,212,241,183,199,195,190,71,78,178,70,22,
+        76,128,224,104,234,128,40,104,37,148,166,34,158,154,225,179,38,197,123,
+        246,167,137,226,44,242,90,179,53,164,242,76,235,247,235,215,78,198,9,191,
+        253,137,46,213,121,83,38,160,168,229,129,21,140,204,205,37,61,144,27,254,
+        175,189,44,230,26,69,228,182,57,51,32,63,108,123,227,139,113,38,229,173,
+        121,98,193,76,220,95,235,89,122,120,182,112,20,121,167,249,48,132,80,52,
+        40,153,60,133,175,132,118,184,0,233,49,155,39,121
       ])
+
       signatureSHA512 = new Uint8Array([
-        4,158,87,2,1,45,7,135,46,182,165,62,255,35,13,36,73,13,129,70,162,
-        147,210,17,218,88,16,176,243,63,97,255,26,184,128,7,148,56,46,63,
-        113,52,71,149,189,255,91,195,209,1,129,39,128,24,255,109,250,80,16,
-        240,38,152,10,227,38,153,110,14,32,153,103,222,48,215,89,48,118,46,
-        172,245,13,200,125,196,27,101,13,251,223,91,128,245,30,158,22,233,
-        78,129,125,168,49,211,195,50,120,189,250,29,54,102,58,5,168,81,241,
-        252,9,168,138,36,92,233,24,246,103,82,39,200,10,142,168,83,150,243,
-        91,83,120,149,109,163,184,155,155,116,72,251,120,146,62,119,134,194,
-        12,250,195,21,92,49,196,120,100,85,125,26,5,86,89,83,102,89,249,228,
-        251,50,181,101,109,130,199,222,237,198,195,190,142,166,94,78,71,24,
-        145,101,199,239,212,125,235,110,43,191,235,176,233,97,52,24,205,93,
-        101,144,107,122,14,27,108,202,20,43,227,151,8,181,209,3,181,68,35,
-        14,171,17,142,67,215,135,65,39,245,152,103,106,26,53,56,207,78,93,
-        181,160,196,6,25,200,4,59,48,83
+        75,151,232,209,207,40,6,156,129,0,77,63,171,160,14,6,186,187,192,149,244,120,
+        136,30,25,69,16,155,35,174,28,43,216,85,71,145,36,242,35,248,239,44,223,71,
+        252,129,22,202,184,156,114,88,56,57,7,171,37,64,170,30,98,53,96,164,149,124,
+        212,224,87,184,182,147,241,203,219,138,15,229,9,45,42,86,224,72,52,23,126,
+        148,53,40,137,61,40,162,97,203,138,146,49,60,65,99,68,240,107,253,4,127,16,
+        30,241,248,22,87,77,117,167,150,159,67,250,194,151,80,106,172,110,125,148,
+        198,30,179,15,69,187,14,127,195,139,165,140,216,138,178,75,27,246,164,115,
+        88,15,105,66,59,7,185,56,92,176,21,39,10,178,133,40,114,138,37,227,180,241,
+        160,90,156,173,155,156,73,77,39,200,147,175,151,165,70,62,103,151,70,27,87,
+        146,203,162,242,15,102,117,72,178,145,49,211,77,171,130,19,110,182,154,212,
+        115,211,64,198,111,254,9,23,61,128,119,9,24,80,129,26,251,0,37,142,205,134,
+        143,144,97,175,37,200,93,64,58,106,230,4,77,233,131,80,168,107,173,11,177,128
       ])
     })
 
@@ -170,24 +162,51 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
       rsa256.sign(RsaPrivateCryptoKeySHA256, data).should.be.instanceof(ArrayBuffer)
     })
 
-    it('should return a RSASSA-PKCS1-v1_5 SHA-1 signature', () => {
+    /*
+    // These tests will not result in matching signatures since the data is salted by a random generated
+    // salt of specified saltLength. Hence the resulting signatures will (or should) always differ
+    // Unless these is a way to specificy the exact salt there is no way to consistantly test this
+    // use case except through generating the signature natively, and verifying it in Chrome
+    // (Which is manually tested before each npm release)
+
+    it('should return a RSA-PSS SHA-1 signature', () => {
       Buffer.from(rsa1.sign(RsaPrivateCryptoKeySHA1, data))
         .should.eql(Buffer.from(signatureSHA1.buffer))
     })
 
-    it('should return a RSASSA-PKCS1-v1_5 SHA-256 signature', () => {
+    it('should return a RSA-PSS SHA-256 signature', () => {
       Buffer.from(rsa256.sign(RsaPrivateCryptoKeySHA256, data))
         .should.eql(Buffer.from(signatureSHA256.buffer))
     })
 
-    it('should return a RSASSA-PKCS1-v1_5 SHA-384 signature', () => {
+    it('should return a RSA-PSS SHA-384 signature', () => {
       Buffer.from(rsa384.sign(RsaPrivateCryptoKeySHA384, data))
         .should.eql(Buffer.from(signatureSHA384.buffer))
     })
 
-    it('should return a RSASSA-PKCS1-v1_5 SHA-512 signature', () => {
+    it('should return a RSA-PSS SHA-512 signature', () => {
       Buffer.from(rsa512.sign(RsaPrivateCryptoKeySHA512, data))
         .should.eql(Buffer.from(signatureSHA512.buffer))
+    })*/
+
+    it('should return a correct length RSA-PSS SHA-1 signature', () => {
+      Buffer.from(rsa1.sign(RsaPrivateCryptoKeySHA1, data)).length
+        .should.eql(256)
+    })
+
+    it('should return a correct length RSA-PSS SHA-256 signature', () => {
+      Buffer.from(rsa256.sign(RsaPrivateCryptoKeySHA256, data)).length
+        .should.eql(256)
+    })
+
+    it('should return a correct length RSA-PSS SHA-384 signature', () => {
+      Buffer.from(rsa384.sign(RsaPrivateCryptoKeySHA384, data)).length
+        .should.eql(256)
+    })
+
+    it('should return a correct length RSA-PSS SHA-512 signature', () => {
+      Buffer.from(rsa512.sign(RsaPrivateCryptoKeySHA512, data)).length
+        .should.eql(256)
     })
   })
 
@@ -195,7 +214,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    * verify
    */
   describe('verify', () => {
-      let data, 
+    let data, 
         rsa1,
         rsa256,
         rsa384,
@@ -206,83 +225,75 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         signatureSHA512
 
     before(() => {
-      rsa1 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-1' }})
-      rsa256 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-256' }})
-      rsa384 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-384' }})
-      rsa512 = new RSASSA_PKCS1_v1_5({ name: "RSASSA-PKCS1-v1_5", hash: { name: 'SHA-512' }})
+      rsa1 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-1' }, saltLength:128 })
+      rsa256 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 })
+      rsa384 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-384' }, saltLength:128 })
+      rsa512 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-512' }, saltLength:128 })
 
       data = new TextEncoder().encode('signed with Chrome webcrypto')
 
       signatureSHA1 = new Uint8Array([
-        127,216,28,63,83,35,34,208,245,91,207,119,10,184,129,202,
-        139,66,206,41,38,172,58,191,191,192,170,0,50,252,203,79,122,
-        189,47,152,221,146,48,67,138,202,133,8,129,52,124,23,54,221,
-        74,255,46,115,31,175,254,168,16,54,106,148,120,155,95,209,
-        239,49,224,192,150,248,194,219,147,147,125,115,196,40,254,
-        13,36,115,150,178,102,249,182,214,61,30,134,186,50,187,244,
-        120,160,29,208,130,92,192,213,98,166,182,109,179,67,120,99,
-        142,173,192,83,1,151,56,236,123,92,232,170,145,139,7,170,135,
-        54,18,177,153,63,6,130,239,175,165,64,78,154,125,150,185,47,
-        92,113,83,169,254,192,127,102,214,36,173,94,39,123,58,137,2,
-        108,12,202,141,26,72,95,4,235,54,187,254,90,7,4,202,109,197,
-        16,16,98,205,96,250,74,234,136,108,154,231,19,213,145,97,166,
-        68,145,210,203,141,107,42,86,116,111,28,68,211,252,202,204,
-        219,96,183,3,98,113,51,196,140,164,123,226,223,194,186,161,
-        194,39,115,227,85,167,219,182,201,34,84,63,69,139,198,150,
-        141,163,227,34,215,156,56,98,21
-      ])
+        106,72,85,203,236,250,251,24,235,182,101,41,84,69,124,31,49,152,145,7,136,
+        189,121,111,124,89,102,33,83,247,172,99,104,241,202,99,139,60,16,215,205,
+        211,158,56,183,2,36,126,25,230,117,110,176,14,13,215,204,218,140,160,166,
+        148,149,191,60,244,179,23,124,34,194,4,32,62,118,27,241,42,19,9,226,176,
+        230,104,15,144,17,229,182,43,10,89,154,221,181,222,120,114,168,23,86,4,
+        114,45,73,72,96,160,237,51,136,131,4,145,54,144,192,191,123,225,23,213,235,
+        121,198,61,54,162,28,126,104,20,123,70,39,173,201,41,232,231,211,113,74,
+        116,179,108,241,168,131,89,99,187,201,6,80,18,204,230,150,102,55,126,29,
+        224,252,26,66,49,244,164,163,187,182,118,251,228,107,81,199,151,206,223,
+        236,82,146,41,145,175,160,64,21,158,119,205,228,169,2,201,14,46,75,237,157,
+        22,83,128,43,83,140,14,133,125,234,253,243,83,232,145,192,22,121,173,194,
+        179,64,134,217,52,79,164,29,117,229,231,201,1,161,233,148,143,45,170,115,
+        151,188,110,40,201,7,19,167,206,66,179,157,166
+      ]) 
+
       signatureSHA256 = new Uint8Array([
-        84, 181, 186, 121, 235, 76, 199, 102, 174, 125, 176, 216, 94, 190,
-        243, 201, 219, 114, 227, 61, 54, 194, 237, 14, 248, 204, 120, 109,
-        249, 220, 229, 80, 44, 48, 86, 133, 96, 129, 85, 213, 70, 19, 126,
-        0, 160, 91, 18, 185, 200, 102, 180, 181, 69, 27, 162, 181, 189, 110,
-        188, 112, 124, 93, 57, 208, 91, 142, 182, 192, 87, 167, 193, 111,
-        88, 5, 244, 108, 200, 150, 133, 68, 144, 208, 27, 155, 222, 213, 189,
-        224, 156, 226, 124, 65, 178, 69, 71, 63, 243, 141, 3, 126, 209, 237,
-        45, 179, 240, 255, 194, 245, 43, 148, 123, 97, 172, 239, 168, 221,
-        44, 186, 72, 194, 29, 9, 171, 103, 125, 182, 39, 95, 163, 80, 3, 208,
-        184, 184, 48, 114, 135, 7, 111, 114, 38, 25, 28, 234, 82, 18, 49, 113,
-        20, 251, 59, 147, 206, 7, 134, 15, 189, 201, 253, 241, 120, 236, 58,
-        235, 148, 27, 204, 233, 165, 31, 27, 223, 28, 10, 214, 159, 109, 186,
-        239, 71, 126, 18, 63, 111, 198, 115, 226, 237, 145, 26, 12, 120, 56,
-        166, 13, 195, 65, 11, 114, 149, 145, 255, 242, 97, 190, 255, 202, 219,
-        144, 83, 238, 240, 182, 82, 165, 229, 118, 146, 29, 95, 127, 76, 188,
-        247, 138, 254, 72, 18, 251, 42, 118, 156, 229, 66, 8, 106, 55, 106,
-        83, 232, 234, 23, 195, 160, 167, 133, 14, 181, 126, 5, 36, 157, 2, 81,
-        144, 83
+        125,62,110,162,81,189,84,124,6,128,24,121,105,62,151,102,224,113,59,
+        113,147,64,65,194,190,53,225,5,97,158,120,193,192,12,216,137,232,192,
+        22,184,142,237,44,1,111,108,183,0,1,216,215,114,11,145,224,178,122,
+        227,99,151,107,40,17,22,207,108,234,141,44,155,82,214,129,234,248,
+        75,77,242,201,11,240,157,167,151,61,213,120,255,15,28,232,161,209,
+        229,81,79,83,108,48,141,157,12,55,53,43,223,119,196,127,227,230,255,
+        240,51,207,55,197,73,195,86,249,130,179,173,102,187,210,70,199,202,
+        20,53,83,200,175,197,137,224,70,18,35,231,59,219,119,185,180,64,186,
+        140,54,188,200,105,15,142,181,148,187,30,115,90,17,169,58,128,180,77,
+        93,37,215,216,135,139,134,190,176,185,233,112,35,82,64,158,250,165,11,
+        40,140,26,21,148,57,129,207,169,52,70,158,87,55,38,47,189,17,81,187,
+        195,127,142,161,205,127,44,168,53,75,85,14,49,160,227,156,130,210,159,
+        8,159,238,192,105,165,195,150,217,118,64,167,113,215,136,7,110,231,224,
+        111,127,34,48,243,216,233,37,95,240,20
       ])
+
       signatureSHA384 = new Uint8Array([
-        21,153,55,225,112,89,64,99,7,223,198,5,88,40,109,185,100,147,36,
-        146,188,103,131,247,20,84,227,185,14,55,5,48,253,39,179,227,168,
-        118,94,230,243,115,28,153,185,140,129,238,38,185,168,43,113,4,48,
-        112,236,65,242,19,60,56,250,127,20,116,45,137,123,24,81,88,219,
-        181,124,87,139,60,107,74,2,192,19,155,225,115,169,246,76,168,24,
-        45,111,53,231,173,213,3,187,168,216,37,47,116,133,180,76,184,88,
-        251,156,96,197,159,127,215,166,244,39,195,169,103,15,139,182,206,
-        192,181,32,35,18,197,99,90,48,45,33,237,89,186,201,46,147,122,30,
-        78,246,173,98,47,34,92,7,197,159,205,121,150,238,169,89,212,66,
-        134,141,194,237,214,81,171,30,159,15,35,117,39,34,47,78,122,161,
-        160,21,212,112,153,129,74,79,206,117,95,161,15,66,106,48,247,199,
-        96,230,136,139,87,144,239,64,234,218,143,78,145,85,3,157,135,245,
-        38,155,7,174,78,157,2,20,36,160,151,205,4,172,238,20,130,129,229,
-        130,26,7,177,210,20,72,39,74,66,240,168,224,121,142,128,14,204,
-        114,190
+        7,209,224,125,70,61,157,196,171,235,111,163,88,171,190,70,134,216,253,62,
+        163,124,28,174,136,175,191,198,238,213,65,4,172,152,202,42,101,190,87,159,
+        165,5,107,252,28,45,147,190,98,91,128,115,232,206,33,238,23,245,122,86,167,
+        16,239,21,188,28,58,208,248,92,147,164,245,254,76,83,8,41,72,96,222,230,
+        140,28,248,120,111,228,69,229,5,21,210,35,108,40,145,159,142,133,75,226,
+        134,54,182,156,35,112,108,44,20,14,8,94,160,250,79,116,57,226,32,109,211,
+        80,68,160,55,39,152,189,118,195,212,241,183,199,195,190,71,78,178,70,22,
+        76,128,224,104,234,128,40,104,37,148,166,34,158,154,225,179,38,197,123,
+        246,167,137,226,44,242,90,179,53,164,242,76,235,247,235,215,78,198,9,191,
+        253,137,46,213,121,83,38,160,168,229,129,21,140,204,205,37,61,144,27,254,
+        175,189,44,230,26,69,228,182,57,51,32,63,108,123,227,139,113,38,229,173,
+        121,98,193,76,220,95,235,89,122,120,182,112,20,121,167,249,48,132,80,52,
+        40,153,60,133,175,132,118,184,0,233,49,155,39,121
       ])
+
       signatureSHA512 = new Uint8Array([
-        4,158,87,2,1,45,7,135,46,182,165,62,255,35,13,36,73,13,129,70,162,
-        147,210,17,218,88,16,176,243,63,97,255,26,184,128,7,148,56,46,63,
-        113,52,71,149,189,255,91,195,209,1,129,39,128,24,255,109,250,80,16,
-        240,38,152,10,227,38,153,110,14,32,153,103,222,48,215,89,48,118,46,
-        172,245,13,200,125,196,27,101,13,251,223,91,128,245,30,158,22,233,
-        78,129,125,168,49,211,195,50,120,189,250,29,54,102,58,5,168,81,241,
-        252,9,168,138,36,92,233,24,246,103,82,39,200,10,142,168,83,150,243,
-        91,83,120,149,109,163,184,155,155,116,72,251,120,146,62,119,134,194,
-        12,250,195,21,92,49,196,120,100,85,125,26,5,86,89,83,102,89,249,228,
-        251,50,181,101,109,130,199,222,237,198,195,190,142,166,94,78,71,24,
-        145,101,199,239,212,125,235,110,43,191,235,176,233,97,52,24,205,93,
-        101,144,107,122,14,27,108,202,20,43,227,151,8,181,209,3,181,68,35,
-        14,171,17,142,67,215,135,65,39,245,152,103,106,26,53,56,207,78,93,
-        181,160,196,6,25,200,4,59,48,83
+        75,151,232,209,207,40,6,156,129,0,77,63,171,160,14,6,186,187,192,149,244,120,
+        136,30,25,69,16,155,35,174,28,43,216,85,71,145,36,242,35,248,239,44,223,71,
+        252,129,22,202,184,156,114,88,56,57,7,171,37,64,170,30,98,53,96,164,149,124,
+        212,224,87,184,182,147,241,203,219,138,15,229,9,45,42,86,224,72,52,23,126,
+        148,53,40,137,61,40,162,97,203,138,146,49,60,65,99,68,240,107,253,4,127,16,
+        30,241,248,22,87,77,117,167,150,159,67,250,194,151,80,106,172,110,125,148,
+        198,30,179,15,69,187,14,127,195,139,165,140,216,138,178,75,27,246,164,115,
+        88,15,105,66,59,7,185,56,92,176,21,39,10,178,133,40,114,138,37,227,180,241,
+        160,90,156,173,155,156,73,77,39,200,147,175,151,165,70,62,103,151,70,27,87,
+        146,203,162,242,15,102,117,72,178,145,49,211,77,171,130,19,110,182,154,212,
+        115,211,64,198,111,254,9,23,61,128,119,9,24,80,129,26,251,0,37,142,205,134,
+        143,144,97,175,37,200,93,64,58,106,230,4,77,233,131,80,168,107,173,11,177,128
       ])
     })
 
@@ -321,8 +332,8 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
     let alg, rsa, cryptoKeyPair
 
     before(() => {
-      alg = { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, hash: { name: 'SHA-256' } }
-      rsa = new RSASSA_PKCS1_v1_5(alg)
+      alg = { name: 'RSA-PSS', modulusLength: 2048, hash: { name: 'SHA-256' } }
+      rsa = new RSA_PSS(alg)
       return Promise.resolve()
         .then(() => cryptoKeyPair = rsa.generateKey(alg, true, ['sign', 'verify']))
 
@@ -348,22 +359,22 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
     it('should set public key algorithm', () => {
       cryptoKeyPair.publicKey.algorithm
-        .should.be.instanceof(RSASSA_PKCS1_v1_5)
+        .should.be.instanceof(RSA_PSS)
     })
 
     it('should set private key algorithm', () => {
       cryptoKeyPair.privateKey.algorithm
-        .should.be.instanceof(RSASSA_PKCS1_v1_5)
+        .should.be.instanceof(RSA_PSS)
     })
 
     it('should set public key algorithm name', () => {
       cryptoKeyPair.publicKey.algorithm.name
-        .should.equal('RSASSA-PKCS1-v1_5')
+        .should.equal('RSA-PSS')
     })
 
     it('should set private key algorithm name', () => {
       cryptoKeyPair.privateKey.algorithm.name
-        .should.equal('RSASSA-PKCS1-v1_5')
+        .should.equal('RSA-PSS')
     })
 
     //it('should set public key algorithm hash', () => {
@@ -430,12 +441,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
             d: "FAKE",
-            alg: "RS256",
+            alg: "PS256",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({
-            name: 'RSASSA-PKCS1-v1_5',
+          alg = new RSA_PSS({
+            name: 'RSA-PSS',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash: { name: 'SHA-256' }
@@ -457,12 +468,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS256",
+            alg: "PS256",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({
-            name: 'RSASSA-PKCS1-v1_5',
+          alg = new RSA_PSS({
+            name: 'RSA-PSS',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash: { name: 'SHA-256' }
@@ -484,12 +495,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "WRONG",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS256",
+            alg: "PS256",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({
-            name: 'RSASSA-PKCS1-v1_5',
+          alg = new RSA_PSS({
+            name: 'RSA-PSS',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash: { name: 'SHA-256' }
@@ -511,13 +522,13 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS256",
+            alg: "PS256",
             use: "WRONG",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({
-            name: 'RSASSA-PKCS1-v1_5',
+          alg = new RSA_PSS({
+            name: 'RSA-PSS',
             modulusLength: 1024,
             publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash: { name: 'SHA-256' }
@@ -531,7 +542,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
       })
 
-      describe('RS1 key alg', () => {
+      describe('PS1 key alg', () => {
         let key, jwk, alg
 
         before(() => {
@@ -539,11 +550,11 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS1",
+            alg: "PS1",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', jwk, alg, false, ['verify'])
         })
 
@@ -552,7 +563,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
       })
 
-      describe('RS256 key alg', () => {
+      describe('PS256 key alg', () => {
         let key, jwk, alg
 
         before(() => {
@@ -560,11 +571,11 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS256",
+            alg: "PS256",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', jwk, alg, false, ['verify'])
         })
 
@@ -573,7 +584,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
       })
 
-      describe('RS384 key alg', () => {
+      describe('PS384 key alg', () => {
         let key, jwk, alg
 
         before(() => {
@@ -581,11 +592,11 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS384",
+            alg: "PS384",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', jwk, alg, false, ['verify'])
         })
 
@@ -594,7 +605,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
       })
 
-      describe('RS512 key alg', () => {
+      describe('PS512 key alg', () => {
         let key, jwk, alg
 
         before(() => {
@@ -602,11 +613,11 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             kty: "RSA",
             e: "AQAB",
             n: "vGO3eU16ag9zRkJ4AK8ZUZrjbtp5xWK0LyFMNT8933evJoHeczexMUzSiXaLrEFSyQZortk81zJH3y41MBO_UFDO_X0crAquNrkjZDrf9Scc5-MdxlWU2Jl7Gc4Z18AC9aNibWVmXhgvHYkEoFdLCFG-2Sq-qIyW4KFkjan05IE",
-            alg: "RS512",
+            alg: "PS512",
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', jwk, alg, false, ['verify'])
         })
 
@@ -627,13 +638,13 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
         })
 
         it('should throw DataError', () => {
           expect(() => {
             alg.importKey('jwk', jwk, alg, false, ['verify'])
-          }).to.throw('Key alg must be "RS1", "RS256", "RS384", or "RS512"')
+          }).to.throw('Key alg must be "PS1", "PS256", "PS384", or "PS512"')
         })
       })
 
@@ -648,7 +659,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             ext: true
           }
 
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', jwk, alg, false, ['verify'])
         })
 
@@ -661,7 +672,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         let key, alg
 
         before(() => {
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', RsaPrivateJwk, alg, false, ['sign'])
         })
 
@@ -670,7 +681,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
 
         it('should define algorithm', () => {
-          key.algorithm.should.be.instanceof(RSASSA_PKCS1_v1_5)
+          key.algorithm.should.be.instanceof(RSA_PSS)
         })
 
         it('should define modulusLength', () => {
@@ -698,7 +709,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         let key, alg
 
         before(() => {
-          alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          alg = new RSA_PSS({ name: 'RSA-PSS' })
           key = alg.importKey('jwk', RsaPublicJwk, alg, false, ['verify'])
         })
 
@@ -707,7 +718,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
         })
 
         it('should define algorithm', () => {
-          key.algorithm.should.be.instanceof(RSASSA_PKCS1_v1_5)
+          key.algorithm.should.be.instanceof(RSA_PSS)
         })
 
         it('should define modulusLength', () => {
@@ -734,7 +745,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
     describe('with other format', () => {
       it('should throw NotSupportedError', () => {
-        let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+        let alg = new RSA_PSS({ name: 'RSA-PSS' })
 
         let caller = () => {
           alg.importKey('WRONG', RsaPublicJwk, alg, false, ['verify'])
@@ -753,7 +764,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
     describe('with missing key material', () => {
       it('should throw OperationError', () => {
         expect(() => {
-          let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          let alg = new RSA_PSS({ name: 'RSA-PSS' })
           alg.exportKey('format', {})
         }).to.throw('Missing key material')
       })
@@ -775,12 +786,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             handle: RsaPublicKey
           })
 
-          let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          let alg = new RSA_PSS({ name: 'RSA-PSS' })
           jwk = alg.exportKey('jwk', key)
         })
 
-        it('should set "alg" to "RS1"', () => {
-          jwk.alg.should.equal('RS1')
+        it('should set "alg" to "PS1"', () => {
+          jwk.alg.should.equal('PS1')
         })
       })
 
@@ -796,12 +807,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             handle: RsaPublicKey
           })
 
-          let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          let alg = new RSA_PSS({ name: 'RSA-PSS' })
           jwk = alg.exportKey('jwk', key)
         })
 
-        it('should set "alg" to "RS256"', () => {
-          jwk.alg.should.equal('RS256')
+        it('should set "alg" to "PS256"', () => {
+          jwk.alg.should.equal('PS256')
         })
       })
 
@@ -817,12 +828,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             handle: RsaPublicKey
           })
 
-          let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          let alg = new RSA_PSS({ name: 'RSA-PSS' })
           jwk = alg.exportKey('jwk', key)
         })
 
-        it('should set "alg" to "RS384"', () => {
-          jwk.alg.should.equal('RS384')
+        it('should set "alg" to "PS384"', () => {
+          jwk.alg.should.equal('PS384')
         })
       })
 
@@ -838,12 +849,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
             handle: RsaPublicKey
           })
 
-          let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+          let alg = new RSA_PSS({ name: 'RSA-PSS' })
           jwk = alg.exportKey('jwk', key)
         })
 
-        it('should set "alg" to "RS512"', () => {
-          jwk.alg.should.equal('RS512')
+        it('should set "alg" to "PS512"', () => {
+          jwk.alg.should.equal('PS512')
         })
       })
 
@@ -861,7 +872,7 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
         })
 
-        let alg = new RSASSA_PKCS1_v1_5({ name: 'RSASSA-PKCS1-v1_5' })
+        let alg = new RSA_PSS({ name: 'RSA-PSS' })
 
         let caller = () => {
           alg.exportKey('WRONG', key)

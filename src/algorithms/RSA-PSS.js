@@ -1,12 +1,12 @@
 /**
  * Package dependencies
  */
-const RSA = require('node-rsa')
+
 const crypto = require('crypto')
-const {spawnSync} = require('child_process')
-const keyto = require('@trust/keyto')
-const {TextEncoder, TextDecoder} = require('text-encoding')
 const base64url = require('base64url').default
+const keyto = require('@trust/keyto')
+const {spawnSync} = require('child_process')
+const {TextEncoder, TextDecoder} = require('text-encoding')
 
 /**
  * Local dependencies
@@ -32,9 +32,9 @@ const {
 } = require('../errors')
 
 /**
- * RSASSA_PKCS1_v1_5
+ * RSA_PSS
  */
-class RSASSA_PKCS1_v1_5 extends Algorithm {
+class RSA_PSS extends Algorithm {
 
   /**
    * dictionaries
@@ -55,7 +55,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       name: String,
       modulusLength: Number,
       publicExponent: 'BufferSource',
-      hash: 'HashAlgorithmIdentifier'
+      hash: 'HashAlgorithmIdentifier',
     }
   }
 
@@ -63,7 +63,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
    * sign
    *
    * @description
-   * Create an RSA digital signature
+   * Create an RSA-PSS digital signature
    *
    * @param {CryptoKey} key
    * @param {BufferSource} data
@@ -76,16 +76,22 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       throw new InvalidAccessError('Signing requires a private key')
     }
 
+    // Ensure saltLength exists
+    if (this.saltLength === undefined){
+      throw new OperationError('saltLength must be a valid integer')
+    }
+
+
     // Parametrize hash
     let hashName 
     if (this.hash.name === 'SHA-1'){
-      hashName = 'RSA-SHA1'
+      hashName = 'sha1'
     } else if (this.hash.name === 'SHA-256'){
-      hashName = 'RSA-SHA256'
+      hashName = 'sha256'
     } else if (this.hash.name === 'SHA-384'){
-      hashName = 'RSA-SHA384'
+      hashName = 'sha384'
     } else if (this.hash.name === 'SHA-512'){
-      hashName = 'RSA-SHA512'
+      hashName = 'sha512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')
     }
@@ -96,7 +102,11 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       data = new TextDecoder().decode(data)
       let signer = crypto.createSign(hashName)
       signer.update(data)
-      return signer.sign(pem).buffer
+      return signer.sign({
+        key: pem,
+        saltLength: this.saltLength,
+        padding: crypto.constants.RSA_PKCS1_PSS_PADDING
+      }).buffer
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -119,16 +129,21 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       throw new InvalidAccessError('Verifying requires a public key')
     }
 
+    // Ensure saltLength exists
+    if (this.saltLength === undefined){
+      throw new OperationError('saltLength must be a valid integer')
+    }
+
     // Parametrize hash
     let hashName 
     if (this.hash.name === 'SHA-1'){
-      hashName = 'RSA-SHA1'
+      hashName = 'sha1'
     } else if (this.hash.name === 'SHA-256'){
-      hashName = 'RSA-SHA256'
+      hashName = 'sha256'
     } else if (this.hash.name === 'SHA-384'){
-      hashName = 'RSA-SHA384'
+      hashName = 'sha384'
     } else if (this.hash.name === 'SHA-512'){
-      hashName = 'RSA-SHA512'
+      hashName = 'sha512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')
     }
@@ -143,7 +158,11 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       let verifier = crypto.createVerify(hashName)
       verifier.update(data)
 
-      return verifier.verify(pem, signature)
+      return verifier.verify({
+          key: pem,
+          saltLength: this.saltLength,
+          padding: crypto.constants.RSA_PKCS1_PSS_PADDING
+        }, signature)
     } catch (error) {
       throw new OperationError(error.message)
     }
@@ -188,7 +207,7 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     }
 
     // 4-9. Create and assign algorithm object
-    let algorithm = new RSASSA_PKCS1_v1_5(params)
+    let algorithm = new RSA_PSS(params)
 
     // 10-13. Instantiate publicKey
     let publicKey = new CryptoKey({
@@ -277,30 +296,25 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       // 2.3.7-8. Determine hash name
       if (jwk.alg === undefined) {
         // keep undefined
-      } else if (jwk.alg === 'RS1') {
+      } else if (jwk.alg === 'PS1') {
         hash = 'SHA-1'
-      } else if (jwk.alg === 'RS256') {
+      } else if (jwk.alg === 'PS256') {
         hash = 'SHA-256'
-      } else if (jwk.alg === 'RS384') {
+      } else if (jwk.alg === 'PS384') {
         hash = 'SHA-384'
-      } else if (jwk.alg === 'RS512') {
+      } else if (jwk.alg === 'PS512') {
         hash = 'SHA-512'
       } else {
         throw new DataError(
-          'Key alg must be "RS1", "RS256", "RS384", or "RS512"'
+          'Key alg must be "PS1", "PS256", "PS384", or "PS512"'
         )
       }
 
-      // 2.3.9. Ommited due to redundancy, uncomment if needed
+      // 2.3.9. Ommited due to redundancy
       if (hash !== undefined) {
         normalizedHash = supportedAlgorithms.normalize('digest', hash)
-
-        //if (normalizedHash !== normalizedAlgorithm.hash) {
-        //  throw new DataError()
-        //}
       }
       
-
       // 2.3.10. Verify 'd' field
       if (jwk.d) {
         key = new CryptoKey({
@@ -320,9 +334,9 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-    // 3-7. Setup RSSASSA object
-    let alg = new RSASSA_PKCS1_v1_5({
-      name: 'RSASSA-PKCS1-v1_5',
+    // 3-7. Setup RSA PSS object
+    let alg = new RSA_PSS({
+      name: 'RSA-PSS',
       modulusLength: base64url.toBuffer(jwk.n).length * 8,
       publicExponent: new Uint8Array(base64url.toBuffer(jwk.e)),
       hash: normalizedHash
@@ -349,8 +363,6 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
   exportKey (format, key) {
     let result
 
-    // TODO
-    // - should we type check key here?
     if (!key.handle) {
       throw new OperationError('Missing key material')
     }
@@ -364,13 +376,13 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
       let hash = key.algorithm.hash.name
 
       if (hash === 'SHA-1') {
-        jwk.alg = 'RS1'
+        jwk.alg = 'PS1'
       } else if (hash === 'SHA-256') {
-        jwk.alg = 'RS256'
+        jwk.alg = 'PS256'
       } else if (hash === 'SHA-384') {
-        jwk.alg = 'RS384'
+        jwk.alg = 'PS384'
       } else if (hash === 'SHA-512') {
-        jwk.alg = 'RS512'
+        jwk.alg = 'PS512'
       } else {
         // TODO other applicable specifications
       }
@@ -385,7 +397,6 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
     } else {
       throw new KeyFormatNotSupportedError(format)
     }
-
     return result
   }
 }
@@ -393,4 +404,4 @@ class RSASSA_PKCS1_v1_5 extends Algorithm {
 /**
  * Export
  */
-module.exports = RSASSA_PKCS1_v1_5
+module.exports = RSA_PSS

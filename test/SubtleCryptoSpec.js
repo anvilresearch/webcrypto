@@ -386,7 +386,7 @@ describe('SubtleCrypto', () => {
       let promise, result, signature, error
 
       beforeEach((done) => {
-        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' }}
 
         let data = new TextEncoder().encode('signed with Chrome webcrypto')
 
@@ -521,7 +521,7 @@ describe('SubtleCrypto', () => {
       let promise, result, signature, error
 
       beforeEach((done) => {
-        let algorithm = { name: 'RSASSA-PKCS1-v1_5' }
+        let algorithm = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' }}
 
         let data = new TextEncoder().encode('signed with Chrome webcrypto')
 
