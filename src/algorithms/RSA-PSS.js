@@ -84,13 +84,13 @@ class RSA_PSS extends Algorithm {
 
     // Parametrize hash
     let hashName 
-    if (key.algorithm.hash.name === 'SHA-1'){
+    if (this.hash.name === 'SHA-1'){
       hashName = 'sha1'
-    } else if (key.algorithm.hash.name === 'SHA-256'){
+    } else if (this.hash.name === 'SHA-256'){
       hashName = 'sha256'
-    } else if (key.algorithm.hash.name === 'SHA-384'){
+    } else if (this.hash.name === 'SHA-384'){
       hashName = 'sha384'
-    } else if (key.algorithm.hash.name === 'SHA-512'){
+    } else if (this.hash.name === 'SHA-512'){
       hashName = 'sha512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')
@@ -136,13 +136,13 @@ class RSA_PSS extends Algorithm {
 
     // Parametrize hash
     let hashName 
-    if (key.algorithm.hash.name === 'SHA-1'){
+    if (this.hash.name === 'SHA-1'){
       hashName = 'sha1'
-    } else if (key.algorithm.hash.name === 'SHA-256'){
+    } else if (this.hash.name === 'SHA-256'){
       hashName = 'sha256'
-    } else if (key.algorithm.hash.name === 'SHA-384'){
+    } else if (this.hash.name === 'SHA-384'){
       hashName = 'sha384'
-    } else if (key.algorithm.hash.name === 'SHA-512'){
+    } else if (this.hash.name === 'SHA-512'){
       hashName = 'sha512'
     } else {
       throw new OperationError('Algorithm hash is an unknown format.')

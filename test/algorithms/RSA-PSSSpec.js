@@ -69,15 +69,21 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    * sign
    */
   describe('sign', () => {
-    let alg, rsa, data, 
-    signatureSHA1, 
-    signatureSHA256, 
-    signatureSHA384,
-    signatureSHA512
+    let data, 
+        rsa1,
+        rsa256,
+        rsa384,
+        rsa512,
+        signatureSHA1, 
+        signatureSHA256, 
+        signatureSHA384,
+        signatureSHA512
 
     before(() => {
-      alg = { name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 }
-      rsa = new RSA_PSS(alg)
+      rsa1 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-1' }, saltLength:128 })
+      rsa256 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 })
+      rsa384 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-384' }, saltLength:128 })
+      rsa512 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-512' }, saltLength:128 })
 
       data = new TextEncoder().encode('signed with Chrome webcrypto')
 
@@ -148,12 +154,12 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
     it('should throw with non-private key', () => {
       expect(() => {
-        rsa.sign(RsaPublicCryptoKeySHA256, new Uint8Array())
+        rsa256.sign(RsaPublicCryptoKeySHA256, new Uint8Array())
       }).to.throw('Signing requires a private key')
     })
 
     it('should return an ArrayBuffer', () => {
-      rsa.sign(RsaPrivateCryptoKeySHA256, data).should.be.instanceof(ArrayBuffer)
+      rsa256.sign(RsaPrivateCryptoKeySHA256, data).should.be.instanceof(ArrayBuffer)
     })
 
     /*
@@ -164,42 +170,42 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
     // (Which is manually tested before each npm release)
 
     it('should return a RSA-PSS SHA-1 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA1, data))
+      Buffer.from(rsa1.sign(RsaPrivateCryptoKeySHA1, data))
         .should.eql(Buffer.from(signatureSHA1.buffer))
     })
 
     it('should return a RSA-PSS SHA-256 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA256, data))
+      Buffer.from(rsa256.sign(RsaPrivateCryptoKeySHA256, data))
         .should.eql(Buffer.from(signatureSHA256.buffer))
     })
 
     it('should return a RSA-PSS SHA-384 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA384, data))
+      Buffer.from(rsa384.sign(RsaPrivateCryptoKeySHA384, data))
         .should.eql(Buffer.from(signatureSHA384.buffer))
     })
 
     it('should return a RSA-PSS SHA-512 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA512, data))
+      Buffer.from(rsa512.sign(RsaPrivateCryptoKeySHA512, data))
         .should.eql(Buffer.from(signatureSHA512.buffer))
     })*/
 
     it('should return a correct length RSA-PSS SHA-1 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA1, data)).length
+      Buffer.from(rsa1.sign(RsaPrivateCryptoKeySHA1, data)).length
         .should.eql(256)
     })
 
     it('should return a correct length RSA-PSS SHA-256 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA256, data)).length
+      Buffer.from(rsa256.sign(RsaPrivateCryptoKeySHA256, data)).length
         .should.eql(256)
     })
 
     it('should return a correct length RSA-PSS SHA-384 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA384, data)).length
+      Buffer.from(rsa384.sign(RsaPrivateCryptoKeySHA384, data)).length
         .should.eql(256)
     })
 
     it('should return a correct length RSA-PSS SHA-512 signature', () => {
-      Buffer.from(rsa.sign(RsaPrivateCryptoKeySHA512, data)).length
+      Buffer.from(rsa512.sign(RsaPrivateCryptoKeySHA512, data)).length
         .should.eql(256)
     })
   })
@@ -208,15 +214,21 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
    * verify
    */
   describe('verify', () => {
-    let alg, rsa, data, 
+    let data, 
+        rsa1,
+        rsa256,
+        rsa384,
+        rsa512,
         signatureSHA1, 
         signatureSHA256, 
         signatureSHA384,
         signatureSHA512
 
     before(() => {
-      alg = { name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 }
-      rsa = new RSA_PSS(alg)
+      rsa1 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-1' }, saltLength:128 })
+      rsa256 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-256' }, saltLength:128 })
+      rsa384 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-384' }, saltLength:128 })
+      rsa512 = new RSA_PSS({ name: "RSA-PSS", hash: { name: 'SHA-512' }, saltLength:128 })
 
       data = new TextEncoder().encode('signed with Chrome webcrypto')
 
@@ -287,29 +299,29 @@ const NotSupportedError = require('../../src/errors/NotSupportedError')
 
     it('should throw with non-private key', () => {
       expect(() => {
-        rsa.verify(RsaPrivateCryptoKeySHA256, new Uint8Array())
+        rsa256.verify(RsaPrivateCryptoKeySHA256, new Uint8Array())
       }).to.throw('Verifying requires a public key')
     })
 
     it('should return false with invalid signature', () => {
       let invalidData = new TextEncoder().encode('invalid signature')
-      rsa.verify(RsaPublicCryptoKeySHA256, signatureSHA256, invalidData).should.equal(false)
+      rsa256.verify(RsaPublicCryptoKeySHA256, signatureSHA256, invalidData).should.equal(false)
     })
 
     it('should return true with valid SHA-1 signature', () => {
-      rsa.verify(RsaPublicCryptoKeySHA1, signatureSHA1, data).should.equal(true)
+      rsa1.verify(RsaPublicCryptoKeySHA1, signatureSHA1, data).should.equal(true)
     })
 
     it('should return true with valid SHA-256 signature', () => {
-      rsa.verify(RsaPublicCryptoKeySHA256, signatureSHA256, data).should.equal(true)
+      rsa256.verify(RsaPublicCryptoKeySHA256, signatureSHA256, data).should.equal(true)
     })
 
     it('should return true with valid SHA-384 signature', () => {
-      rsa.verify(RsaPublicCryptoKeySHA384, signatureSHA384, data).should.equal(true)
+      rsa384.verify(RsaPublicCryptoKeySHA384, signatureSHA384, data).should.equal(true)
     })
 
     it('should return true with valid SHA-512 signature', () => {
-      rsa.verify(RsaPublicCryptoKeySHA512, signatureSHA512, data).should.equal(true)
+      rsa512.verify(RsaPublicCryptoKeySHA512, signatureSHA512, data).should.equal(true)
     })
   })
 
