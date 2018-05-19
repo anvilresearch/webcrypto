@@ -37,10 +37,10 @@ const {
   ECDSA_P384_PublicKey,
   ECDSA_P384_PrivatePem,
   ECDSA_P384_PublicPem,
-  ECDSA_P512_PrivateKey,
-  ECDSA_P512_PublicKey,
-  ECDSA_P512_PrivatePem,
-  ECDSA_P512_PublicPem,
+  ECDSA_P521_PrivateKey,
+  ECDSA_P521_PublicKey,
+  ECDSA_P521_PrivatePem,
+  ECDSA_P521_PublicPem,
 } = require('../EcdsaKeyPairsForTesting')
 
 /**
@@ -517,10 +517,10 @@ ECDSATest({
   ECPublicPem: ECDSA_P384_PublicPem,
 }, 'P-384', 'SHA-384')
 
-// P512
+// P521
 ECDSATest({
-  ECPrivateKey: ECDSA_P512_PrivateKey,
-  ECPublicKey: ECDSA_P512_PublicKey,
-  ECPrivatePem: ECDSA_P512_PrivatePem,
-  ECPublicPem: ECDSA_P512_PublicPem,
-}, 'P-512', 'SHA-512')
+  ECPrivateKey: ECDSA_P521_PrivateKey,
+  ECPublicKey: ECDSA_P521_PublicKey,
+  ECPrivatePem: ECDSA_P521_PrivatePem,
+  ECPublicPem: ECDSA_P521_PublicPem,
+}, 'P-521', 'SHA-512')
