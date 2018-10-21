@@ -53,6 +53,25 @@ encourage or provide a [native, if not core][wtf] Web Cryptography module.
 $ npm install @trust/webcrypto --save
 ```
 
+### Not for use in Webpack
+
+This library is not for use in Webpack.
+
+The whole point of this library is that it's an exact duplicate of the browser's WebCrypto API,
+for the server side.
+
+For Webpacked web applications,
+you don't need it (and can't use it).
+If this module is transitively included by another dependency,
+you have to exclude it by adding it to the [`externals` section in the Webpack config](https://webpack.js.org/configuration/externals/),
+such as this:
+
+```
+externals: {
+  '@trust/webcrypto': 'crypto'
+}
+```
+
 ## Usage
 
 ```javascript
@@ -109,7 +128,7 @@ Only the following paramaters are supported for the corresponding algorithm.
 | Algorithm name | Supported paramater |
 | -------------- | ------------------- |
 | ECDSA          | `K-256 (secp256k1)`, `P-256`, `P-384`, `P-512` |
-| EDDSA          | `ed25519`           | 
+| EDDSA          | `ed25519`           |
 | AES-CTR        | `sha-1`             |
 
 
